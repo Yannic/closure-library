@@ -1,22 +1,13 @@
-// Copyright 2007 The Closure Library Authors. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS-IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+/**
+ * @license
+ * Copyright The Closure Library Authors.
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
 /**
  * @fileoverview DOM pattern matcher.  Allows for simple searching of DOM
  * using patterns descended from {@link goog.dom.pattern.AbstractPattern}.
- *
- * @author robbyw@google.com (Robby Walker)
+ * @suppress {missingRequire} TODO(user): this shouldn't be needed
  */
 
 goog.provide('goog.dom.pattern.Matcher');
@@ -24,6 +15,7 @@ goog.provide('goog.dom.pattern.Matcher');
 goog.require('goog.dom.TagIterator');
 goog.require('goog.dom.pattern.MatchType');
 goog.require('goog.iter');
+goog.requireType('goog.dom.pattern');
 
 
 // TODO(robbyw): Allow for backtracks of size > 1.
@@ -48,6 +40,7 @@ goog.require('goog.iter');
  * @final
  */
 goog.dom.pattern.Matcher = function() {
+  'use strict';
   /**
    * Array of patterns to attempt to match in parallel.
    *
@@ -74,6 +67,7 @@ goog.dom.pattern.Matcher = function() {
  *     the above semantics.
  */
 goog.dom.pattern.Matcher.prototype.addPattern = function(pattern, callback) {
+  'use strict';
   this.patterns_.push(pattern);
   this.callbacks_.push(callback);
 };
@@ -85,6 +79,7 @@ goog.dom.pattern.Matcher.prototype.addPattern = function(pattern, callback) {
  * @private
  */
 goog.dom.pattern.Matcher.prototype.reset_ = function() {
+  'use strict';
   for (var i = 0, len = this.patterns_.length; i < len; i++) {
     this.patterns_[i].reset();
   }
@@ -101,6 +96,7 @@ goog.dom.pattern.Matcher.prototype.reset_ = function() {
  * @private
  */
 goog.dom.pattern.Matcher.prototype.matchToken_ = function(position) {
+  'use strict';
   for (var i = 0, len = this.patterns_.length; i < len; i++) {
     var pattern = this.patterns_[i];
     switch (pattern.matchToken(position.node, position.tagType)) {
@@ -130,11 +126,13 @@ goog.dom.pattern.Matcher.prototype.matchToken_ = function(position) {
  * @param {Node} node The root node of the tree to match.
  */
 goog.dom.pattern.Matcher.prototype.match = function(node) {
+  'use strict';
   var position = new goog.dom.TagIterator(node);
 
   this.reset_();
 
   goog.iter.forEach(position, function() {
+    'use strict';
     while (this.matchToken_(position)) {
       // Since we've moved, our old pattern statuses don't make sense any more.
       // Reset them.

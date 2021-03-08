@@ -1,80 +1,139 @@
-// Copyright 2008 The Closure Library Authors. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS-IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+/**
+ * @license
+ * Copyright The Closure Library Authors.
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
-goog.provide('goog.i18n.GraphemeBreakTest');
-goog.setTestOnly('goog.i18n.GraphemeBreakTest');
+goog.module('goog.i18n.GraphemeBreakTest');
+goog.setTestOnly();
 
-goog.require('goog.i18n.GraphemeBreak');
-goog.require('goog.testing.jsunit');
+const GraphemeBreak = goog.require('goog.i18n.GraphemeBreak');
+const testSuite = goog.require('goog.testing.testSuite');
+const uChar = goog.require('goog.i18n.uChar');
 
-function testBreakNormalAscii() {
-  assertTrue(
-      goog.i18n.GraphemeBreak.hasGraphemeBreak(
-          'a'.charCodeAt(0), 'b'.charCodeAt(0), true));
-}
+/** @const {function(number):?string} */
+const fromCharCode = uChar.fromCharCode;
 
-function testBreakAsciiWithExtendedChar() {
-  assertFalse(
-      goog.i18n.GraphemeBreak.hasGraphemeBreak(
-          'a'.charCodeAt(0), 0x0300, true));
-}
+testSuite({
+  testEmptyInput() {
+    assertTrue(GraphemeBreak.hasGraphemeBreakStrings('a', ''));
+    assertTrue(GraphemeBreak.hasGraphemeBreakStrings('', 'b'));
+  },
 
-function testBreakSurrogates() {
-  assertFalse(goog.i18n.GraphemeBreak.hasGraphemeBreak(0xDA00, 0xDC00, true));
-  assertFalse(goog.i18n.GraphemeBreak.hasGraphemeBreak(0xDBFF, 0xDFFF, true));
-}
+  testBreakNormalAscii() {
+    assertTrue(GraphemeBreak.hasGraphemeBreak(
+        'a'.charCodeAt(0), 'b'.charCodeAt(0), true));
 
-function testBreakHangLxL() {
-  assertFalse(goog.i18n.GraphemeBreak.hasGraphemeBreak(0x1100, 0x1100, true));
-}
+    assertTrue(GraphemeBreak.hasGraphemeBreakStrings('a', 'b', true));
+  },
 
-function testBreakHangL_T() {
-  assertTrue(goog.i18n.GraphemeBreak.hasGraphemeBreak(0x1100, 0x11A8));
-}
+  /** @suppress {checkTypes} suppression added to enable type checking */
+  testBreakAsciiWithExtendedChar() {
+    assertFalse(
+        GraphemeBreak.hasGraphemeBreak('a'.charCodeAt(0), 0x0300, true));
 
-function testBreakHangLVxV() {
-  assertFalse(goog.i18n.GraphemeBreak.hasGraphemeBreak(0xAC00, 0x1160, true));
-}
+    assertFalse(
+        GraphemeBreak.hasGraphemeBreakStrings('a', fromCharCode(0x0300), true));
+  },
 
-function testBreakHangLV_L() {
-  assertTrue(goog.i18n.GraphemeBreak.hasGraphemeBreak(0xAC00, 0x1100, true));
-}
+  /** @suppress {checkTypes} suppression added to enable type checking */
+  testBreakSurrogates() {
+    assertFalse(GraphemeBreak.hasGraphemeBreak(0xDA00, 0xDC00, true));
+    assertFalse(GraphemeBreak.hasGraphemeBreak(0xDBFF, 0xDFFF, true));
 
-function testBreakHangLVTxT() {
-  assertFalse(goog.i18n.GraphemeBreak.hasGraphemeBreak(0xAC01, 0x11A8, true));
-}
+    assertFalse(GraphemeBreak.hasGraphemeBreakStrings(
+        fromCharCode(0xDA00), fromCharCode(0xDC00), true));
+    assertFalse(GraphemeBreak.hasGraphemeBreakStrings(
+        fromCharCode(0xDBFF), fromCharCode(0xDFFF), true));
+  },
 
-function testBreakThaiPrependLegacy() {
-  assertTrue(goog.i18n.GraphemeBreak.hasGraphemeBreak(0x0E40, 0x0E01));
-}
+  /** @suppress {checkTypes} suppression added to enable type checking */
+  testBreakHangLxL() {
+    assertFalse(GraphemeBreak.hasGraphemeBreak(0x1100, 0x1100, true));
+    assertFalse(GraphemeBreak.hasGraphemeBreakStrings(
+        fromCharCode(0x1100), fromCharCode(0x1100), true));
+  },
 
-function testBreakThaiPrependExtended() {
-  assertTrue(goog.i18n.GraphemeBreak.hasGraphemeBreak(0x0E40, 0x0E01, true));
-}
+  /** @suppress {checkTypes} suppression added to enable type checking */
+  testBreakHangL_T() {
+    assertTrue(GraphemeBreak.hasGraphemeBreak(0x1100, 0x11A8));
+    assertTrue(GraphemeBreak.hasGraphemeBreakStrings(
+        fromCharCode(0x1100), fromCharCode(0x11A8)));
+  },
 
-function testBreakDevaSpacingMarkLegacy() {
-  assertTrue(goog.i18n.GraphemeBreak.hasGraphemeBreak(0x0915, 0x093E));
-}
+  /** @suppress {checkTypes} suppression added to enable type checking */
+  testBreakHangLVxV() {
+    assertFalse(GraphemeBreak.hasGraphemeBreak(0xAC00, 0x1160, true));
+    assertFalse(GraphemeBreak.hasGraphemeBreakStrings(
+        fromCharCode(0xAC00), fromCharCode(0x1160), true));
+  },
 
-function testBreakDevaSpacingMarkExtended() {
-  assertFalse(goog.i18n.GraphemeBreak.hasGraphemeBreak(0x0915, 0x093E, true));
-}
+  /** @suppress {checkTypes} suppression added to enable type checking */
+  testBreakHangLV_L() {
+    assertTrue(GraphemeBreak.hasGraphemeBreak(0xAC00, 0x1100, true));
+    assertTrue(GraphemeBreak.hasGraphemeBreakStrings(
+        fromCharCode(0xAC00), fromCharCode(0x1100), true));
+  },
 
-function testBreakDevaViramaSpace() {
-  assertTrue(goog.i18n.GraphemeBreak.hasGraphemeBreak(0x094D, 0x0020));
-}
+  /** @suppress {checkTypes} suppression added to enable type checking */
+  testBreakHangLVTxT() {
+    assertFalse(GraphemeBreak.hasGraphemeBreak(0xAC01, 0x11A8, true));
+    assertFalse(GraphemeBreak.hasGraphemeBreakStrings(
+        fromCharCode(0xAC01), fromCharCode(0x11A8), true));
+  },
 
-function testBreakDevaViramaConsonant() {
-  assertFalse(goog.i18n.GraphemeBreak.hasGraphemeBreak(0x094D, 0x0915));
-}
+  /** @suppress {checkTypes} suppression added to enable type checking */
+  testBreakThaiPrependLegacy() {
+    assertTrue(GraphemeBreak.hasGraphemeBreak(0x0E40, 0x0E01, false));
+    assertTrue(GraphemeBreak.hasGraphemeBreakStrings(
+        fromCharCode(0x0E40), fromCharCode(0x0E01), false));
+  },
+
+  /** @suppress {checkTypes} suppression added to enable type checking */
+  testBreakThaiPrependExtended() {
+    assertTrue(GraphemeBreak.hasGraphemeBreak(0x0E40, 0x0E01, true));
+    assertTrue(GraphemeBreak.hasGraphemeBreakStrings(
+        fromCharCode(0x0E40), fromCharCode(0x0E01), true));
+  },
+
+  /** @suppress {checkTypes} suppression added to enable type checking */
+  testBreakDevaSpacingMarkLegacy() {
+    assertTrue(GraphemeBreak.hasGraphemeBreak(0x0915, 0x093E, false));
+    assertTrue(GraphemeBreak.hasGraphemeBreakStrings(
+        fromCharCode(0x0915), fromCharCode(0x093E), false));
+  },
+
+  /** @suppress {checkTypes} suppression added to enable type checking */
+  testBreakDevaSpacingMarkExtended() {
+    assertFalse(GraphemeBreak.hasGraphemeBreak(0x0915, 0x093E, true));
+    assertFalse(GraphemeBreak.hasGraphemeBreakStrings(
+        fromCharCode(0x0915), fromCharCode(0x093E), true));
+  },
+
+  /** @suppress {checkTypes} suppression added to enable type checking */
+  testBreakDevaViramaSpace() {
+    assertTrue(GraphemeBreak.hasGraphemeBreak(0x094D, 0x0020));
+    assertTrue(GraphemeBreak.hasGraphemeBreakStrings(
+        fromCharCode(0x094D), fromCharCode(0x0020)));
+  },
+
+  /** @suppress {checkTypes} suppression added to enable type checking */
+  testBreakDevaViramaConsonant() {
+    assertFalse(GraphemeBreak.hasGraphemeBreak(0x094D, 0x0915));
+    assertFalse(GraphemeBreak.hasGraphemeBreakStrings(
+        fromCharCode(0x094D), fromCharCode(0x0915)));
+  },
+
+  testEmojiSequences() {
+    assertFalse(GraphemeBreak.hasGraphemeBreakStrings('👦', '🏼'));
+    assertFalse(GraphemeBreak.hasGraphemeBreakStrings('👨\u200D', '🚒'));
+    assertFalse(GraphemeBreak.hasGraphemeBreakStrings('👨', '\u200D🚒'));
+    assertTrue(GraphemeBreak.hasGraphemeBreakStrings(
+        '🕵️‍♀️', '👨‍🚒'));
+  },
+
+  testEmojiFlagSequences() {
+    assertFalse(GraphemeBreak.hasGraphemeBreakStrings('🇦🇨🇦', '🇨'));
+    assertTrue(GraphemeBreak.hasGraphemeBreakStrings('🇦🇨', '🇦🇨'));
+  },
+});

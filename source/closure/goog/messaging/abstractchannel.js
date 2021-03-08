@@ -1,23 +1,14 @@
-// Copyright 2010 The Closure Library Authors. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS-IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+/**
+ * @license
+ * Copyright The Closure Library Authors.
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
 /**
  * @fileoverview An abstract superclass for message channels that handles the
  * repetitive details of registering and dispatching to services. This is more
  * useful for full-fledged channels than for decorators, since decorators
  * generally delegate service registering anyway.
- *
  */
 
 
@@ -38,6 +29,7 @@ goog.require('goog.messaging.MessageChannel');  // interface
  * @implements {goog.messaging.MessageChannel}
  */
 goog.messaging.AbstractChannel = function() {
+  'use strict';
   goog.messaging.AbstractChannel.base(this, 'constructor');
 
   /**
@@ -76,6 +68,7 @@ goog.messaging.AbstractChannel.prototype.logger =
  * @override
  */
 goog.messaging.AbstractChannel.prototype.connect = function(opt_connectCb) {
+  'use strict';
   if (opt_connectCb) {
     opt_connectCb();
   }
@@ -89,6 +82,7 @@ goog.messaging.AbstractChannel.prototype.connect = function(opt_connectCb) {
  * @override
  */
 goog.messaging.AbstractChannel.prototype.isConnected = function() {
+  'use strict';
   return true;
 };
 
@@ -96,6 +90,7 @@ goog.messaging.AbstractChannel.prototype.isConnected = function() {
 /** @override */
 goog.messaging.AbstractChannel.prototype.registerService = function(
     serviceName, callback, opt_objectPayload) {
+  'use strict';
   this.services_[serviceName] = {
     callback: callback,
     objectPayload: !!opt_objectPayload
@@ -106,6 +101,7 @@ goog.messaging.AbstractChannel.prototype.registerService = function(
 /** @override */
 goog.messaging.AbstractChannel.prototype.registerDefaultService = function(
     callback) {
+  'use strict';
   this.defaultService_ = callback;
 };
 
@@ -130,6 +126,7 @@ goog.messaging.AbstractChannel.prototype.send = goog.abstractMethod;
  */
 goog.messaging.AbstractChannel.prototype.deliver = function(
     serviceName, payload) {
+  'use strict';
   var service = this.getService(serviceName, payload);
   if (!service) {
     return;
@@ -137,7 +134,7 @@ goog.messaging.AbstractChannel.prototype.deliver = function(
 
   var decodedPayload =
       this.decodePayload(serviceName, payload, service.objectPayload);
-  if (goog.isDefAndNotNull(decodedPayload)) {
+  if (decodedPayload != null) {
     service.callback(decodedPayload);
   }
 };
@@ -156,6 +153,7 @@ goog.messaging.AbstractChannel.prototype.deliver = function(
  */
 goog.messaging.AbstractChannel.prototype.getService = function(
     serviceName, payload) {
+  'use strict';
   var service = this.services_[serviceName];
   if (service) {
     return service;
@@ -184,16 +182,17 @@ goog.messaging.AbstractChannel.prototype.getService = function(
  */
 goog.messaging.AbstractChannel.prototype.decodePayload = function(
     serviceName, payload, objectPayload) {
-  if (objectPayload && goog.isString(payload)) {
+  'use strict';
+  if (objectPayload && typeof payload === 'string') {
     try {
-      return goog.json.parse(payload);
+      return /** @type {!Object} */ (JSON.parse(payload));
     } catch (err) {
       goog.log.warning(
           this.logger, 'Expected JSON payload for ' + serviceName + ', was "' +
               payload + '"');
       return null;
     }
-  } else if (!objectPayload && !goog.isString(payload)) {
+  } else if (!objectPayload && typeof payload !== 'string') {
     return goog.json.serialize(payload);
   }
   return payload;
@@ -202,8 +201,8 @@ goog.messaging.AbstractChannel.prototype.decodePayload = function(
 
 /** @override */
 goog.messaging.AbstractChannel.prototype.disposeInternal = function() {
+  'use strict';
   goog.messaging.AbstractChannel.base(this, 'disposeInternal');
-  delete this.logger;
   delete this.services_;
   delete this.defaultService_;
 };

@@ -1,16 +1,8 @@
-// Copyright 2006 The Closure Library Authors. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS-IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+/**
+ * @license
+ * Copyright The Closure Library Authors.
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
 // The original file lives here: http://go/cross_domain_channel.js
 
@@ -21,20 +13,22 @@
  * from which it came. The Jsonp class provides a workaround by
  * using dynamically generated script tags. Typical usage:.
  *
- * var jsonp = new goog.net.Jsonp(new goog.Uri('http://my.host.com/servlet'));
- * var payload = { 'foo': 1, 'bar': true };
+ * const trustedUri = goog.html.TrustedResourceUrl.fromConstant(
+ *     goog.string.Const.from('https://example.com/servlet'));
+ * const jsonp = new goog.net.Jsonp(trustedUri);
+ * const payload = {'foo': 1, 'bar': true};
  * jsonp.send(payload, function(reply) { alert(reply) });
  *
  * This script works in all browsers that are currently supported by
  * the Google Maps API, which is IE 6.0+, Firefox 0.8+, Safari 1.2.4+,
  * Netscape 7.1+, Mozilla 1.4+, Opera 8.02+.
- *
  */
 
 goog.provide('goog.net.Jsonp');
 
-goog.require('goog.Uri');
+goog.require('goog.html.TrustedResourceUrl');
 goog.require('goog.net.jsloader');
+goog.require('goog.object');
 
 // WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING
 //
@@ -55,8 +49,8 @@ goog.require('goog.net.jsloader');
  * host URL. By default, if no reply arrives within 5s, the channel
  * assumes the call failed to complete successfully.
  *
- * @param {goog.Uri|string} uri The Uri of the server side code that receives
- *     data posted through this channel (e.g.,
+ * @param {!goog.html.TrustedResourceUrl} uri The Uri of the server side code
+ *     that receives data posted through this channel (e.g.,
  *     "http://maps.google.com/maps/geo").
  *
  * @param {string=} opt_callbackParamName The parameter name that is used to
@@ -66,13 +60,14 @@ goog.require('goog.net.jsloader');
  * @final
  */
 goog.net.Jsonp = function(uri, opt_callbackParamName) {
+  'use strict';
   /**
    * The uri_ object will be used to encode the payload that is sent to the
    * server.
-   * @type {goog.Uri}
+   * @type {!goog.html.TrustedResourceUrl}
    * @private
    */
-  this.uri_ = new goog.Uri(uri);
+  this.uri_ = uri;
 
   /**
    * This is the callback parameter name that is added to the uri.
@@ -124,6 +119,7 @@ goog.net.Jsonp.scriptCounter_ = 0;
  * @private
  */
 goog.net.Jsonp.getCallbackId_ = function(id) {
+  'use strict';
   return goog.net.Jsonp.CALLBACKS + '__' + id;
 };
 
@@ -139,6 +135,7 @@ goog.net.Jsonp.getCallbackId_ = function(id) {
  * interrupted.
  */
 goog.net.Jsonp.prototype.setRequestTimeout = function(timeout) {
+  'use strict';
   this.timeout_ = timeout;
 };
 
@@ -149,6 +146,7 @@ goog.net.Jsonp.prototype.setRequestTimeout = function(timeout) {
  * @return {number} The timeout value.
  */
 goog.net.Jsonp.prototype.getRequestTimeout = function() {
+  'use strict';
   return this.timeout_;
 };
 
@@ -162,6 +160,7 @@ goog.net.Jsonp.prototype.getRequestTimeout = function() {
  * @param {string} nonce The CSP nonce value.
  */
 goog.net.Jsonp.prototype.setNonce = function(nonce) {
+  'use strict';
   this.nonce_ = nonce;
 };
 
@@ -202,35 +201,31 @@ goog.net.Jsonp.prototype.setNonce = function(nonce) {
  */
 goog.net.Jsonp.prototype.send = function(
     opt_payload, opt_replyCallback, opt_errorCallback, opt_callbackParamValue) {
+  'use strict';
+  const payload = opt_payload ? goog.object.clone(opt_payload) : {};
 
-  var payload = opt_payload || null;
-
-  var id = opt_callbackParamValue ||
+  const id = opt_callbackParamValue ||
       '_' + (goog.net.Jsonp.scriptCounter_++).toString(36) +
           goog.now().toString(36);
-  var callbackId = goog.net.Jsonp.getCallbackId_(id);
-
-  // Create a new Uri object onto which this payload will be added
-  var uri = this.uri_.clone();
-  if (payload) {
-    goog.net.Jsonp.addPayloadToUri_(payload, uri);
-  }
+  const callbackId = goog.net.Jsonp.getCallbackId_(id);
 
   if (opt_replyCallback) {
-    var reply = goog.net.Jsonp.newReplyHandler_(id, opt_replyCallback);
+    const reply = goog.net.Jsonp.newReplyHandler_(id, opt_replyCallback);
     // Register the callback on goog.global to make it discoverable
     // by jsonp response.
     goog.global[callbackId] = reply;
-    uri.setParameterValues(this.callbackParamName_, callbackId);
+    payload[this.callbackParamName_] = callbackId;
   }
 
-  var options = {timeout: this.timeout_, cleanupWhenDone: true};
+  const options = {timeout: this.timeout_, cleanupWhenDone: true};
   if (this.nonce_) {
     options.attributes = {'nonce': this.nonce_};
   }
 
-  var deferred = goog.net.jsloader.load(uri.toString(), options);
-  var error = goog.net.Jsonp.newErrorHandler_(id, payload, opt_errorCallback);
+  const uri = this.uri_.cloneWithParams(payload);
+
+  const deferred = goog.net.jsloader.safeLoad(uri, options);
+  const error = goog.net.Jsonp.newErrorHandler_(id, payload, opt_errorCallback);
   deferred.addErrback(error);
 
   return {id_: id, deferred_: deferred};
@@ -240,10 +235,11 @@ goog.net.Jsonp.prototype.send = function(
 /**
  * Cancels a given request. The request must be exactly the object returned by
  * the send method.
- *
  * @param {Object} request The request object returned by the send method.
+ * @suppress {strictMissingProperties} Part of the go/strict_warnings_migration
  */
 goog.net.Jsonp.prototype.cancel = function(request) {
+  'use strict';
   if (request) {
     if (request.deferred_) {
       request.deferred_.cancel();
@@ -266,12 +262,14 @@ goog.net.Jsonp.prototype.cancel = function(request) {
  * @private
  */
 goog.net.Jsonp.newErrorHandler_ = function(id, payload, opt_errorCallback) {
+  'use strict';
   /**
    * When we call across domains with a request, this function is the
    * timeout handler. Once it's done executing the user-specified
    * error-handler, it removes the script node and original function.
    */
   return function() {
+    'use strict';
     goog.net.Jsonp.cleanup_(id, false);
     if (opt_errorCallback) {
       opt_errorCallback(payload);
@@ -290,6 +288,7 @@ goog.net.Jsonp.newErrorHandler_ = function(id, payload, opt_errorCallback) {
  * @private
  */
 goog.net.Jsonp.newReplyHandler_ = function(id, replyCallback) {
+  'use strict';
   /**
    * This function is the handler for the all-is-well response. It
    * clears the error timeout handler, calls the user's handler, then
@@ -297,7 +296,8 @@ goog.net.Jsonp.newReplyHandler_ = function(id, replyCallback) {
    *
    * @param {...Object} var_args The response data sent from the server.
    */
-  var handler = function(var_args) {
+  const handler = function(var_args) {
+    'use strict';
     goog.net.Jsonp.cleanup_(id, true);
     replyCallback.apply(undefined, arguments);
   };
@@ -315,7 +315,8 @@ goog.net.Jsonp.newReplyHandler_ = function(id, replyCallback) {
  * @private
  */
 goog.net.Jsonp.cleanup_ = function(id, deleteReplyHandler) {
-  var callbackId = goog.net.Jsonp.getCallbackId_(id);
+  'use strict';
+  const callbackId = goog.net.Jsonp.getCallbackId_(id);
   if (goog.global[callbackId]) {
     if (deleteReplyHandler) {
       try {
@@ -331,37 +332,6 @@ goog.net.Jsonp.cleanup_ = function(id, deleteReplyHandler) {
       goog.global[callbackId] = goog.nullFunction;
     }
   }
-};
-
-
-/**
- * Returns URL encoded payload. The payload should be a map of name-value
- * pairs, in the form {"foo": 1, "bar": true, ...}.  If the map is empty,
- * the URI will be unchanged.
- *
- * <p>The method uses hasOwnProperty() to assure the properties are on the
- * object, not on its prototype.
- *
- * @param {!Object} payload A map of value name pairs to be encoded.
- *     A value may be specified as an array, in which case a query parameter
- *     will be created for each value, e.g.:
- *     {"foo": [1,2]} will encode to "foo=1&foo=2".
- *
- * @param {!goog.Uri} uri A Uri object onto which the payload key value pairs
- *     will be encoded.
- *
- * @return {!goog.Uri} A reference to the Uri sent as a parameter.
- * @private
- */
-goog.net.Jsonp.addPayloadToUri_ = function(payload, uri) {
-  for (var name in payload) {
-    // NOTE(user): Safari/1.3 doesn't have hasOwnProperty(). In that
-    // case, we iterate over all properties as a very lame workaround.
-    if (!payload.hasOwnProperty || payload.hasOwnProperty(name)) {
-      uri.setParameterValues(name, payload[name]);
-    }
-  }
-  return uri;
 };
 
 

@@ -1,26 +1,18 @@
-// Copyright 2008 The Closure Library Authors. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS-IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+/**
+ * @license
+ * Copyright The Closure Library Authors.
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
 /**
  * @fileoverview Base class for control renderers.
  * TODO(attila):  If the renderer framework works well, pull it into Component.
- *
- * @author attila@google.com (Attila Bodis)
+ * @suppress {missingRequire} TODO(user): this shouldn't be needed
  */
 
 goog.provide('goog.ui.ControlRenderer');
 
+goog.forwardDeclare('goog.ui.Control');
 goog.require('goog.a11y.aria');
 goog.require('goog.a11y.aria.Role');
 goog.require('goog.a11y.aria.State');
@@ -33,7 +25,8 @@ goog.require('goog.object');
 goog.require('goog.string');
 goog.require('goog.style');
 goog.require('goog.ui.Component');
-goog.require('goog.userAgent');
+goog.require('goog.ui.ControlContent');
+goog.require('goog.userAgent');  // circular
 
 
 
@@ -43,14 +36,14 @@ goog.require('goog.userAgent');
  * tailored for them by extending this class.  Controls that use renderers
  * delegate one or more of the following API methods to the renderer:
  * <ul>
- *    <li>{@code createDom} - renders the DOM for the component
- *    <li>{@code canDecorate} - determines whether an element can be decorated
+ *    <li>`createDom` - renders the DOM for the component
+ *    <li>`canDecorate` - determines whether an element can be decorated
  *        by the component
- *    <li>{@code decorate} - decorates an existing element with the component
- *    <li>{@code setState} - updates the appearance of the component based on
+ *    <li>`decorate` - decorates an existing element with the component
+ *    <li>`setState` - updates the appearance of the component based on
  *        its state
- *    <li>{@code getContent} - returns the component's content
- *    <li>{@code setContent} - sets the component's content
+ *    <li>`getContent` - returns the component's content
+ *    <li>`setContent` - sets the component's content
  * </ul>
  * Controls are stateful; renderers, on the other hand, should be stateless and
  * reusable.
@@ -58,7 +51,6 @@ goog.require('goog.userAgent');
  */
 goog.ui.ControlRenderer = function() {};
 goog.addSingletonGetter(goog.ui.ControlRenderer);
-goog.tagUnsealableClass(goog.ui.ControlRenderer);
 
 
 /**
@@ -102,6 +94,7 @@ goog.tagUnsealableClass(goog.ui.ControlRenderer);
  *     class name.
  */
 goog.ui.ControlRenderer.getCustomRenderer = function(ctor, cssClassName) {
+  'use strict';
   var renderer = new ctor();
 
   /**
@@ -109,7 +102,10 @@ goog.ui.ControlRenderer.getCustomRenderer = function(ctor, cssClassName) {
    * rendered using this renderer.
    * @return {string} Renderer-specific CSS class.
    */
-  renderer.getCssClass = function() { return cssClassName; };
+  renderer.getCssClass = function() {
+    'use strict';
+    return cssClassName;
+  };
 
   return renderer;
 };
@@ -181,6 +177,7 @@ goog.ui.ControlRenderer.TOGGLE_ARIA_STATE_MAP_ = goog.object.create(
  * @return {goog.a11y.aria.Role|undefined} ARIA role.
  */
 goog.ui.ControlRenderer.prototype.getAriaRole = function() {
+  'use strict';
   // By default, the ARIA role is unspecified.
   return undefined;
 };
@@ -193,6 +190,7 @@ goog.ui.ControlRenderer.prototype.getAriaRole = function() {
  * @return {Element} Root element for the control.
  */
 goog.ui.ControlRenderer.prototype.createDom = function(control) {
+  'use strict';
   // Create and return DIV wrapping contents.
   var element = control.getDomHelper().createDom(
       goog.dom.TagName.DIV, this.getClassNames(control).join(' '),
@@ -212,6 +210,7 @@ goog.ui.ControlRenderer.prototype.createDom = function(control) {
  * @return {Element} The control's content element.
  */
 goog.ui.ControlRenderer.prototype.getContentElement = function(element) {
+  'use strict';
   return element;
 };
 
@@ -228,6 +227,7 @@ goog.ui.ControlRenderer.prototype.getContentElement = function(element) {
  */
 goog.ui.ControlRenderer.prototype.enableClassName = function(
     control, className, enable) {
+  'use strict';
   var element = /** @type {Element} */ (
       control.getElement ? control.getElement() : control);
   if (element) {
@@ -256,6 +256,7 @@ goog.ui.ControlRenderer.prototype.enableClassName = function(
  */
 goog.ui.ControlRenderer.prototype.enableExtraClassName = function(
     control, className, enable) {
+  'use strict';
   // The base class implementation is trivial; subclasses should override as
   // needed.
   this.enableClassName(control, className, enable);
@@ -269,12 +270,13 @@ goog.ui.ControlRenderer.prototype.enableExtraClassName = function(
  * @return {boolean} Whether the renderer can decorate the element.
  */
 goog.ui.ControlRenderer.prototype.canDecorate = function(element) {
+  'use strict';
   return true;
 };
 
 
 /**
- * Default implementation of {@code decorate} for {@link goog.ui.Control}s.
+ * Default implementation of `decorate` for {@link goog.ui.Control}s.
  * Initializes the control's ID, content, and state based on the ID of the
  * element, its child nodes, and its CSS classes, respectively.  Returns the
  * element.
@@ -283,6 +285,7 @@ goog.ui.ControlRenderer.prototype.canDecorate = function(element) {
  * @return {Element} Decorated element.
  */
 goog.ui.ControlRenderer.prototype.decorate = function(control, element) {
+  'use strict';
   // Set the control's ID to the decorated element's DOM ID, if any.
   if (element.id) {
     control.setId(element.id);
@@ -310,6 +313,7 @@ goog.ui.ControlRenderer.prototype.decorate = function(control, element) {
   var hasCombinedClassName = false;
   var classNames = goog.array.toArray(goog.dom.classlist.get(element));
   goog.array.forEach(classNames, function(className) {
+    'use strict';
     if (!hasRendererClassName && className == rendererClassName) {
       hasRendererClassName = true;
       if (structuralClassName == rendererClassName) {
@@ -373,6 +377,7 @@ goog.ui.ControlRenderer.prototype.decorate = function(control, element) {
  *     as it enters the document.
  */
 goog.ui.ControlRenderer.prototype.initializeDom = function(control) {
+  'use strict';
   // Initialize render direction (BiDi).  We optimize the left-to-right render
   // direction by assuming that elements are left-to-right by default, and only
   // updating their styling if they are explicitly set to right-to-left.
@@ -397,6 +402,7 @@ goog.ui.ControlRenderer.prototype.initializeDom = function(control) {
  */
 goog.ui.ControlRenderer.prototype.setAriaRole = function(
     element, opt_preferredRole) {
+  'use strict';
   var ariaRole = opt_preferredRole || this.getAriaRole();
   if (ariaRole) {
     goog.asserts.assert(
@@ -419,11 +425,12 @@ goog.ui.ControlRenderer.prototype.setAriaRole = function(
  * @param {!Element} element Element whose ARIA state is to be updated.
  */
 goog.ui.ControlRenderer.prototype.setAriaStates = function(control, element) {
+  'use strict';
   goog.asserts.assert(control);
   goog.asserts.assert(element);
 
   var ariaLabel = control.getAriaLabel();
-  if (goog.isDefAndNotNull(ariaLabel)) {
+  if (ariaLabel != null) {
     this.setAriaLabel(element, ariaLabel);
   }
 
@@ -457,6 +464,7 @@ goog.ui.ControlRenderer.prototype.setAriaStates = function(control, element) {
  * @param {string} ariaLabel Label to add to the element.
  */
 goog.ui.ControlRenderer.prototype.setAriaLabel = function(element, ariaLabel) {
+  'use strict';
   goog.a11y.aria.setLabel(element, ariaLabel);
 };
 
@@ -468,6 +476,7 @@ goog.ui.ControlRenderer.prototype.setAriaLabel = function(element, ariaLabel) {
  */
 goog.ui.ControlRenderer.prototype.setAllowTextSelection = function(
     element, allow) {
+  'use strict';
   // On all browsers other than IE and Opera, it isn't necessary to recursively
   // apply unselectable styling to the element's children.
   goog.style.setUnselectable(
@@ -484,6 +493,7 @@ goog.ui.ControlRenderer.prototype.setAllowTextSelection = function(
  */
 goog.ui.ControlRenderer.prototype.setRightToLeft = function(
     element, rightToLeft) {
+  'use strict';
   this.enableClassName(
       element, goog.getCssName(this.getStructuralCssClass(), 'rtl'),
       rightToLeft);
@@ -492,12 +502,13 @@ goog.ui.ControlRenderer.prototype.setRightToLeft = function(
 
 /**
  * Returns true if the control's key event target supports keyboard focus
- * (based on its {@code tabIndex} attribute), false otherwise.
+ * (based on its `tabIndex` attribute), false otherwise.
  * @param {goog.ui.Control} control Control whose key event target is to be
  *     checked.
  * @return {boolean} Whether the control's key event target is focusable.
  */
 goog.ui.ControlRenderer.prototype.isFocusable = function(control) {
+  'use strict';
   var keyTarget;
   if (control.isSupportedState(goog.ui.Component.State.FOCUSED) &&
       (keyTarget = control.getKeyEventTarget())) {
@@ -509,14 +520,15 @@ goog.ui.ControlRenderer.prototype.isFocusable = function(control) {
 
 /**
  * Updates the control's key event target to make it focusable or non-focusable
- * via its {@code tabIndex} attribute.  Does nothing if the control doesn't
- * support the {@code FOCUSED} state, or if it has no key event target.
+ * via its `tabIndex` attribute.  Does nothing if the control doesn't
+ * support the `FOCUSED` state, or if it has no key event target.
  * @param {goog.ui.Control} control Control whose key event target is to be
  *     updated.
  * @param {boolean} focusable Whether to enable keyboard focus support on the
  *     control's key event target.
  */
 goog.ui.ControlRenderer.prototype.setFocusable = function(control, focusable) {
+  'use strict';
   var keyTarget;
   if (control.isSupportedState(goog.ui.Component.State.FOCUSED) &&
       (keyTarget = control.getKeyEventTarget())) {
@@ -525,7 +537,7 @@ goog.ui.ControlRenderer.prototype.setFocusable = function(control, focusable) {
       try {
         keyTarget.blur();
       } catch (e) {
-        // TODO(user|user):  Find out why this fails on IE.
+        // TODO(user):  Find out why this fails on IE.
       }
       // The blur event dispatched by the key event target element when blur()
       // was called on it should have been handled by the control's handleBlur()
@@ -551,6 +563,7 @@ goog.ui.ControlRenderer.prototype.setFocusable = function(control, focusable) {
  * @param {boolean} visible Whether to show the element.
  */
 goog.ui.ControlRenderer.prototype.setVisible = function(element, visible) {
+  'use strict';
   // The base class implementation is trivial; subclasses should override as
   // needed.  It should be possible to do animated reveals, for example.
   goog.style.setElementShown(element, visible);
@@ -567,6 +580,7 @@ goog.ui.ControlRenderer.prototype.setVisible = function(element, visible) {
  * @param {boolean} enable Whether the control is entering or exiting the state.
  */
 goog.ui.ControlRenderer.prototype.setState = function(control, state, enable) {
+  'use strict';
   var element = control.getElement();
   if (element) {
     var className = this.getClassForState(state);
@@ -590,6 +604,7 @@ goog.ui.ControlRenderer.prototype.setState = function(control, state, enable) {
  */
 goog.ui.ControlRenderer.prototype.updateAriaState = function(
     element, state, enable) {
+  'use strict';
   // Ensure the ARIA attribute map exists.
   if (!goog.ui.ControlRenderer.ariaAttributeMap_) {
     goog.ui.ControlRenderer.ariaAttributeMap_ = goog.object.create(
@@ -620,6 +635,7 @@ goog.ui.ControlRenderer.prototype.updateAriaState = function(
  * @private
  */
 goog.ui.ControlRenderer.getAriaStateForAriaRole_ = function(element, attr) {
+  'use strict';
   var role = goog.a11y.aria.getRole(element);
   if (!role) {
     return attr;
@@ -637,6 +653,7 @@ goog.ui.ControlRenderer.getAriaStateForAriaRole_ = function(element, attr) {
  * @private
  */
 goog.ui.ControlRenderer.isAriaState_ = function(attr) {
+  'use strict';
   return attr == goog.a11y.aria.State.CHECKED ||
       attr == goog.a11y.aria.State.SELECTED;
 };
@@ -653,21 +670,23 @@ goog.ui.ControlRenderer.isAriaState_ = function(attr) {
  *     will only moved under the content element of the control.
  */
 goog.ui.ControlRenderer.prototype.setContent = function(element, content) {
+  'use strict';
   var contentElem = this.getContentElement(element);
   if (contentElem) {
     goog.dom.removeChildren(contentElem);
     if (content) {
-      if (goog.isString(content)) {
+      if (typeof content === 'string') {
         goog.dom.setTextContent(contentElem, content);
       } else {
         var childHandler = function(child) {
+          'use strict';
           if (child) {
             var doc = goog.dom.getOwnerDocument(contentElem);
             contentElem.appendChild(
-                goog.isString(child) ? doc.createTextNode(child) : child);
+                typeof child === 'string' ? doc.createTextNode(child) : child);
           }
         };
-        if (goog.isArray(content)) {
+        if (Array.isArray(content)) {
           // Array of nodes.
           goog.array.forEach(content, childHandler);
         } else if (goog.isArrayLike(content) && !('nodeType' in content)) {
@@ -696,6 +715,7 @@ goog.ui.ControlRenderer.prototype.setContent = function(element, content) {
  * @return {Element} The key event target.
  */
 goog.ui.ControlRenderer.prototype.getKeyEventTarget = function(control) {
+  'use strict';
   return control.getElement();
 };
 
@@ -711,6 +731,7 @@ goog.ui.ControlRenderer.prototype.getKeyEventTarget = function(control) {
  * @return {string} Renderer-specific CSS class name.
  */
 goog.ui.ControlRenderer.prototype.getCssClass = function() {
+  'use strict';
   return goog.ui.ControlRenderer.CSS_CLASS;
 };
 
@@ -721,9 +742,10 @@ goog.ui.ControlRenderer.prototype.getCssClass = function() {
  * method doesn't reference {@link IE6_CLASS_COMBINATIONS} so that it can be
  * compiled out, but subclasses should return their IE6_CLASS_COMBINATIONS
  * static constant instead.
- * @return {Array<Array<string>>} Array of class name combinations.
+ * @return {!Array<Array<string>>} Array of class name combinations.
  */
 goog.ui.ControlRenderer.prototype.getIe6ClassCombinations = function() {
+  'use strict';
   return [];
 };
 
@@ -742,6 +764,7 @@ goog.ui.ControlRenderer.prototype.getIe6ClassCombinations = function() {
  *     specific CSS class name by default).
  */
 goog.ui.ControlRenderer.prototype.getStructuralCssClass = function() {
+  'use strict';
   return this.getCssClass();
 };
 
@@ -756,7 +779,7 @@ goog.ui.ControlRenderer.prototype.getStructuralCssClass = function() {
  *       different from the renderer-specific CSS class), followed by
  *   <li>any state-specific classes returned by {@link #getClassNamesForState},
  *       followed by
- *   <li>any extra classes returned by the control's {@code getExtraClassNames}
+ *   <li>any extra classes returned by the control's `getExtraClassNames`
  *       method and
  *   <li>for IE6 and lower, additional combined classes from
  *       {@link getAppliedCombinedClassNames_}.
@@ -769,6 +792,7 @@ goog.ui.ControlRenderer.prototype.getStructuralCssClass = function() {
  * @protected
  */
 goog.ui.ControlRenderer.prototype.getClassNames = function(control) {
+  'use strict';
   var cssClass = this.getCssClass();
 
   // Start with the renderer-specific class name.
@@ -820,11 +844,13 @@ goog.ui.ControlRenderer.prototype.getClassNames = function(control) {
  */
 goog.ui.ControlRenderer.prototype.getAppliedCombinedClassNames_ = function(
     classes, opt_includedClass) {
+  'use strict';
   var toAdd = [];
   if (opt_includedClass) {
     classes = goog.array.concat(classes, [opt_includedClass]);
   }
   goog.array.forEach(this.getIe6ClassCombinations(), function(combo) {
+    'use strict';
     if (goog.array.every(combo, goog.partial(goog.array.contains, classes)) &&
         (!opt_includedClass || goog.array.contains(combo, opt_includedClass))) {
       toAdd.push(combo.join('_'));
@@ -847,6 +873,7 @@ goog.ui.ControlRenderer.prototype.getAppliedCombinedClassNames_ = function(
  * @protected
  */
 goog.ui.ControlRenderer.prototype.getClassNamesForState = function(state) {
+  'use strict';
   var classNames = [];
   while (state) {
     // For each enabled state, push the corresponding CSS class name onto
@@ -870,6 +897,7 @@ goog.ui.ControlRenderer.prototype.getClassNamesForState = function(state) {
  * @protected
  */
 goog.ui.ControlRenderer.prototype.getClassForState = function(state) {
+  'use strict';
   if (!this.classByState_) {
     this.createClassByStateMap_();
   }
@@ -887,6 +915,7 @@ goog.ui.ControlRenderer.prototype.getClassForState = function(state) {
  * @protected
  */
 goog.ui.ControlRenderer.prototype.getStateFromClass = function(className) {
+  'use strict';
   if (!this.stateByClass_) {
     this.createStateByClassMap_();
   }
@@ -900,6 +929,7 @@ goog.ui.ControlRenderer.prototype.getStateFromClass = function(className) {
  * @private
  */
 goog.ui.ControlRenderer.prototype.createClassByStateMap_ = function() {
+  'use strict';
   var baseClass = this.getStructuralCssClass();
 
   // This ensures space-separated css classnames are not allowed, which some
@@ -934,6 +964,7 @@ goog.ui.ControlRenderer.prototype.createClassByStateMap_ = function() {
  * @private
  */
 goog.ui.ControlRenderer.prototype.createStateByClassMap_ = function() {
+  'use strict';
   // We need the classByState_ map so we can transpose it.
   if (!this.classByState_) {
     this.createClassByStateMap_();

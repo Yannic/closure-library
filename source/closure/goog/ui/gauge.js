@@ -1,16 +1,8 @@
-// Copyright 2007 The Closure Library Authors. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS-IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+/**
+ * @license
+ * Copyright The Closure Library Authors.
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
 
 /**
@@ -37,6 +29,10 @@ goog.require('goog.graphics.SolidFill');
 goog.require('goog.math');
 goog.require('goog.ui.Component');
 goog.require('goog.ui.GaugeTheme');
+goog.requireType('goog.dom.DomHelper');
+goog.requireType('goog.fx.AnimationEvent');
+goog.requireType('goog.graphics.AbstractGraphics');
+goog.requireType('goog.graphics.GroupElement');
 
 
 
@@ -50,7 +46,7 @@ goog.require('goog.ui.GaugeTheme');
  * @final
  */
 goog.ui.GaugeColoredRange = function(fromValue, toValue, backgroundColor) {
-
+  'use strict';
   /**
    * The range start (minimal) value.
    * @type {number}
@@ -90,6 +86,7 @@ goog.ui.GaugeColoredRange = function(fromValue, toValue, backgroundColor) {
  * @final
  */
 goog.ui.Gauge = function(width, height, opt_domHelper) {
+  'use strict';
   goog.ui.Component.call(this, opt_domHelper);
 
   /**
@@ -444,6 +441,7 @@ goog.ui.Gauge.prototype.animation_ = null;
  * @return {number} The minimum value of the range.
  */
 goog.ui.Gauge.prototype.getMinimum = function() {
+  'use strict';
   return this.minValue_;
 };
 
@@ -453,6 +451,7 @@ goog.ui.Gauge.prototype.getMinimum = function() {
  * @param {number} min The minimum value of the range.
  */
 goog.ui.Gauge.prototype.setMinimum = function(min) {
+  'use strict';
   this.minValue_ = min;
   var element = this.getElement();
   if (element) {
@@ -465,6 +464,7 @@ goog.ui.Gauge.prototype.setMinimum = function(min) {
  * @return {number} The maximum value of the range.
  */
 goog.ui.Gauge.prototype.getMaximum = function() {
+  'use strict';
   return this.maxValue_;
 };
 
@@ -474,6 +474,7 @@ goog.ui.Gauge.prototype.getMaximum = function() {
  * @param {number} max The maximum value of the range.
  */
 goog.ui.Gauge.prototype.setMaximum = function(max) {
+  'use strict';
   this.maxValue_ = max;
 
   var element = this.getElement();
@@ -491,6 +492,7 @@ goog.ui.Gauge.prototype.setMaximum = function(max) {
  *     If not specified, no string value will be displayed.
  */
 goog.ui.Gauge.prototype.setValue = function(value, opt_formattedValue) {
+  'use strict';
   this.value_ = value;
   this.formattedValue_ = opt_formattedValue || null;
 
@@ -535,6 +537,7 @@ goog.ui.Gauge.prototype.setValue = function(value, opt_formattedValue) {
  *     tick section.
  */
 goog.ui.Gauge.prototype.setTicks = function(majorUnits, minorUnits) {
+  'use strict';
   this.majorTicks_ = Math.max(1, majorUnits);
   this.minorTicks_ = Math.max(1, minorUnits);
   this.draw_();
@@ -546,6 +549,7 @@ goog.ui.Gauge.prototype.setTicks = function(majorUnits, minorUnits) {
  * @param {Array<string>} tickLabels A text label for each major tick value.
  */
 goog.ui.Gauge.prototype.setMajorTickLabels = function(tickLabels) {
+  'use strict';
   this.majorTickLabels_ = tickLabels;
   this.draw_();
 };
@@ -557,6 +561,7 @@ goog.ui.Gauge.prototype.setMajorTickLabels = function(tickLabels) {
  * @param {string} text The top title text.
  */
 goog.ui.Gauge.prototype.setTitleTop = function(text) {
+  'use strict';
   this.titleTop_ = text;
   this.draw_();
 };
@@ -568,6 +573,7 @@ goog.ui.Gauge.prototype.setTitleTop = function(text) {
  * @param {string} text The bottom title text.
  */
 goog.ui.Gauge.prototype.setTitleBottom = function(text) {
+  'use strict';
   this.titleBottom_ = text;
   this.draw_();
 };
@@ -578,6 +584,7 @@ goog.ui.Gauge.prototype.setTitleBottom = function(text) {
  * @param {goog.graphics.Font} font The font for titles.
  */
 goog.ui.Gauge.prototype.setTitleFont = function(font) {
+  'use strict';
   this.titleFont_ = font;
   this.draw_();
 };
@@ -588,6 +595,7 @@ goog.ui.Gauge.prototype.setTitleFont = function(font) {
  * @param {goog.graphics.Font} font The font for displaying the value.
  */
 goog.ui.Gauge.prototype.setValueFont = function(font) {
+  'use strict';
   this.valueFont_ = font;
   this.drawValue_();
 };
@@ -598,6 +606,7 @@ goog.ui.Gauge.prototype.setValueFont = function(font) {
  * @param {goog.ui.GaugeTheme} theme The color theme to use.
  */
 goog.ui.Gauge.prototype.setTheme = function(theme) {
+  'use strict';
   this.theme_ = theme;
   this.draw_();
 };
@@ -612,6 +621,7 @@ goog.ui.Gauge.prototype.setTheme = function(theme) {
  */
 goog.ui.Gauge.prototype.addBackgroundColor = function(
     fromValue, toValue, color) {
+  'use strict';
   this.rangeColors_.push(
       new goog.ui.GaugeColoredRange(fromValue, toValue, color));
   this.draw_();
@@ -623,10 +633,10 @@ goog.ui.Gauge.prototype.addBackgroundColor = function(
  * @override
  */
 goog.ui.Gauge.prototype.createDom = function() {
-  this.setElementInternal(
-      this.getDomHelper().createDom(
-          goog.dom.TagName.DIV, goog.getCssName('goog-gauge'),
-          this.graphics_.getElement()));
+  'use strict';
+  this.setElementInternal(this.getDomHelper().createDom(
+      goog.dom.TagName.DIV, goog.getCssName('goog-gauge'),
+      this.graphics_.getElement()));
 };
 
 
@@ -635,6 +645,7 @@ goog.ui.Gauge.prototype.createDom = function() {
  * @private
  */
 goog.ui.Gauge.prototype.clear_ = function() {
+  'use strict';
   this.graphics_.clear();
   this.needleGroup_ = null;
 };
@@ -643,8 +654,10 @@ goog.ui.Gauge.prototype.clear_ = function() {
 /**
  * Redraw the entire gauge.
  * @private
+ * @suppress {strictPrimitiveOperators} Part of the go/strict_warnings_migration
  */
 goog.ui.Gauge.prototype.draw_ = function() {
+  'use strict';
   if (!this.isInDocument()) {
     return;
   }
@@ -805,6 +818,7 @@ goog.ui.Gauge.prototype.draw_ = function() {
  * @private
  */
 goog.ui.Gauge.prototype.onAnimate_ = function(e) {
+  'use strict';
   this.needleValuePosition_ = e.x;
   this.drawValue_();
 };
@@ -815,6 +829,7 @@ goog.ui.Gauge.prototype.onAnimate_ = function(e) {
  * @private
  */
 goog.ui.Gauge.prototype.onAnimateEnd_ = function() {
+  'use strict';
   this.stopAnimation_();
 };
 
@@ -824,6 +839,7 @@ goog.ui.Gauge.prototype.onAnimateEnd_ = function() {
  * @private
  */
 goog.ui.Gauge.prototype.stopAnimation_ = function() {
+  'use strict';
   if (this.animation_) {
     goog.events.removeAll(this.animation_);
     this.animation_.stop(false);
@@ -845,6 +861,7 @@ goog.ui.Gauge.prototype.stopAnimation_ = function() {
  * @return {number} The range position.
  */
 goog.ui.Gauge.prototype.valueToRangePosition_ = function(value) {
+  'use strict';
   var valueRange = this.maxValue_ - this.minValue_;
   var valuePct = (value - this.minValue_) / valueRange;  // 0 to 1
 
@@ -864,6 +881,7 @@ goog.ui.Gauge.prototype.valueToRangePosition_ = function(value) {
  * @private
  */
 goog.ui.Gauge.prototype.valueToAngle_ = function(value) {
+  'use strict';
   var valuePct = this.valueToRangePosition_(value);
   return this.valuePositionToAngle_(valuePct);
 };
@@ -879,6 +897,7 @@ goog.ui.Gauge.prototype.valueToAngle_ = function(value) {
  * @private
  */
 goog.ui.Gauge.prototype.valuePositionToAngle_ = function(valuePct) {
+  'use strict';
   var startAngle = goog.math.standardAngle((360 - this.angleSpan_) / 2 + 90);
   return this.angleSpan_ * valuePct + startAngle;
 };
@@ -891,6 +910,7 @@ goog.ui.Gauge.prototype.valuePositionToAngle_ = function(valuePct) {
  * @private
  */
 goog.ui.Gauge.prototype.drawValue_ = function() {
+  'use strict';
   if (!this.isInDocument()) {
     return;
   }
@@ -970,12 +990,14 @@ goog.ui.Gauge.prototype.drawValue_ = function() {
  * Should be called after theme colors have been changed.
  */
 goog.ui.Gauge.prototype.redraw = function() {
+  'use strict';
   this.draw_();
 };
 
 
 /** @override */
 goog.ui.Gauge.prototype.enterDocument = function() {
+  'use strict';
   goog.ui.Gauge.superClass_.enterDocument.call(this);
 
   // set roles and states
@@ -992,6 +1014,7 @@ goog.ui.Gauge.prototype.enterDocument = function() {
 
 /** @override */
 goog.ui.Gauge.prototype.exitDocument = function() {
+  'use strict';
   goog.ui.Gauge.superClass_.exitDocument.call(this);
   this.stopAnimation_();
 };
@@ -999,6 +1022,7 @@ goog.ui.Gauge.prototype.exitDocument = function() {
 
 /** @override */
 goog.ui.Gauge.prototype.disposeInternal = function() {
+  'use strict';
   this.stopAnimation_();
   this.graphics_.dispose();
   delete this.graphics_;

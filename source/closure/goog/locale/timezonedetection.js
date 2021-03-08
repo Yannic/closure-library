@@ -1,16 +1,8 @@
-// Copyright 2008 The Closure Library Authors. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS-IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+/**
+ * @license
+ * Copyright The Closure Library Authors.
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
 /**
  * @fileoverview Functions for detecting user's time zone.
@@ -42,6 +34,7 @@ goog.locale.timeZoneDetection.TZ_POKE_POINTS_ = [
  * @return {number} Fingerprint of user's time zone setting.
  */
 goog.locale.timeZoneDetection.getFingerprint = function(date) {
+  'use strict';
   var hash = 0;
   var stdOffset;
   var isComplex = false;
@@ -69,6 +62,7 @@ goog.locale.timeZoneDetection.getFingerprint = function(date) {
  * @return {string} Time zone ID of best guess.
  */
 goog.locale.timeZoneDetection.detectTimeZone = function(opt_country, opt_date) {
+  'use strict';
   var date = opt_date || new Date();
   var fingerprint = goog.locale.timeZoneDetection.getFingerprint(date);
   var timeZoneList = goog.locale.TimeZoneFingerprint[fingerprint];
@@ -101,6 +95,7 @@ goog.locale.timeZoneDetection.detectTimeZone = function(opt_country, opt_date) {
  */
 goog.locale.timeZoneDetection.getTimeZoneList = function(
     opt_country, opt_date) {
+  'use strict';
   var date = opt_date || new Date();
   var fingerprint = goog.locale.timeZoneDetection.getFingerprint(date);
   var timeZoneList = goog.locale.TimeZoneFingerprint[fingerprint];

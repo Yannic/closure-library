@@ -1,16 +1,8 @@
-// Copyright 2016 The Closure Library Authors. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS-IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+/**
+ * @license
+ * Copyright The Closure Library Authors.
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
 /**
  * @fileoverview Potentially unsafe API for the HTML sanitizer.
@@ -24,7 +16,6 @@
  * to support web components).
  *
  * @supported IE 10+, Chrome 26+, Firefox 22+, Safari 7.1+, Opera 15+
- * @visibility {//closure/goog/html/sanitizer:approved_for_unsafe_config}
  */
 
 goog.provide('goog.html.sanitizer.unsafe');
@@ -33,10 +24,12 @@ goog.require('goog.asserts');
 goog.require('goog.html.sanitizer.HtmlSanitizer.Builder');
 goog.require('goog.string');
 goog.require('goog.string.Const');
+goog.requireType('goog.html.sanitizer.HtmlSanitizerAttributePolicy');
 
 
 /**
- * Extends the tag whitelist with the list of tags provided.
+ * Extends the tag whitelist with the list of tags provided. If the tag is
+ * blacklisted, this method also removes it from the blacklist.
  *
  * IMPORTANT: Uses of this method must be carefully security-reviewed to ensure
  * that the new tags do not introduce untrusted code execution or unsanctioned
@@ -48,13 +41,12 @@ goog.require('goog.string.Const');
  * @param {!goog.html.sanitizer.HtmlSanitizer.Builder} builder The builder
  *     whose tag whitelist should be extended.
  * @param {!Array<string>} tags A list of additional tags to allow through the
- *     sanitizer. Note that if the tag is also present in the blacklist,
- *     its addition to the whitelist has no effect. The tag names are
- *     case-insensitive.
+ *     sanitizer. The tag names are case-insensitive.
  * @return {!goog.html.sanitizer.HtmlSanitizer.Builder}
  */
 goog.html.sanitizer.unsafe.alsoAllowTags = function(
     justification, builder, tags) {
+  'use strict';
   goog.asserts.assertString(
       goog.string.Const.unwrap(justification), 'must provide justification');
   goog.asserts.assert(
@@ -92,43 +84,11 @@ goog.html.sanitizer.unsafe.alsoAllowTags = function(
  */
 goog.html.sanitizer.unsafe.alsoAllowAttributes = function(
     justification, builder, attrs) {
+  'use strict';
   goog.asserts.assertString(
       goog.string.Const.unwrap(justification), 'must provide justification');
   goog.asserts.assert(
       !goog.string.isEmptyOrWhitespace(goog.string.Const.unwrap(justification)),
       'must provide non-empty justification');
   return builder.alsoAllowAttributesPrivateDoNotAccessOrElse(attrs);
-};
-
-
-/**
- * Turns off sanitization of TEMPLATE tag descendants. The output is still
- * safe to consume as a whole, but clients need to handle the contents of
- * TEMPLATE nodes carefully, hence its definition in the unsafe package.
- *
- * Note that this only applies to descendants of unsanitized template tags, not
- * to the tag itself, which must be manually added to the whitelist and removed
- * from the blacklist.
- *
- * IMPORTANT: Uses of this method must be carefully security-reviewed to ensure
- * that the new tags do not introduce untrusted code execution or unsanctioned
- * network activity.
- *
- * @param {!goog.string.Const} justification A constant string explaining why
- *     the templates should not be sanitized, and why this is safe. May include
- *     a security review ticket number.
- * @param {!goog.html.sanitizer.HtmlSanitizer.Builder} builder The builder
- *     whose template tag descendants should not be sanitized.
- * @return {!goog.html.sanitizer.HtmlSanitizer.Builder}
- * @throws {Error} Thrown if the browser does not support TEMPLATE tags.
- *     In this case, careful post-sanitization handling wouldn't matter.
- */
-goog.html.sanitizer.unsafe.keepUnsanitizedTemplateContents = function(
-    justification, builder) {
-  goog.asserts.assertString(
-      goog.string.Const.unwrap(justification), 'must provide justification');
-  goog.asserts.assert(
-      !goog.string.isEmptyOrWhitespace(goog.string.Const.unwrap(justification)),
-      'must provide non-empty justification');
-  return builder.keepUnsanitizedTemplateContentsPrivateDoNotAccessOrElse();
 };

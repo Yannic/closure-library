@@ -34,8 +34,6 @@
  * goog.require('my.Class')
  * </code>
  *
- * @author nick@medium.com (Nick Santos)
- *
  * @nocompile
  */
 
@@ -76,7 +74,6 @@ global.CLOSURE_IMPORT_SCRIPT = function(src, opt_sourceText) {
  * @param {string} src The file source.
  * @return {string} The file contents.
  */
-
 global.CLOSURE_LOAD_FILE_SYNC = function(src) {
   return fs.readFileSync(
       path.resolve(__dirname, '..', src), {encoding: 'utf-8'});

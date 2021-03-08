@@ -1,16 +1,8 @@
-// Copyright 2008 The Closure Library Authors. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS-IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+/**
+ * @license
+ * Copyright The Closure Library Authors.
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
 /**
  * @fileoverview An HSVA (hue/saturation/value/alpha) color palette/picker
@@ -18,7 +10,6 @@
  * Without the styles from the demo css file, only a hex color label and input
  * field show up.
  *
- * @author chrisn@google.com (Chris Nokleberg)
  * @see ../demos/hsvapalette.html
  */
 
@@ -32,6 +23,9 @@ goog.require('goog.events.EventType');
 goog.require('goog.style');
 goog.require('goog.ui.Component');
 goog.require('goog.ui.HsvPalette');
+goog.requireType('goog.dom.DomHelper');
+goog.requireType('goog.events.Event');
+goog.requireType('goog.math.Rect');
 
 
 
@@ -49,6 +43,7 @@ goog.require('goog.ui.HsvPalette');
  * @final
  */
 goog.ui.HsvaPalette = function(opt_domHelper, opt_color, opt_alpha, opt_class) {
+  'use strict';
   goog.ui.HsvaPalette.base(
       this, 'constructor', opt_domHelper, opt_color, opt_class);
 
@@ -59,7 +54,7 @@ goog.ui.HsvaPalette = function(opt_domHelper, opt_color, opt_alpha, opt_class) {
    * @type {number}
    * @private
    */
-  this.alpha_ = goog.isDef(opt_alpha) ? opt_alpha : 1;
+  this.alpha_ = (opt_alpha !== undefined) ? opt_alpha : 1;
 
   /**
    * @override
@@ -95,6 +90,7 @@ goog.ui.HsvaPalette.prototype.swatchBackdropEl_;
 
 /** @override */
 goog.ui.HsvaPalette.prototype.getAlpha = function() {
+  'use strict';
   return this.alpha_;
 };
 
@@ -105,6 +101,7 @@ goog.ui.HsvaPalette.prototype.getAlpha = function() {
  * @param {number} alpha The selected alpha value, in [0, 1].
  */
 goog.ui.HsvaPalette.prototype.setAlpha = function(alpha) {
+  'use strict';
   this.setColorAlphaHelper_(this.color, alpha);
 };
 
@@ -116,6 +113,7 @@ goog.ui.HsvaPalette.prototype.setAlpha = function(alpha) {
  * @override
  */
 goog.ui.HsvaPalette.prototype.setColor = function(color) {
+  'use strict';
   this.setColorAlphaHelper_(color, 1);
 };
 
@@ -126,6 +124,7 @@ goog.ui.HsvaPalette.prototype.setColor = function(color) {
  * @return {string} The string of the selected color with alpha.
  */
 goog.ui.HsvaPalette.prototype.getColorRgbaHex = function() {
+  'use strict';
   var alphaHex = Math.floor(this.alpha_ * 255).toString(16);
   return this.color + (alphaHex.length == 1 ? '0' + alphaHex : alphaHex);
 };
@@ -137,6 +136,7 @@ goog.ui.HsvaPalette.prototype.getColorRgbaHex = function() {
  * @param {string} color The selected color with alpha.
  */
 goog.ui.HsvaPalette.prototype.setColorRgbaHex = function(color) {
+  'use strict';
   var parsed = goog.ui.HsvaPalette.parseColorRgbaHex_(color);
   this.setColorAlphaHelper_(parsed[0], parsed[1]);
 };
@@ -150,6 +150,7 @@ goog.ui.HsvaPalette.prototype.setColorRgbaHex = function(color) {
  * @private
  */
 goog.ui.HsvaPalette.prototype.setColorAlphaHelper_ = function(color, alpha) {
+  'use strict';
   var colorChange = this.color != color;
   var alphaChange = this.alpha_ != alpha;
   this.alpha_ = alpha;
@@ -167,6 +168,7 @@ goog.ui.HsvaPalette.prototype.setColorAlphaHelper_ = function(color, alpha) {
 
 /** @override */
 goog.ui.HsvaPalette.prototype.createDom = function() {
+  'use strict';
   goog.ui.HsvaPalette.base(this, 'createDom');
 
   var dom = this.getDomHelper();
@@ -187,6 +189,7 @@ goog.ui.HsvaPalette.prototype.createDom = function() {
 
 /** @override */
 goog.ui.HsvaPalette.prototype.disposeInternal = function() {
+  'use strict';
   goog.ui.HsvaPalette.base(this, 'disposeInternal');
 
   delete this.aImageEl_;
@@ -197,6 +200,7 @@ goog.ui.HsvaPalette.prototype.disposeInternal = function() {
 
 /** @override */
 goog.ui.HsvaPalette.prototype.updateUi = function() {
+  'use strict';
   goog.ui.HsvaPalette.base(this, 'updateUi');
   if (this.isInDocument()) {
     var a = this.alpha_ * 255;
@@ -212,6 +216,7 @@ goog.ui.HsvaPalette.prototype.updateUi = function() {
 
 /** @override */
 goog.ui.HsvaPalette.prototype.updateInput = function() {
+  'use strict';
   if (!goog.array.equals(
           [this.color, this.alpha_],
           goog.ui.HsvaPalette.parseUserInput_(this.inputElement.value))) {
@@ -222,6 +227,7 @@ goog.ui.HsvaPalette.prototype.updateInput = function() {
 
 /** @override */
 goog.ui.HsvaPalette.prototype.handleMouseDown = function(e) {
+  'use strict';
   goog.ui.HsvaPalette.base(this, 'handleMouseDown', e);
   if (e.target == this.aImageEl_ || e.target == this.aHandleEl_) {
     // Setup value change listeners
@@ -246,6 +252,7 @@ goog.ui.HsvaPalette.prototype.handleMouseDown = function(e) {
  * @private
  */
 goog.ui.HsvaPalette.prototype.handleMouseMoveA_ = function(b, e) {
+  'use strict';
   e.preventDefault();
   var vportPos = this.getDomHelper().getDocumentScroll();
   var newA =
@@ -258,6 +265,7 @@ goog.ui.HsvaPalette.prototype.handleMouseMoveA_ = function(b, e) {
 
 /** @override */
 goog.ui.HsvaPalette.prototype.handleInput = function(e) {
+  'use strict';
   var parsed = goog.ui.HsvaPalette.parseUserInput_(this.inputElement.value);
   if (parsed) {
     this.setColorAlphaHelper_(parsed[0], parsed[1]);
@@ -273,6 +281,7 @@ goog.ui.HsvaPalette.prototype.handleInput = function(e) {
  * @private
  */
 goog.ui.HsvaPalette.parseUserInput_ = function(value) {
+  'use strict';
   if (/^#?[0-9a-f]{8}$/i.test(value)) {
     return goog.ui.HsvaPalette.parseColorRgbaHex_(value);
   } else if (/^#?[0-9a-f]{6}$/i.test(value)) {
@@ -290,6 +299,7 @@ goog.ui.HsvaPalette.parseUserInput_ = function(value) {
  * @private
  */
 goog.ui.HsvaPalette.parseColorRgbaHex_ = function(color) {
+  'use strict';
   var hex = goog.color.alpha.parse(color).hex;
   return [
     goog.color.alpha.extractHexColor(hex),

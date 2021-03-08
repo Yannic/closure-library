@@ -1,22 +1,13 @@
-// Copyright 2013 The Closure Library Authors. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS-IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+/**
+ * @license
+ * Copyright The Closure Library Authors.
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
 /**
  * @fileoverview Utility functions for managing networking, such as
  * testing network connectivity.
  *
- * @visibility {:internal}
  */
 
 
@@ -26,6 +17,7 @@ goog.require('goog.Uri');
 goog.require('goog.labs.net.webChannel.WebChannelDebug');
 
 goog.scope(function() {
+'use strict';
 var netUtils = goog.labs.net.webChannel.netUtils;
 var WebChannelDebug = goog.labs.net.webChannel.WebChannelDebug;
 
@@ -49,6 +41,7 @@ netUtils.NETWORK_TIMEOUT = 10000;
  *     test.
  */
 netUtils.testNetwork = function(callback, opt_imageUri) {
+  'use strict';
   var uri = opt_imageUri;
   if (!uri) {
     // default google.com image
@@ -70,12 +63,13 @@ netUtils.testNetwork = function(callback, opt_imageUri) {
  * @param {number} timeout Milliseconds before giving up.
  * @param {function(boolean)} callback Function to call with results.
  * @param {number} retries The number of times to retry.
+ * @param {!WebChannelDebug} channelDebug The debug object
  * @param {number=} opt_pauseBetweenRetriesMS Optional number of milliseconds
  *     between retries - defaults to 0.
  */
 netUtils.testLoadImageWithRetries = function(
-    url, timeout, callback, retries, opt_pauseBetweenRetriesMS) {
-  var channelDebug = new WebChannelDebug();
+    url, timeout, callback, retries, channelDebug, opt_pauseBetweenRetriesMS) {
+  'use strict';
   channelDebug.debug('TestLoadImageWithRetries: ' + opt_pauseBetweenRetriesMS);
   if (retries == 0) {
     // no more retries, give up
@@ -86,13 +80,15 @@ netUtils.testLoadImageWithRetries = function(
   var pauseBetweenRetries = opt_pauseBetweenRetriesMS || 0;
   retries--;
   netUtils.testLoadImage(url, timeout, function(succeeded) {
+    'use strict';
     if (succeeded) {
       callback(true);
     } else {
       // try again
       goog.global.setTimeout(function() {
+        'use strict';
         netUtils.testLoadImageWithRetries(
-            url, timeout, callback, retries, pauseBetweenRetries);
+            url, timeout, callback, retries, channelDebug, pauseBetweenRetries);
       }, pauseBetweenRetries);
     }
   });
@@ -104,30 +100,38 @@ netUtils.testLoadImageWithRetries = function(
  * @param {string} url URL to the image.
  * @param {number} timeout Milliseconds before giving up.
  * @param {function(boolean)} callback Function to call with results.
+ * @suppress {strictMissingProperties} Part of the go/strict_warnings_migration
  */
 netUtils.testLoadImage = function(url, timeout, callback) {
+  'use strict';
   var channelDebug = new WebChannelDebug();
   channelDebug.debug('TestLoadImage: loading ' + url);
-  var img = new Image();
-  img.onload = goog.partial(
-      netUtils.imageCallback_, channelDebug, img, 'TestLoadImage: loaded', true,
-      callback);
-  img.onerror = goog.partial(
-      netUtils.imageCallback_, channelDebug, img, 'TestLoadImage: error', false,
-      callback);
-  img.onabort = goog.partial(
-      netUtils.imageCallback_, channelDebug, img, 'TestLoadImage: abort', false,
-      callback);
-  img.ontimeout = goog.partial(
-      netUtils.imageCallback_, channelDebug, img, 'TestLoadImage: timeout',
-      false, callback);
+  if (goog.global.Image) {
+    var img = new Image();
+    img.onload = goog.partial(
+        netUtils.imageCallback_, channelDebug, img, 'TestLoadImage: loaded',
+        true, callback);
+    img.onerror = goog.partial(
+        netUtils.imageCallback_, channelDebug, img, 'TestLoadImage: error',
+        false, callback);
+    img.onabort = goog.partial(
+        netUtils.imageCallback_, channelDebug, img, 'TestLoadImage: abort',
+        false, callback);
+    img.ontimeout = goog.partial(
+        netUtils.imageCallback_, channelDebug, img, 'TestLoadImage: timeout',
+        false, callback);
 
-  goog.global.setTimeout(function() {
-    if (img.ontimeout) {
-      img.ontimeout();
-    }
-  }, timeout);
-  img.src = url;
+    goog.global.setTimeout(function() {
+      'use strict';
+      if (img.ontimeout) {
+        img.ontimeout();
+      }
+    }, timeout);
+    img.src = url;
+  } else {
+    // log ERROR_OTHER from environements where Image is not supported
+    callback(false);
+  }
 };
 
 
@@ -142,6 +146,7 @@ netUtils.testLoadImage = function(url, timeout, callback) {
  */
 netUtils.imageCallback_ = function(
     channelDebug, img, debugText, result, callback) {
+  'use strict';
   try {
     channelDebug.debug(debugText);
     netUtils.clearImageCallbacks_(img);
@@ -156,8 +161,10 @@ netUtils.imageCallback_ = function(
  * Clears handlers to avoid memory leaks.
  * @param {Image} img The image to clear handlers from.
  * @private
+ * @suppress {strictMissingProperties} Part of the go/strict_warnings_migration
  */
 netUtils.clearImageCallbacks_ = function(img) {
+  'use strict';
   img.onload = null;
   img.onerror = null;
   img.onabort = null;

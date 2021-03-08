@@ -71,6 +71,12 @@ def _GetOptionsParser():
                     default=[],
                     help='The paths that should be traversed to build the '
                     'dependencies.')
+  parser.add_option(
+      '-e',
+      '--exclude',
+      dest='excludes',
+      action='append',
+      help='Files to exclude from the --root flag.')
   parser.add_option('-o',
                     '--output_mode',
                     dest='output_mode',
@@ -186,7 +192,7 @@ class _PathSource(source.Source):
 
 
 def _WrapGoogModuleSource(src):
-  return ('goog.loadModule(function(exports) {{'
+  return (u'goog.loadModule(function(exports) {{'
           '"use strict";'
           '{0}'
           '\n'  # terminate any trailing single line comment.
@@ -203,19 +209,15 @@ def main():
   if options.output_file:
     out = io.open(options.output_file, 'wb')
   else:
-    version = sys.version_info[:2]
-    if version >= (3, 0):
-      # Write bytes to stdout
-      out = sys.stdout.buffer
-    else:
-      out = sys.stdout
+    out = sys.stdout
 
   sources = set()
 
   logging.info('Scanning paths...')
   for path in options.roots:
     for js_path in treescan.ScanTreeForJsFiles(path):
-      sources.add(_PathSource(js_path))
+      if not options.excludes or js_path not in options.excludes:
+        sources.add(_PathSource(js_path))
 
   # Add scripts specified on the command line.
   for js_path in args:
@@ -260,7 +262,7 @@ def main():
   elif output_mode == 'compiled':
     logging.warning("""\
 Closure Compiler now natively understands and orders Closure dependencies and
-is prefererred over using this script for performing JavaScript compilation.
+is preferred over using this script for performing JavaScript compilation.
 
 Please migrate your codebase.
 

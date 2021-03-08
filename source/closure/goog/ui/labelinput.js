@@ -1,16 +1,8 @@
-// Copyright 2006 The Closure Library Authors. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS-IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+/**
+ * @license
+ * Copyright The Closure Library Authors.
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
 /**
  * @fileoverview This behavior is applied to a text input and it shows a text
@@ -28,7 +20,6 @@
  * event only once (when created or when it is changed) so if you move the DOM
  * node to another form it will not be cleared correctly before submitting.
  *
- * @author arv@google.com (Erik Arvidsson)
  * @see ../demos/labelinput.html
  */
 
@@ -46,6 +37,8 @@ goog.require('goog.events.EventHandler');
 goog.require('goog.events.EventType');
 goog.require('goog.ui.Component');
 goog.require('goog.userAgent');
+goog.requireType('goog.events.BrowserEvent');
+goog.requireType('goog.events.Event');
 
 
 
@@ -57,6 +50,7 @@ goog.require('goog.userAgent');
  * @constructor
  */
 goog.ui.LabelInput = function(opt_label, opt_domHelper) {
+  'use strict';
   goog.ui.Component.call(this, opt_domHelper);
 
   /**
@@ -67,7 +61,6 @@ goog.ui.LabelInput = function(opt_label, opt_domHelper) {
   this.label_ = opt_label || '';
 };
 goog.inherits(goog.ui.LabelInput, goog.ui.Component);
-goog.tagUnsealableClass(goog.ui.LabelInput);
 
 
 /**
@@ -110,7 +103,8 @@ goog.ui.LabelInput.supportsPlaceholder_;
  * @private
  */
 goog.ui.LabelInput.isPlaceholderSupported_ = function() {
-  if (!goog.isDefAndNotNull(goog.ui.LabelInput.supportsPlaceholder_)) {
+  'use strict';
+  if (goog.ui.LabelInput.supportsPlaceholder_ == null) {
     goog.ui.LabelInput.supportsPlaceholder_ =
         ('placeholder' in goog.dom.createElement(goog.dom.TagName.INPUT));
   }
@@ -137,9 +131,9 @@ goog.ui.LabelInput.prototype.hasFocus_ = false;
  * @override
  */
 goog.ui.LabelInput.prototype.createDom = function() {
-  this.setElementInternal(
-      this.getDomHelper().createDom(
-          goog.dom.TagName.INPUT, {'type': goog.dom.InputType.TEXT}));
+  'use strict';
+  this.setElementInternal(this.getDomHelper().createDom(
+      goog.dom.TagName.INPUT, {'type': goog.dom.InputType.TEXT}));
 };
 
 
@@ -149,8 +143,10 @@ goog.ui.LabelInput.prototype.createDom = function() {
  * label input object.
  * @param {Element} element The HTML input element to decorate.
  * @override
+ * @suppress {strictMissingProperties} Part of the go/strict_warnings_migration
  */
 goog.ui.LabelInput.prototype.decorateInternal = function(element) {
+  'use strict';
   goog.ui.LabelInput.superClass_.decorateInternal.call(this, element);
   if (!this.label_) {
     this.label_ = element.getAttribute('label') || '';
@@ -176,8 +172,12 @@ goog.ui.LabelInput.prototype.decorateInternal = function(element) {
 };
 
 
-/** @override */
+/**
+ * @override
+ * @suppress {strictMissingProperties} Part of the go/strict_warnings_migration
+ */
 goog.ui.LabelInput.prototype.enterDocument = function() {
+  'use strict';
   goog.ui.LabelInput.superClass_.enterDocument.call(this);
   this.attachEvents_();
   this.check_();
@@ -188,8 +188,12 @@ goog.ui.LabelInput.prototype.enterDocument = function() {
 };
 
 
-/** @override */
+/**
+ * @override
+ * @suppress {strictMissingProperties} Part of the go/strict_warnings_migration
+ */
 goog.ui.LabelInput.prototype.exitDocument = function() {
+  'use strict';
   goog.ui.LabelInput.superClass_.exitDocument.call(this);
   this.detachEvents_();
 
@@ -202,6 +206,7 @@ goog.ui.LabelInput.prototype.exitDocument = function() {
  * @private
  */
 goog.ui.LabelInput.prototype.attachEvents_ = function() {
+  'use strict';
   var eh = new goog.events.EventHandler(this);
   eh.listen(this.getElement(), goog.events.EventType.FOCUS, this.handleFocus_);
   eh.listen(this.getElement(), goog.events.EventType.BLUR, this.handleBlur_);
@@ -235,8 +240,10 @@ goog.ui.LabelInput.prototype.attachEvents_ = function() {
  * Adds a listener to the form so that we can clear the input before it is
  * submitted.
  * @private
+ * @suppress {strictMissingProperties} Part of the go/strict_warnings_migration
  */
 goog.ui.LabelInput.prototype.attachEventsToForm_ = function() {
+  'use strict';
   // in case we have are in a form we need to make sure the label is not
   // submitted
   if (!this.formAttached_ && this.eventHandler_ && this.getElement().form) {
@@ -253,6 +260,7 @@ goog.ui.LabelInput.prototype.attachEventsToForm_ = function() {
  * @private
  */
 goog.ui.LabelInput.prototype.detachEvents_ = function() {
+  'use strict';
   if (this.eventHandler_) {
     this.eventHandler_.dispose();
     this.eventHandler_ = null;
@@ -262,6 +270,7 @@ goog.ui.LabelInput.prototype.detachEvents_ = function() {
 
 /** @override */
 goog.ui.LabelInput.prototype.disposeInternal = function() {
+  'use strict';
   goog.ui.LabelInput.superClass_.disposeInternal.call(this);
   this.detachEvents_();
 };
@@ -281,6 +290,7 @@ goog.ui.LabelInput.prototype.labelCssClassName =
  * @private
  */
 goog.ui.LabelInput.prototype.handleFocus_ = function(e) {
+  'use strict';
   this.hasFocus_ = true;
   var el = this.getElement();
   goog.asserts.assert(el);
@@ -290,7 +300,9 @@ goog.ui.LabelInput.prototype.handleFocus_ = function(e) {
   }
   if (!this.hasChanged() && !this.inFocusAndSelect_) {
     var me = this;
+    /** @suppress {strictMissingProperties} Part of the go/strict_warnings_migration */
     var clearValue = function() {
+      'use strict';
       // Component could be disposed by the time this is called.
       if (me.getElement()) {
         me.getElement().value = '';
@@ -311,6 +323,7 @@ goog.ui.LabelInput.prototype.handleFocus_ = function(e) {
  * @private
  */
 goog.ui.LabelInput.prototype.handleBlur_ = function(e) {
+  'use strict';
   // We listen to the click event when we enter focusAndSelect mode so we can
   // fake an artificial focus when the user clicks on the input box. However,
   // if the user clicks on something else (and we lose focus), there is no
@@ -337,12 +350,13 @@ goog.ui.LabelInput.prototype.handleBlur_ = function(e) {
  *
  * IE and Chrome don't have this problem, Opera blurs in the input box
  * completely in a way that preventDefault on the escape key has no effect.
- *
  * @param {goog.events.BrowserEvent} e The event object passed in to
  *     the event handler.
  * @private
+ * @suppress {strictMissingProperties} Part of the go/strict_warnings_migration
  */
 goog.ui.LabelInput.prototype.handleEscapeKeys_ = function(e) {
+  'use strict';
   if (e.keyCode == 27) {
     if (e.type == goog.events.EventType.KEYDOWN) {
       this.ffKeyRestoreValue_ = this.getElement().value;
@@ -360,8 +374,10 @@ goog.ui.LabelInput.prototype.handleEscapeKeys_ = function(e) {
  * Handler for the submit event of the form element.
  * @param {goog.events.Event} e The event object passed in to the event handler.
  * @private
+ * @suppress {strictMissingProperties} Part of the go/strict_warnings_migration
  */
 goog.ui.LabelInput.prototype.handleFormSubmit_ = function(e) {
+  'use strict';
   if (!this.hasChanged()) {
     this.getElement().value = '';
     // allow form to be sent before restoring value
@@ -373,8 +389,10 @@ goog.ui.LabelInput.prototype.handleFormSubmit_ = function(e) {
 /**
  * Restore value after submit
  * @private
+ * @suppress {strictMissingProperties} Part of the go/strict_warnings_migration
  */
 goog.ui.LabelInput.prototype.handleAfterSubmit_ = function() {
+  'use strict';
   if (!this.hasChanged()) {
     this.getElement().value = this.label_;
   }
@@ -388,6 +406,7 @@ goog.ui.LabelInput.prototype.handleAfterSubmit_ = function() {
  * @private
  */
 goog.ui.LabelInput.prototype.handleWindowLoad_ = function(e) {
+  'use strict';
   this.check_();
 };
 
@@ -396,14 +415,17 @@ goog.ui.LabelInput.prototype.handleWindowLoad_ = function(e) {
  * @return {boolean} Whether the control is currently focused on.
  */
 goog.ui.LabelInput.prototype.hasFocus = function() {
+  'use strict';
   return this.hasFocus_;
 };
 
 
 /**
  * @return {boolean} Whether the value has been changed by the user.
+ * @suppress {strictMissingProperties} Part of the go/strict_warnings_migration
  */
 goog.ui.LabelInput.prototype.hasChanged = function() {
+  'use strict';
   return !!this.getElement() && this.getElement().value != '' &&
       this.getElement().value != this.label_;
 };
@@ -411,8 +433,10 @@ goog.ui.LabelInput.prototype.hasChanged = function() {
 
 /**
  * Clears the value of the input element without resetting the default text.
+ * @suppress {strictMissingProperties} Part of the go/strict_warnings_migration
  */
 goog.ui.LabelInput.prototype.clear = function() {
+  'use strict';
   this.getElement().value = '';
 
   // Reset ffKeyRestoreValue_ when non-null
@@ -426,6 +450,7 @@ goog.ui.LabelInput.prototype.clear = function() {
  * Clears the value of the input element and resets the default text.
  */
 goog.ui.LabelInput.prototype.reset = function() {
+  'use strict';
   if (this.hasChanged()) {
     this.clear();
     this.check_();
@@ -437,8 +462,10 @@ goog.ui.LabelInput.prototype.reset = function() {
  * Use this to set the value through script to ensure that the label state is
  * up to date
  * @param {string} s The new value for the input.
+ * @suppress {strictMissingProperties} Part of the go/strict_warnings_migration
  */
 goog.ui.LabelInput.prototype.setValue = function(s) {
+  'use strict';
   if (this.ffKeyRestoreValue_ != null) {
     this.ffKeyRestoreValue_ = s;
   }
@@ -451,8 +478,10 @@ goog.ui.LabelInput.prototype.setValue = function(s) {
  * Returns the current value of the text box, returning an empty string if the
  * search box is the default value
  * @return {string} The value of the input box.
+ * @suppress {strictMissingProperties} Part of the go/strict_warnings_migration
  */
 goog.ui.LabelInput.prototype.getValue = function() {
+  'use strict';
   if (this.ffKeyRestoreValue_ != null) {
     // Fix the Firefox from incorrectly reporting the value to calling code
     // that attached the listener to keypress before the labelinput
@@ -466,8 +495,10 @@ goog.ui.LabelInput.prototype.getValue = function() {
 /**
  * Sets the label text as aria-label, and placeholder when supported.
  * @param {string} label The text to show as the label.
+ * @suppress {strictMissingProperties} Part of the go/strict_warnings_migration
  */
 goog.ui.LabelInput.prototype.setLabel = function(label) {
+  'use strict';
   var labelInputElement = this.getElement();
 
   if (goog.ui.LabelInput.isPlaceholderSupported_()) {
@@ -497,6 +528,7 @@ goog.ui.LabelInput.prototype.setLabel = function(label) {
  * @return {string} The text to show as the label.
  */
 goog.ui.LabelInput.prototype.getLabel = function() {
+  'use strict';
   return this.label_;
 };
 
@@ -504,8 +536,10 @@ goog.ui.LabelInput.prototype.getLabel = function() {
 /**
  * Checks the state of the input element
  * @private
+ * @suppress {strictMissingProperties} Part of the go/strict_warnings_migration
  */
 goog.ui.LabelInput.prototype.check_ = function() {
+  'use strict';
   var labelInputElement = this.getElement();
   goog.asserts.assert(
       labelInputElement, 'The label input element cannot be null.');
@@ -541,8 +575,10 @@ goog.ui.LabelInput.prototype.check_ = function() {
  * This method focuses the input and selects all the text. If the value hasn't
  * changed it will set the value to the label so that the label text is
  * selected.
+ * @suppress {strictMissingProperties} Part of the go/strict_warnings_migration
  */
 goog.ui.LabelInput.prototype.focusAndSelect = function() {
+  'use strict';
   // We need to check whether the input has changed before focusing
   var hc = this.hasChanged();
   this.inFocusAndSelect_ = true;
@@ -573,8 +609,10 @@ goog.ui.LabelInput.prototype.focusAndSelect = function() {
  * Enables/Disables the label input.
  * @param {boolean} enabled Whether to enable (true) or disable (false) the
  *     label input.
+ * @suppress {strictMissingProperties} Part of the go/strict_warnings_migration
  */
 goog.ui.LabelInput.prototype.setEnabled = function(enabled) {
+  'use strict';
   this.getElement().disabled = !enabled;
   var el = this.getElement();
   goog.asserts.assert(el);
@@ -585,8 +623,10 @@ goog.ui.LabelInput.prototype.setEnabled = function(enabled) {
 
 /**
  * @return {boolean} True if the label input is enabled, false otherwise.
+ * @suppress {strictMissingProperties} Part of the go/strict_warnings_migration
  */
 goog.ui.LabelInput.prototype.isEnabled = function() {
+  'use strict';
   return !this.getElement().disabled;
 };
 
@@ -595,6 +635,7 @@ goog.ui.LabelInput.prototype.isEnabled = function() {
  * @private
  */
 goog.ui.LabelInput.prototype.focusAndSelect_ = function() {
+  'use strict';
   this.inFocusAndSelect_ = false;
 };
 
@@ -602,8 +643,10 @@ goog.ui.LabelInput.prototype.focusAndSelect_ = function() {
 /**
  * Sets the value of the input element to label.
  * @private
+ * @suppress {strictMissingProperties} Part of the go/strict_warnings_migration
  */
 goog.ui.LabelInput.prototype.restoreLabel_ = function() {
+  'use strict';
   // Check again in case something changed since this was scheduled.
   // We check that the element is still there since this is called by a timer
   // and the dispose method may have been called prior to this.

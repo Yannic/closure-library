@@ -1,21 +1,11 @@
-// Copyright 2007 The Closure Library Authors. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS-IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+/**
+ * @license
+ * Copyright The Closure Library Authors.
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
 /**
  * @fileoverview A utility class for managing editable links.
- *
- * @author nicksantos@google.com (Nick Santos)
  */
 
 goog.provide('goog.editor.Link');
@@ -27,6 +17,7 @@ goog.require('goog.dom.Range');
 goog.require('goog.dom.TagName');
 goog.require('goog.editor.BrowserFeature');
 goog.require('goog.editor.Command');
+goog.require('goog.editor.Field');
 goog.require('goog.editor.node');
 goog.require('goog.editor.range');
 goog.require('goog.string');
@@ -44,6 +35,7 @@ goog.require('goog.uri.utils.ComponentIndex');
  * @final
  */
 goog.editor.Link = function(anchor, isNew) {
+  'use strict';
   /**
    * The link DOM element.
    * @type {HTMLAnchorElement}
@@ -73,6 +65,7 @@ goog.editor.Link = function(anchor, isNew) {
  * @return {HTMLAnchorElement} The anchor element.
  */
 goog.editor.Link.prototype.getAnchor = function() {
+  'use strict';
   return this.anchor_;
 };
 
@@ -82,6 +75,7 @@ goog.editor.Link.prototype.getAnchor = function() {
  *     created by the browser from a selection.
  */
 goog.editor.Link.prototype.getExtraAnchors = function() {
+  'use strict';
   return this.extraAnchors_;
 };
 
@@ -90,12 +84,13 @@ goog.editor.Link.prototype.getExtraAnchors = function() {
  * @return {string} The inner text for the anchor.
  */
 goog.editor.Link.prototype.getCurrentText = function() {
+  'use strict';
   if (!this.currentText_) {
     var anchor = this.getAnchor();
 
     var leaf = goog.editor.node.getLeftMostLeaf(anchor);
     if (leaf.tagName && leaf.tagName == goog.dom.TagName.IMG) {
-      this.currentText_ = leaf.getAttribute('alt');
+      this.currentText_ = leaf.getAttribute('alt') || '';
     } else {
       this.currentText_ = goog.dom.getRawTextContent(this.getAnchor());
     }
@@ -108,6 +103,7 @@ goog.editor.Link.prototype.getCurrentText = function() {
  * @return {boolean} Whether the link is new.
  */
 goog.editor.Link.prototype.isNew = function() {
+  'use strict';
   return this.isNew_;
 };
 
@@ -117,6 +113,7 @@ goog.editor.Link.prototype.isNew = function() {
  * @param {string} url A URL.
  */
 goog.editor.Link.prototype.initializeUrl = function(url) {
+  'use strict';
   this.getAnchor().href = url;
 };
 
@@ -126,6 +123,7 @@ goog.editor.Link.prototype.initializeUrl = function(url) {
  * object will no longer be usable/useful after this call.
  */
 goog.editor.Link.prototype.removeLink = function() {
+  'use strict';
   goog.dom.flattenElement(this.anchor_);
   this.anchor_ = null;
   while (this.extraAnchors_.length) {
@@ -137,12 +135,13 @@ goog.editor.Link.prototype.removeLink = function() {
 /**
  * Change the link.
  * @param {string} newText New text for the link. If the link contains all its
- *     text in one descendent, newText will only replace the text in that
+ *     text in one descendant, newText will only replace the text in that
  *     one node. Otherwise, we'll change the innerHTML of the whole
  *     link to newText.
  * @param {string} newUrl A new URL.
  */
 goog.editor.Link.prototype.setTextAndUrl = function(newText, newUrl) {
+  'use strict';
   var anchor = this.getAnchor();
   anchor.href = newUrl;
 
@@ -183,6 +182,7 @@ goog.editor.Link.prototype.setTextAndUrl = function(newText, newUrl) {
  * cursor after that space.
  */
 goog.editor.Link.prototype.placeCursorRightOf = function() {
+  'use strict';
   var anchor = this.getAnchor();
   // If the browser gets stuck in a link if we place the cursor next to it,
   // we'll place the cursor after a space instead.
@@ -219,6 +219,7 @@ goog.editor.Link.prototype.placeCursorRightOf = function() {
  * @private
  */
 goog.editor.Link.prototype.updateLinkDisplay_ = function(field, url) {
+  'use strict';
   this.initializeUrl(url);
   this.placeCursorRightOf();
   field.execCommand(goog.editor.Command.UPDATE_LINK_BUBBLE);
@@ -231,6 +232,7 @@ goog.editor.Link.prototype.updateLinkDisplay_ = function(field, url) {
  *     a valid link address.
  */
 goog.editor.Link.prototype.getValidLinkFromText = function() {
+  'use strict';
   var text = goog.string.trim(this.getCurrentText());
   if (goog.editor.Link.isLikelyUrl(text)) {
     if (text.search(/:/) < 0) {
@@ -250,6 +252,7 @@ goog.editor.Link.prototype.getValidLinkFromText = function() {
  * @param {goog.editor.Field} field The field where this link is being created.
  */
 goog.editor.Link.prototype.finishLinkCreation = function(field) {
+  'use strict';
   var linkFromText = this.getValidLinkFromText();
   if (linkFromText) {
     this.updateLinkDisplay_(field, linkFromText);
@@ -270,6 +273,7 @@ goog.editor.Link.prototype.finishLinkCreation = function(field) {
  */
 goog.editor.Link.createNewLink = function(
     anchor, url, opt_target, opt_extraAnchors) {
+  'use strict';
   var link = new goog.editor.Link(anchor, true);
   link.initializeUrl(url);
 
@@ -292,6 +296,7 @@ goog.editor.Link.createNewLink = function(
  * @return {!goog.editor.Link} The link.
  */
 goog.editor.Link.createNewLinkFromText = function(anchor, opt_target) {
+  'use strict';
   var link = new goog.editor.Link(anchor, true);
   var text = link.getValidLinkFromText();
   link.initializeUrl(text ? text : '');
@@ -312,6 +317,7 @@ goog.editor.Link.createNewLinkFromText = function(anchor, opt_target) {
  * @return {boolean} Whether str could be a URL.
  */
 goog.editor.Link.isLikelyUrl = function(str) {
+  'use strict';
   // Whitespace means this isn't a domain.
   if (/\s/.test(str)) {
     return false;
@@ -340,7 +346,8 @@ goog.editor.Link.isLikelyUrl = function(str) {
   // Require domains to contain a '.', unless the domain is fully qualified and
   // forbids domains from containing invalid characters.
   var domain = parts[goog.uri.utils.ComponentIndex.DOMAIN];
-  if (!domain || (addedScheme && domain.indexOf('.') == -1) ||
+  if (!domain ||
+      (addedScheme && (domain.indexOf('.') === -1 || domain.length < 3)) ||
       (/[^\w\d\-\u0100-\uffff.%]/.test(domain))) {
     return false;
   }
@@ -376,6 +383,7 @@ goog.editor.Link.LIKELY_EMAIL_ADDRESS_ = new RegExp(
  * @return {boolean} Whether "str" looks like an email address.
  */
 goog.editor.Link.isLikelyEmailAddress = function(str) {
+  'use strict';
   return goog.editor.Link.LIKELY_EMAIL_ADDRESS_.test(str);
 };
 
@@ -386,5 +394,6 @@ goog.editor.Link.isLikelyEmailAddress = function(str) {
  * @return {boolean} Whether the url is a mailto link.
  */
 goog.editor.Link.isMailto = function(url) {
+  'use strict';
   return !!url && goog.string.startsWith(url, 'mailto:');
 };

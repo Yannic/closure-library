@@ -1,16 +1,8 @@
-// Copyright 2007 The Closure Library Authors. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS-IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+/**
+ * @license
+ * Copyright The Closure Library Authors.
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
 /**
  * @fileoverview Browser history stack management class.
@@ -41,7 +33,6 @@
  *   <li>Safari 4+
  * </ul>
  *
- * @author brenneman@google.com (Shawn Brenneman)
  * @see ../demos/history1.html
  * @see ../demos/history2.html
  */
@@ -176,11 +167,13 @@ goog.require('goog.history.Event');
 goog.require('goog.history.EventType');
 goog.require('goog.html.SafeHtml');
 goog.require('goog.html.TrustedResourceUrl');
+goog.require('goog.html.uncheckedconversions');
 goog.require('goog.labs.userAgent.device');
 goog.require('goog.memoize');
 goog.require('goog.string');
 goog.require('goog.string.Const');
 goog.require('goog.userAgent');
+goog.requireType('goog.events.BrowserEvent');
 
 
 
@@ -231,10 +224,12 @@ goog.require('goog.userAgent');
  */
 goog.History = function(
     opt_invisible, opt_blankPageUrl, opt_input, opt_iframe) {
+  'use strict';
   goog.events.EventTarget.call(this);
 
   if (opt_invisible && !opt_blankPageUrl) {
-    throw Error('Can\'t use invisible history without providing a blank page.');
+    throw new Error(
+        'Can\'t use invisible history without providing a blank page.');
   }
 
   var input;
@@ -421,6 +416,7 @@ goog.History.prototype.lastToken_ = null;
  * @return {boolean} Whether onhashchange is supported.
  */
 goog.History.isOnHashChangeSupported = goog.memoize(function() {
+  'use strict';
   return goog.userAgent.IE ? goog.userAgent.isDocumentModeOrHigher(8) :
                              'onhashchange' in goog.global;
 });
@@ -456,6 +452,7 @@ goog.History.prototype.lockedToken_ = null;
 
 /** @override */
 goog.History.prototype.disposeInternal = function() {
+  'use strict';
   goog.History.superClass_.disposeInternal.call(this);
   this.eventHandler_.dispose();
   this.setEnabled(false);
@@ -475,7 +472,7 @@ goog.History.prototype.disposeInternal = function() {
  * @param {boolean} enable Whether to enable the history polling loop.
  */
 goog.History.prototype.setEnabled = function(enable) {
-
+  'use strict';
   if (enable == this.enabled_) {
     return;
   }
@@ -501,7 +498,7 @@ goog.History.prototype.setEnabled = function(enable) {
       this.eventHandler_.listen(this.window_, 'pageshow', this.onShow_);
     }
 
-    // TODO(user): make HTML5 and invisible history work by listening to the
+    // TODO(goto): make HTML5 and invisible history work by listening to the
     // iframe # changes instead of the window.
     if (goog.History.isOnHashChangeSupported() && this.userVisible_) {
       this.eventHandler_.listen(
@@ -547,6 +544,7 @@ goog.History.prototype.setEnabled = function(enable) {
  * @protected
  */
 goog.History.prototype.onDocumentLoaded = function() {
+  'use strict';
   this.documentLoaded = true;
 
   if (this.hiddenInput_.value) {
@@ -567,6 +565,7 @@ goog.History.prototype.onDocumentLoaded = function() {
  * @private
  */
 goog.History.prototype.onShow_ = function(e) {
+  'use strict';
   // NOTE(user): persisted is a property passed in the pageshow event that
   // indicates whether the page is being persisted from the cache or is being
   // loaded for the first time.
@@ -581,11 +580,12 @@ goog.History.prototype.onShow_ = function(e) {
  * Handles HTML5 onhashchange events on browsers where it is supported.
  * This is very similar to {@link #check_}, except that it is not executed
  * continuously. It is only used when
- * {@code goog.History.isOnHashChangeSupported()} is true.
+ * `goog.History.isOnHashChangeSupported()` is true.
  * @param {goog.events.BrowserEvent} e The browser event.
  * @private
  */
 goog.History.prototype.onHashChange_ = function(e) {
+  'use strict';
   var hash = this.getLocationFragment_(this.window_);
   if (hash != this.lastToken_) {
     this.update_(hash, true);
@@ -597,6 +597,7 @@ goog.History.prototype.onHashChange_ = function(e) {
  * @return {string} The current token.
  */
 goog.History.prototype.getToken = function() {
+  'use strict';
   if (this.lockedToken_ != null) {
     return this.lockedToken_;
   } else if (this.userVisible_) {
@@ -618,6 +619,7 @@ goog.History.prototype.getToken = function() {
  *     title in IE.
  */
 goog.History.prototype.setToken = function(token, opt_title) {
+  'use strict';
   this.setHistoryState_(token, false, opt_title);
 };
 
@@ -630,6 +632,7 @@ goog.History.prototype.setToken = function(token, opt_title) {
  *     title in IE.
  */
 goog.History.prototype.replaceToken = function(token, opt_title) {
+  'use strict';
   this.setHistoryState_(token, true, opt_title);
 };
 
@@ -644,6 +647,7 @@ goog.History.prototype.replaceToken = function(token, opt_title) {
  * @private
  */
 goog.History.prototype.getLocationFragment_ = function(win) {
+  'use strict';
   var href = win.location.href;
   var index = href.indexOf('#');
   return index < 0 ? '' : href.substring(index + 1);
@@ -664,6 +668,7 @@ goog.History.prototype.getLocationFragment_ = function(win) {
  * @private
  */
 goog.History.prototype.setHistoryState_ = function(token, replace, opt_title) {
+  'use strict';
   if (this.getToken() != token) {
     if (this.userVisible_) {
       this.setHash_(token, replace);
@@ -715,6 +720,7 @@ goog.History.prototype.setHistoryState_ = function(token, replace, opt_title) {
  * @private
  */
 goog.History.prototype.setHash_ = function(token, opt_replace) {
+  'use strict';
   // If the page uses a BASE element, setting location.hash directly will
   // navigate away from the current document. Also, the original URL path may
   // possibly change from HTML5 history pushState. To account for these, the
@@ -731,10 +737,14 @@ goog.History.prototype.setHash_ = function(token, opt_replace) {
   }
 
   if (url != loc.href) {
+    var safeUrl =
+        goog.html.uncheckedconversions
+            .safeUrlFromStringKnownToSatisfyTypeContract(
+                goog.string.Const.from('URL taken from location.href.'), url);
     if (opt_replace) {
-      loc.replace(url);
+      goog.dom.safe.replaceLocation(loc, safeUrl);
     } else {
-      loc.href = url;
+      goog.dom.safe.setLocationHref(loc, safeUrl);
     }
   }
 };
@@ -756,6 +766,7 @@ goog.History.prototype.setHash_ = function(token, opt_replace) {
  */
 goog.History.prototype.setIframeToken_ = function(
     token, opt_replace, opt_title) {
+  'use strict';
   if (this.unsetIframe_ || token != this.getIframeToken_()) {
     this.unsetIframe_ = false;
     token = goog.string.urlEncode(token);
@@ -786,9 +797,9 @@ goog.History.prototype.setIframeToken_ = function(
       var contentWindow = this.iframe_.contentWindow;
       if (contentWindow) {
         if (opt_replace) {
-          contentWindow.location.replace(url);
+          goog.dom.safe.replaceLocation(contentWindow.location, url);
         } else {
-          contentWindow.location.href = url;
+          goog.dom.safe.setLocationHref(contentWindow.location, url);
         }
       }
     }
@@ -809,6 +820,7 @@ goog.History.prototype.setIframeToken_ = function(
  * @private
  */
 goog.History.prototype.getIframeToken_ = function() {
+  'use strict';
   if (goog.userAgent.IE) {
     var doc = goog.dom.getFrameContentDocument(this.iframe_);
     return doc.body ? goog.string.urlDecode(doc.body.innerHTML) : null;
@@ -818,13 +830,13 @@ goog.History.prototype.getIframeToken_ = function() {
     var contentWindow = this.iframe_.contentWindow;
     if (contentWindow) {
       var hash;
-      /** @preserveTry */
+
       try {
         // Iframe tokens are urlEncoded
         hash = goog.string.urlDecode(this.getLocationFragment_(contentWindow));
       } catch (e) {
         // An exception will be thrown if the location of the iframe can not be
-        // accessed (permission denied). This can occur in FF if the the server
+        // accessed (permission denied). This can occur in FF if the server
         // that is hosting the blank html page goes down and then a new history
         // token is set. The iframe will navigate to an error page, and the
         // location of the iframe can no longer be accessed. Due to the polling,
@@ -857,14 +869,15 @@ goog.History.prototype.getIframeToken_ = function() {
 
 /**
  * Checks the state of the document fragment and the iframe title to detect
- * navigation changes. If {@code goog.HistoryisOnHashChangeSupported()} is
- * {@code false}, then this runs approximately twenty times per second.
+ * navigation changes. If `goog.HistoryisOnHashChangeSupported()` is
+ * `false`, then this runs approximately twenty times per second.
  * @param {boolean} isNavigation True if the event was initiated by a browser
  *     action, false if it was caused by a setToken call. See
  *     {@link goog.history.Event}.
  * @private
  */
 goog.History.prototype.check_ = function(isNavigation) {
+  'use strict';
   if (this.userVisible_) {
     var hash = this.getLocationFragment_(this.window_);
     if (hash != this.lastToken_) {
@@ -896,6 +909,7 @@ goog.History.prototype.check_ = function(isNavigation) {
  * @private
  */
 goog.History.prototype.update_ = function(token, isNavigation) {
+  'use strict';
   this.lastToken_ = this.hiddenInput_.value = token;
 
   if (this.userVisible_) {
@@ -919,6 +933,7 @@ goog.History.prototype.update_ = function(token, isNavigation) {
  * @private
  */
 goog.History.prototype.setLongerPolling_ = function(longerPolling) {
+  'use strict';
   if (this.longerPolling_ != longerPolling) {
     this.timer_.setInterval(
         longerPolling ? goog.History.PollingType.LONG :
@@ -941,6 +956,7 @@ goog.History.prototype.setLongerPolling_ = function(longerPolling) {
  * @private
  */
 goog.History.prototype.operaDefibrillator_ = function() {
+  'use strict';
   this.timer_.stop();
   this.timer_.start();
 };
@@ -988,8 +1004,6 @@ goog.History.EventType = goog.history.EventType;
 
 /**
  * Constant for the history change event type.
- * @param {string} token The string identifying the new history state.
- * @extends {goog.events.Event}
  * @constructor
  * @deprecated Use goog.history.Event.
  * @final

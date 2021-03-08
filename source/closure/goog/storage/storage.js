@@ -1,27 +1,19 @@
-// Copyright 2011 The Closure Library Authors. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS-IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+/**
+ * @license
+ * Copyright The Closure Library Authors.
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
 /**
  * @fileoverview Provides a convenient API for data persistence using a selected
  * data storage mechanism.
- *
  */
 
 goog.provide('goog.storage.Storage');
 
 goog.require('goog.json');
 goog.require('goog.storage.ErrorCode');
+goog.requireType('goog.storage.mechanism.Mechanism');
 
 
 
@@ -34,6 +26,7 @@ goog.require('goog.storage.ErrorCode');
  * @struct
  */
 goog.storage.Storage = function(mechanism) {
+  'use strict';
   /**
    * The mechanism used to persist key-value pairs.
    *
@@ -50,7 +43,8 @@ goog.storage.Storage = function(mechanism) {
  * @param {*} value The value to serialize to a string and save.
  */
 goog.storage.Storage.prototype.set = function(key, value) {
-  if (!goog.isDef(value)) {
+  'use strict';
+  if (value === undefined) {
     this.mechanism.remove(key);
     return;
   }
@@ -65,6 +59,7 @@ goog.storage.Storage.prototype.set = function(key, value) {
  * @return {*} Deserialized value or undefined if not found.
  */
 goog.storage.Storage.prototype.get = function(key) {
+  'use strict';
   var json;
   try {
     json = this.mechanism.get(key);
@@ -75,12 +70,12 @@ goog.storage.Storage.prototype.get = function(key) {
     // details.
     return undefined;
   }
-  if (goog.isNull(json)) {
+  if (json === null) {
     return undefined;
   }
-  /** @preserveTry */
+
   try {
-    return goog.json.parse(json);
+    return JSON.parse(json);
   } catch (e) {
     throw goog.storage.ErrorCode.INVALID_VALUE;
   }
@@ -93,5 +88,6 @@ goog.storage.Storage.prototype.get = function(key) {
  * @param {string} key The key to remove.
  */
 goog.storage.Storage.prototype.remove = function(key) {
+  'use strict';
   this.mechanism.remove(key);
 };

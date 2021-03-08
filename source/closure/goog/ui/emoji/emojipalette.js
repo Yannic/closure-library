@@ -1,16 +1,8 @@
-// Copyright 2007 The Closure Library Authors. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS-IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+/**
+ * @license
+ * Copyright The Closure Library Authors.
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
 /**
  * @fileoverview Emoji Palette implementation. This provides a UI widget for
@@ -21,7 +13,6 @@
  * an emoji picker.
  *
  * Based on goog.ui.ColorPicker (colorpicker.js).
- *
  */
 
 goog.provide('goog.ui.emoji.EmojiPalette');
@@ -31,6 +22,9 @@ goog.require('goog.net.ImageLoader');
 goog.require('goog.ui.Palette');
 goog.require('goog.ui.emoji.Emoji');
 goog.require('goog.ui.emoji.EmojiPaletteRenderer');
+goog.requireType('goog.dom.DomHelper');
+goog.requireType('goog.events.Event');
+goog.requireType('goog.ui.PaletteRenderer');
 
 
 
@@ -48,6 +42,7 @@ goog.require('goog.ui.emoji.EmojiPaletteRenderer');
  */
 goog.ui.emoji.EmojiPalette = function(
     emoji, opt_urlPrefix, opt_renderer, opt_domHelper) {
+  'use strict';
   goog.ui.Palette.call(
       this, null, opt_renderer || new goog.ui.emoji.EmojiPaletteRenderer(null),
       opt_domHelper);
@@ -136,6 +131,7 @@ goog.ui.emoji.EmojiPalette.prototype.imageLoader_;
  */
 goog.ui.emoji.EmojiPalette.prototype.getEmojiArrayFromProperties_ = function(
     emojiGroup) {
+  'use strict';
   var emojiItems = [];
 
   for (var i = 0; i < emojiGroup.length; i++) {
@@ -174,6 +170,7 @@ goog.ui.emoji.EmojiPalette.prototype.getEmojiArrayFromProperties_ = function(
  * sprites when the images are done downloading.
  */
 goog.ui.emoji.EmojiPalette.prototype.loadAnimatedEmoji = function() {
+  'use strict';
   if (this.animatedEmoji_.length > 0) {
     for (var i = 0; i < this.animatedEmoji_.length; i++) {
       var emoji =
@@ -197,6 +194,7 @@ goog.ui.emoji.EmojiPalette.prototype.loadAnimatedEmoji = function() {
  * @private
  */
 goog.ui.emoji.EmojiPalette.prototype.handleImageLoad_ = function(e) {
+  'use strict';
   var id = e.target.id;
   var url = e.target.src;
   // Just to be safe, we check to make sure we have an id and src url from
@@ -216,12 +214,14 @@ goog.ui.emoji.EmojiPalette.prototype.handleImageLoad_ = function(e) {
  * @return {goog.net.ImageLoader} the image loader.
  */
 goog.ui.emoji.EmojiPalette.prototype.getImageLoader = function() {
+  'use strict';
   return this.imageLoader_;
 };
 
 
 /** @override */
 goog.ui.emoji.EmojiPalette.prototype.disposeInternal = function() {
+  'use strict';
   goog.ui.emoji.EmojiPalette.superClass_.disposeInternal.call(this);
 
   if (this.imageLoader_) {
@@ -245,6 +245,7 @@ goog.ui.emoji.EmojiPalette.prototype.disposeInternal = function() {
  * @private
  */
 goog.ui.emoji.EmojiPalette.prototype.getGoomojiIdFromElement_ = function(el) {
+  'use strict';
   if (!el) {
     return null;
   }
@@ -263,6 +264,7 @@ goog.ui.emoji.EmojiPalette.prototype.getGoomojiIdFromElement_ = function(el) {
  * @return {goog.ui.emoji.Emoji} The currently selected emoji from this palette.
  */
 goog.ui.emoji.EmojiPalette.prototype.getSelectedEmoji = function() {
+  'use strict';
   var elem = /** @type {Element} */ (this.getSelectedItem());
   var goomojiId = this.getGoomojiIdFromElement_(elem);
   return this.emojiCells_[goomojiId];
@@ -273,6 +275,7 @@ goog.ui.emoji.EmojiPalette.prototype.getSelectedEmoji = function() {
  * @return {number} The number of emoji managed by this palette.
  */
 goog.ui.emoji.EmojiPalette.prototype.getNumberOfEmoji = function() {
+  'use strict';
   return this.emojiCells_.length;
 };
 
@@ -284,5 +287,6 @@ goog.ui.emoji.EmojiPalette.prototype.getNumberOfEmoji = function() {
  * @return {number} The index of the specified emoji within this palette.
  */
 goog.ui.emoji.EmojiPalette.prototype.getEmojiIndex = function(id) {
+  'use strict';
   return this.emojiMap_[id];
 };

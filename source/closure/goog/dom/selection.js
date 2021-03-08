@@ -1,22 +1,13 @@
-// Copyright 2006 The Closure Library Authors. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS-IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+/**
+ * @license
+ * Copyright The Closure Library Authors.
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
 /**
  * @fileoverview Utilities for working with selections in input boxes and text
  * areas.
  *
- * @author arv@google.com (Erik Arvidsson)
  * @see ../demos/dom_selection.html
  */
 
@@ -35,9 +26,10 @@ goog.require('goog.userAgent');
  * @param {number} pos The position to set the start of the selection at.
  */
 goog.dom.selection.setStart = function(textfield, pos) {
+  'use strict';
   if (goog.dom.selection.useSelectionProperties_(textfield)) {
     textfield.selectionStart = pos;
-  } else if (goog.userAgent.IE) {
+  } else if (goog.dom.selection.isLegacyIe_()) {
     // destructuring assignment would have been sweet
     var tmp = goog.dom.selection.getRangeIe_(textfield);
     var range = tmp[0];
@@ -64,6 +56,7 @@ goog.dom.selection.setStart = function(textfield, pos) {
  *     one where it starts at 0.
  */
 goog.dom.selection.getStart = function(textfield) {
+  'use strict';
   return goog.dom.selection.getEndPoints_(textfield, true)[0];
 };
 
@@ -89,6 +82,7 @@ goog.dom.selection.getStart = function(textfield) {
  */
 goog.dom.selection.getEndPointsTextareaIe_ = function(
     range, selRange, getOnlyStart) {
+  'use strict';
   // Create a duplicate of the selected range object to perform our actions
   // against. Example of selectionRange = "" (assuming that the cursor is
   // just after the \r\n combination)
@@ -178,6 +172,7 @@ goog.dom.selection.getEndPointsTextareaIe_ = function(
  *     it starts and ends at 0.
  */
 goog.dom.selection.getEndPoints = function(textfield) {
+  'use strict';
   return goog.dom.selection.getEndPoints_(textfield, false);
 };
 
@@ -199,13 +194,14 @@ goog.dom.selection.getEndPoints = function(textfield) {
  * @private
  */
 goog.dom.selection.getEndPoints_ = function(textfield, getOnlyStart) {
+  'use strict';
   textfield = /** @type {!HTMLInputElement|!HTMLTextAreaElement} */ (textfield);
   var startPos = 0;
   var endPos = 0;
   if (goog.dom.selection.useSelectionProperties_(textfield)) {
     startPos = textfield.selectionStart;
     endPos = getOnlyStart ? -1 : textfield.selectionEnd;
-  } else if (goog.userAgent.IE) {
+  } else if (goog.dom.selection.isLegacyIe_()) {
     var tmp = goog.dom.selection.getRangeIe_(textfield);
     var range = tmp[0];
     var selectionRange = tmp[1];
@@ -235,9 +231,10 @@ goog.dom.selection.getEndPoints_ = function(textfield, getOnlyStart) {
  * @param {number} pos The position to end the selection at.
  */
 goog.dom.selection.setEnd = function(textfield, pos) {
+  'use strict';
   if (goog.dom.selection.useSelectionProperties_(textfield)) {
     textfield.selectionEnd = pos;
-  } else if (goog.userAgent.IE) {
+  } else if (goog.dom.selection.isLegacyIe_()) {
     var tmp = goog.dom.selection.getRangeIe_(textfield);
     var range = tmp[0];
     var selectionRange = tmp[1];
@@ -264,6 +261,7 @@ goog.dom.selection.setEnd = function(textfield, pos) {
  *     unable to find the position or no selection exists.
  */
 goog.dom.selection.getEnd = function(textfield) {
+  'use strict';
   return goog.dom.selection.getEndPoints_(textfield, false)[1];
 };
 
@@ -274,12 +272,13 @@ goog.dom.selection.getEnd = function(textfield) {
  * @param {number} pos The position within the text field.
  */
 goog.dom.selection.setCursorPosition = function(textfield, pos) {
+  'use strict';
   if (goog.dom.selection.useSelectionProperties_(textfield)) {
     // Mozilla directly supports this
     textfield.selectionStart = pos;
     textfield.selectionEnd = pos;
 
-  } else if (goog.userAgent.IE) {
+  } else if (goog.dom.selection.isLegacyIe_()) {
     pos = goog.dom.selection.canonicalizePositionIe_(textfield, pos);
 
     // IE has textranges. A textfield's textrange encompasses the
@@ -299,6 +298,7 @@ goog.dom.selection.setCursorPosition = function(textfield, pos) {
  * @param {string} text The text to change the selection to.
  */
 goog.dom.selection.setText = function(textfield, text) {
+  'use strict';
   textfield = /** @type {!HTMLInputElement|!HTMLTextAreaElement} */ (textfield);
   if (goog.dom.selection.useSelectionProperties_(textfield)) {
     var value = textfield.value;
@@ -308,7 +308,7 @@ goog.dom.selection.setText = function(textfield, text) {
     textfield.value = before + text + after;
     textfield.selectionStart = oldSelectionStart;
     textfield.selectionEnd = oldSelectionStart + text.length;
-  } else if (goog.userAgent.IE) {
+  } else if (goog.dom.selection.isLegacyIe_()) {
     var tmp = goog.dom.selection.getRangeIe_(textfield);
     var range = tmp[0];
     var selectionRange = tmp[1];
@@ -325,7 +325,7 @@ goog.dom.selection.setText = function(textfield, text) {
     selectionRange.setEndPoint('StartToStart', range2);
     selectionRange.select();
   } else {
-    throw Error('Cannot set the selection end');
+    throw new Error('Cannot set the selection end');
   }
 };
 
@@ -336,13 +336,14 @@ goog.dom.selection.setText = function(textfield, text) {
  * @return {string} The selected text.
  */
 goog.dom.selection.getText = function(textfield) {
+  'use strict';
   textfield = /** @type {!HTMLInputElement|!HTMLTextAreaElement} */ (textfield);
   if (goog.dom.selection.useSelectionProperties_(textfield)) {
     var s = textfield.value;
     return s.substring(textfield.selectionStart, textfield.selectionEnd);
   }
 
-  if (goog.userAgent.IE) {
+  if (goog.dom.selection.isLegacyIe_()) {
     var tmp = goog.dom.selection.getRangeIe_(textfield);
     var range = tmp[0];
     var selectionRange = tmp[1];
@@ -355,7 +356,7 @@ goog.dom.selection.getText = function(textfield) {
     return selectionRange.text;
   }
 
-  throw Error('Cannot get the selection text');
+  throw new Error('Cannot get the selection text');
 };
 
 
@@ -369,6 +370,7 @@ goog.dom.selection.getText = function(textfield) {
  * @private
  */
 goog.dom.selection.getSelectionRangeText_ = function(selRange) {
+  'use strict';
   // Create a duplicate of the selected range object to perform our actions
   // against. Suppose the text in the textarea is "Hello\r\nWorld" and the
   // selection encompasses the "o\r\n" bit, initial selectionRange will be "o"
@@ -418,6 +420,7 @@ goog.dom.selection.getSelectionRangeText_ = function(selRange) {
  *     element array.
  */
 goog.dom.selection.getRangeIe_ = function(el) {
+  'use strict';
   var doc = el.ownerDocument || el.document;
 
   var selectionRange = doc.selection.createRange();
@@ -446,6 +449,7 @@ goog.dom.selection.getRangeIe_ = function(el) {
  *     move('character', pos).
  */
 goog.dom.selection.canonicalizePositionIe_ = function(textfield, pos) {
+  'use strict';
   textfield = /** @type {!HTMLTextAreaElement} */ (textfield);
   if (textfield.type == goog.dom.InputType.TEXTAREA) {
     // We do this only for textarea because it is the only one which can
@@ -463,10 +467,11 @@ goog.dom.selection.canonicalizePositionIe_ = function(textfield, pos) {
  *
  * @param {Element} el The element to check for.
  * @return {boolean} Whether it's okay to use the selectionStart and
- *     selectionEnd properties on {@code el}.
+ *     selectionEnd properties on `el`.
  * @private
  */
 goog.dom.selection.useSelectionProperties_ = function(el) {
+  'use strict';
   try {
     return typeof el.selectionStart == 'number';
   } catch (e) {
@@ -474,4 +479,19 @@ goog.dom.selection.useSelectionProperties_ = function(el) {
     // on an element with display: none.
     return false;
   }
+};
+
+
+/**
+ * Whether the client is legacy IE which does not support
+ * selectionStart/selectionEnd properties of a text input element.
+ *
+ * @see https://msdn.microsoft.com/en-us/library/ff974768(v=vs.85).aspx
+ *
+ * @return {boolean} Whether the client is a legacy version of IE.
+ * @private
+ */
+goog.dom.selection.isLegacyIe_ = function() {
+  'use strict';
+  return goog.userAgent.IE && !goog.userAgent.isVersionOrHigher('9');
 };

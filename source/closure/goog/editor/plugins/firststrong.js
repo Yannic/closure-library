@@ -1,16 +1,8 @@
-// Copyright 2012 The Closure Library Authors. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS-IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+/**
+ * @license
+ * Copyright The Closure Library Authors.
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
 /**
  * @fileoverview A plugin to enable the First Strong Bidi algorithm.  The First
@@ -34,9 +26,8 @@
  *
  * <em>Please note</em> that this plugin does not perform the direction change
  * itself. Rather, it fires editor commands upon the key up event when a
- * direction change needs to be performed; {@code goog.editor.Command.DIR_RTL}
- * or {@code goog.editor.Command.DIR_RTL}.
- *
+ * direction change needs to be performed; `goog.editor.Command.DIR_RTL`
+ * or `goog.editor.Command.DIR_RTL`.
  */
 
 goog.provide('goog.editor.plugins.FirstStrong');
@@ -63,6 +54,7 @@ goog.require('goog.userAgent');
  * @final
  */
 goog.editor.plugins.FirstStrong = function() {
+  'use strict';
   goog.editor.plugins.FirstStrong.base(this, 'constructor');
 
   /**
@@ -99,6 +91,7 @@ goog.inherits(goog.editor.plugins.FirstStrong, goog.editor.Plugin);
 
 /** @override */
 goog.editor.plugins.FirstStrong.prototype.getTrogClassId = function() {
+  'use strict';
   return 'FirstStrong';
 };
 
@@ -106,6 +99,7 @@ goog.editor.plugins.FirstStrong.prototype.getTrogClassId = function() {
 /** @override */
 goog.editor.plugins.FirstStrong.prototype.queryCommandValue = function(
     command) {
+  'use strict';
   return false;
 };
 
@@ -113,6 +107,7 @@ goog.editor.plugins.FirstStrong.prototype.queryCommandValue = function(
 /** @override */
 goog.editor.plugins.FirstStrong.prototype.handleSelectionChange = function(
     e, node) {
+  'use strict';
   this.isNewBlock_ = true;
   return false;
 };
@@ -129,6 +124,7 @@ goog.editor.plugins.FirstStrong.INPUT_ATTRIBUTE = 'fs-input';
 
 /** @override */
 goog.editor.plugins.FirstStrong.prototype.handleKeyPress = function(e) {
+  'use strict';
   if (goog.editor.Field.SELECTION_CHANGE_KEYCODES[e.keyCode]) {
     // Key triggered selection change event (e.g. on ENTER) is throttled and a
     // later LTR/RTL strong keypress may come before it. Need to capture it.
@@ -190,6 +186,7 @@ goog.editor.plugins.FirstStrong.prototype.handleKeyPress = function(e) {
  * @override
  */
 goog.editor.plugins.FirstStrong.prototype.handleKeyUp = function(e) {
+  'use strict';
   if (this.switchToRtl_) {
     var field = this.getFieldObject();
     field.dispatchChange(true);
@@ -211,6 +208,7 @@ goog.editor.plugins.FirstStrong.prototype.handleKeyUp = function(e) {
  * @private
  */
 goog.editor.plugins.FirstStrong.prototype.getBlockAncestor_ = function() {
+  'use strict';
   var start = this.getFieldObject().getRange().getStartNode();
   // Go up in the DOM until we reach a Block element.
   while (!goog.editor.plugins.FirstStrong.isBlock_(start)) {
@@ -226,6 +224,7 @@ goog.editor.plugins.FirstStrong.prototype.getBlockAncestor_ = function() {
  * @private
  */
 goog.editor.plugins.FirstStrong.prototype.isNeutralBlock_ = function() {
+  'use strict';
   var root = this.getBlockAncestor_();
   // The exact node with the cursor location. Simply calling getStartNode() on
   // the range only returns the containing block node.
@@ -240,7 +239,7 @@ goog.editor.plugins.FirstStrong.prototype.isNeutralBlock_ = function() {
       goog.editor.plugins.FirstStrong.isGeckoBlock_ :
       goog.editor.plugins.FirstStrong.isBlock_;
   var paragraph = this.getTextAround_(root, cursor, blockFunction);
-  // Not using {@code goog.i18n.bidi.isNeutralText} as it contains additional,
+  // Not using `goog.i18n.bidi.isNeutralText` as it contains additional,
   // unwanted checks to the content.
   return !goog.i18n.bidi.hasAnyLtr(paragraph) &&
       !goog.i18n.bidi.hasAnyRtl(paragraph);
@@ -255,6 +254,7 @@ goog.editor.plugins.FirstStrong.prototype.isNeutralBlock_ = function() {
  * @private
  */
 goog.editor.plugins.FirstStrong.prototype.isList_ = function(element) {
+  'use strict';
   if (!element) {
     return false;
   }
@@ -279,6 +279,7 @@ goog.editor.plugins.FirstStrong.prototype.isList_ = function(element) {
  */
 goog.editor.plugins.FirstStrong.prototype.getTextAround_ = function(
     root, cursorLocation, isParagraphBoundary) {
+  'use strict';
   // The buffer where we're collecting the text.
   var buffer = [];
   // Have we reached the cursor yet, or are we still before it?
@@ -286,6 +287,7 @@ goog.editor.plugins.FirstStrong.prototype.getTextAround_ = function(
 
   if (root && cursorLocation) {
     goog.iter.some(new goog.dom.TagIterator(root), function(node) {
+      'use strict';
       if (node == cursorLocation) {
         pastCursorLocation = true;
       } else if (isParagraphBoundary(node)) {
@@ -315,6 +317,7 @@ goog.editor.plugins.FirstStrong.prototype.getTextAround_ = function(
  * @private
  */
 goog.editor.plugins.FirstStrong.isBlock_ = function(node) {
+  'use strict';
   return !!node && goog.editor.node.isBlockTag(node) &&
       /** @type {!Element} */ (node).tagName != goog.dom.TagName.LI;
 };
@@ -328,6 +331,7 @@ goog.editor.plugins.FirstStrong.isBlock_ = function(node) {
  * @private
  */
 goog.editor.plugins.FirstStrong.isGeckoBlock_ = function(node) {
+  'use strict';
   return !!node &&
       (/** @type {!Element} */ (node).tagName == goog.dom.TagName.BR ||
        goog.editor.plugins.FirstStrong.isBlock_(node));

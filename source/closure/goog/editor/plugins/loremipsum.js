@@ -1,23 +1,13 @@
-// Copyright 2008 The Closure Library Authors. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS-IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+/**
+ * @license
+ * Copyright The Closure Library Authors.
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
 /**
  * @fileoverview A plugin that fills the field with lorem ipsum text when it's
  * empty and does not have the focus. Applies to both editable and uneditable
  * fields.
- *
- * @author nicksantos@google.com (Nick Santos)
  */
 
 goog.provide('goog.editor.plugins.LoremIpsum');
@@ -29,6 +19,7 @@ goog.require('goog.editor.Field');
 goog.require('goog.editor.Plugin');
 goog.require('goog.editor.node');
 goog.require('goog.functions');
+goog.require('goog.html.SafeHtml');
 goog.require('goog.userAgent');
 
 
@@ -41,6 +32,7 @@ goog.require('goog.userAgent');
  * @final
  */
 goog.editor.plugins.LoremIpsum = function(message) {
+  'use strict';
   goog.editor.Plugin.call(this);
 
   /**
@@ -78,6 +70,7 @@ goog.editor.plugins.LoremIpsum.prototype.usingLorem_ = false;
  * @override
  */
 goog.editor.plugins.LoremIpsum.prototype.queryCommandValue = function(command) {
+  'use strict';
   return command == goog.editor.Command.USING_LOREM && this.usingLorem_;
 };
 
@@ -92,6 +85,7 @@ goog.editor.plugins.LoremIpsum.prototype.queryCommandValue = function(command) {
  */
 goog.editor.plugins.LoremIpsum.prototype.execCommand = function(
     command, opt_placeCursor) {
+  'use strict';
   if (command == goog.editor.Command.CLEAR_LOREM) {
     this.clearLorem_(!!opt_placeCursor);
   } else if (command == goog.editor.Command.UPDATE_LOREM) {
@@ -103,6 +97,7 @@ goog.editor.plugins.LoremIpsum.prototype.execCommand = function(
 /** @override */
 goog.editor.plugins.LoremIpsum.prototype.isSupportedCommand = function(
     command) {
+  'use strict';
   return command == goog.editor.Command.CLEAR_LOREM ||
       command == goog.editor.Command.UPDATE_LOREM ||
       command == goog.editor.Command.USING_LOREM;
@@ -112,8 +107,10 @@ goog.editor.plugins.LoremIpsum.prototype.isSupportedCommand = function(
 /**
  * Set the lorem ipsum text in a goog.editor.Field if needed.
  * @private
+ * @suppress {strictMissingProperties} Part of the go/strict_warnings_migration
  */
 goog.editor.plugins.LoremIpsum.prototype.updateLorem_ = function() {
+  'use strict';
   // Try to apply lorem ipsum if:
   // 1) We have lorem ipsum text
   // 2) There's not a dialog open, as that screws
@@ -139,7 +136,9 @@ goog.editor.plugins.LoremIpsum.prototype.updateLorem_ = function() {
       // clear the lorem ipsum style.
       this.oldFontStyle_ = field.style.fontStyle;
       field.style.fontStyle = 'italic';
-      fieldObj.setHtml(true, this.message_, true);
+      fieldObj.setSafeHtml(
+          true, goog.html.SafeHtml.htmlEscapePreservingNewlines(this.message_),
+          true);
     }
   }
 };
@@ -155,9 +154,11 @@ goog.editor.plugins.LoremIpsum.prototype.updateLorem_ = function() {
  * @param {boolean=} opt_placeCursor Whether to place the cursor in the field
  *     after clearing lorem.
  * @private
+ * @suppress {strictMissingProperties} Part of the go/strict_warnings_migration
  */
 goog.editor.plugins.LoremIpsum.prototype.clearLorem_ = function(
     opt_placeCursor) {
+  'use strict';
   // Don't mess with lorem state when a dialog is open as that screws
   // with the dialog's ability to properly restore the selection
   // on dialog close (since the DOM nodes would get clobbered)
@@ -173,7 +174,7 @@ goog.editor.plugins.LoremIpsum.prototype.clearLorem_ = function(
     goog.asserts.assert(field);
     this.usingLorem_ = false;
     field.style.fontStyle = this.oldFontStyle_;
-    fieldObj.setHtml(true, null, true);
+    fieldObj.setSafeHtml(true, null, true);
 
     // TODO(nicksantos): I'm pretty sure that this is a hack, but talk to
     // Julie about why this is necessary and what to do with it. Really,

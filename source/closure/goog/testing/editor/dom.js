@@ -1,25 +1,17 @@
-// Copyright 2009 The Closure Library Authors. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS-IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+/**
+ * @license
+ * Copyright The Closure Library Authors.
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
 /**
  * @fileoverview Testing utilities for editor specific DOM related tests.
- *
  */
 
 goog.setTestOnly('goog.testing.editor.dom');
 goog.provide('goog.testing.editor.dom');
 
+goog.require('goog.dom.AbstractRange');
 goog.require('goog.dom.NodeType');
 goog.require('goog.dom.TagIterator');
 goog.require('goog.dom.TagWalkType');
@@ -45,6 +37,7 @@ goog.require('goog.testing.asserts');
  */
 goog.testing.editor.dom.getPreviousNonEmptyTextNode = function(
     node, opt_stopAt, opt_skipDescendants) {
+  'use strict';
   return goog.testing.editor.dom.getPreviousNextNonEmptyTextNodeHelper_(
       node, opt_stopAt, opt_skipDescendants, true);
 };
@@ -68,6 +61,7 @@ goog.testing.editor.dom.getPreviousNonEmptyTextNode = function(
  */
 goog.testing.editor.dom.getNextNonEmptyTextNode = function(
     node, opt_stopAt, opt_skipDescendants) {
+  'use strict';
   return goog.testing.editor.dom.getPreviousNextNonEmptyTextNodeHelper_(
       node, opt_stopAt, opt_skipDescendants, false);
 };
@@ -96,6 +90,7 @@ goog.testing.editor.dom.getNextNonEmptyTextNode = function(
  */
 goog.testing.editor.dom.getPreviousNextNonEmptyTextNodeHelper_ = function(
     node, opt_stopAt, opt_skipDescendants, opt_isPrevious) {
+  'use strict';
   opt_stopAt = opt_stopAt || node.ownerDocument.body;
   // Initializing the iterator to iterate over the children of opt_stopAt
   // makes it stop only when it finishes iterating through all of that
@@ -150,7 +145,13 @@ goog.testing.editor.dom.getPreviousNextNonEmptyTextNodeHelper_ = function(
  * @private
  */
 goog.testing.editor.dom.isNonEmptyTextNode_ = function(node) {
-  return !!node && node.nodeType == goog.dom.NodeType.TEXT && node.length > 0;
+  'use strict';
+  if (node && node.nodeType == goog.dom.NodeType.TEXT) {
+    node = /** @type {!Text} */ (node);
+    return node.length > 0;
+  }
+
+  return false;
 };
 
 
@@ -168,6 +169,7 @@ goog.testing.editor.dom.isNonEmptyTextNode_ = function(node) {
  * @private
  */
 goog.testing.editor.dom.getRelativeDepth_ = function(node, parentNode) {
+  'use strict';
   var depth = 0;
   while (node) {
     if (node == parentNode) {
@@ -198,6 +200,7 @@ goog.testing.editor.dom.getRelativeDepth_ = function(node, parentNode) {
  */
 goog.testing.editor.dom.assertRangeBetweenText = function(
     before, after, range, opt_stopAt) {
+  'use strict';
   var previousText =
       goog.testing.editor.dom.getTextFollowingRange_(range, true, opt_stopAt);
   if (before == '') {
@@ -246,6 +249,7 @@ goog.testing.editor.dom.assertRangeBetweenText = function(
  */
 goog.testing.editor.dom.getTextFollowingRange_ = function(
     range, isBefore, opt_stopAt) {
+  'use strict';
   var followingTextNode;
   var endpointNode = isBefore ? range.getStartNode() : range.getEndNode();
   var endpointOffset = isBefore ? range.getStartOffset() : range.getEndOffset();

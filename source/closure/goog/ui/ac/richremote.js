@@ -1,16 +1,8 @@
-// Copyright 2007 The Closure Library Authors. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS-IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+/**
+ * @license
+ * Copyright The Closure Library Authors.
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
 /**
  * @fileoverview Factory class to create a rich autocomplete that will match
@@ -57,10 +49,12 @@ goog.require('goog.ui.ac.RichRemoteArrayMatcher');
  * @extends {goog.ui.ac.Remote}
  */
 goog.ui.ac.RichRemote = function(url, input, opt_multi, opt_useSimilar) {
+  'use strict';
   // Create a custom renderer that renders rich rows.  The renderer calls
   // row.render(node, token) for each row.
   var customRenderer = {};
   customRenderer.renderRow = function(row, token, node) {
+    'use strict';
     return row.data.render(node, token);
   };
 
@@ -71,7 +65,6 @@ goog.ui.ac.RichRemote = function(url, input, opt_multi, opt_useSimilar) {
    * @private
    */
   var renderer = new goog.ui.ac.Renderer(null, customRenderer);
-  this.renderer_ = renderer;
 
   /**
    * A remote matcher that parses rich results returned by the server.
@@ -79,7 +72,6 @@ goog.ui.ac.RichRemote = function(url, input, opt_multi, opt_useSimilar) {
    * @private
    */
   var matcher = new goog.ui.ac.RichRemoteArrayMatcher(url, !opt_useSimilar);
-  this.matcher_ = matcher;
 
   /**
    * An input handler that calls select on a row when it is selected.
@@ -103,5 +95,18 @@ goog.inherits(goog.ui.ac.RichRemote, goog.ui.ac.Remote);
  *     a subset of the rows input array.
  */
 goog.ui.ac.RichRemote.prototype.setRowFilter = function(rowFilter) {
+  'use strict';
   this.matcher_.setRowFilter(rowFilter);
+};
+
+
+/**
+ * Sets the function building the rows.
+ * @param {goog.ui.ac.RichRemoteArrayMatcher.RowBuilder} rowBuilder
+ *     A function(type, response) converting the type and the server response to
+ *     an object with two methods: render(node, token) and select(target).
+ */
+goog.ui.ac.RichRemote.prototype.setRowBuilder = function(rowBuilder) {
+  'use strict';
+  this.matcher_.setRowBuilder(rowBuilder);
 };

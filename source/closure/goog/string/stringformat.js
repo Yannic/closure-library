@@ -1,16 +1,8 @@
-// Copyright 2008 The Closure Library Authors. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS-IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+/**
+ * @license
+ * Copyright The Closure Library Authors.
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
 /**
  * @fileoverview Implementation of sprintf-like, python-%-operator-like,
@@ -27,24 +19,26 @@ goog.provide('goog.string.format');
 goog.require('goog.string');
 
 
+// TODO(johnlenz): goog.string.format should not accept undefined as a parameter
 /**
  * Performs sprintf-like conversion, i.e. puts the values in a template.
  * DO NOT use it instead of built-in conversions in simple cases such as
  * 'Cost: %.2f' as it would introduce unnecessary latency opposed to
  * 'Cost: ' + cost.toFixed(2).
  * @param {string} formatString Template string containing % specifiers.
- * @param {...string|number} var_args Values formatString is to be filled with.
+ * @param {...(string|number|undefined)} var_args Values formatString is to
+ *     be filled with.
  * @return {string} Formatted string.
  */
 goog.string.format = function(formatString, var_args) {
-
+  'use strict';
   // Convert the arguments to an array (MDC recommended way).
   var args = Array.prototype.slice.call(arguments);
 
   // Try to get the template.
   var template = args.shift();
   if (typeof template == 'undefined') {
-    throw Error('[goog.string.format] Template required');
+    throw new Error('[goog.string.format] Template required');
   }
 
   // This re is used for matching, it also defines what is supported.
@@ -75,7 +69,7 @@ goog.string.format = function(formatString, var_args) {
 
     // If we didn't get any arguments, fail.
     if (typeof value == 'undefined') {
-      throw Error('[goog.string.format] Not enough arguments');
+      throw new Error('[goog.string.format] Not enough arguments');
     }
 
     // Patch the value argument to the beginning of our type specific call.
@@ -109,6 +103,7 @@ goog.string.format.demuxes_ = {};
  */
 goog.string.format.demuxes_['s'] = function(
     value, flags, width, dotp, precision, type, offset, wholeString) {
+  'use strict';
   var replacement = value;
   // If no padding is necessary we're done.
   // The check for '' is necessary because Firefox incorrectly provides the
@@ -144,7 +139,7 @@ goog.string.format.demuxes_['s'] = function(
  */
 goog.string.format.demuxes_['f'] = function(
     value, flags, width, dotp, precision, type, offset, wholeString) {
-
+  'use strict';
   var replacement = value.toString();
 
   // The check for '' is necessary because Firefox incorrectly provides the
@@ -210,6 +205,7 @@ goog.string.format.demuxes_['f'] = function(
  */
 goog.string.format.demuxes_['d'] = function(
     value, flags, width, dotp, precision, type, offset, wholeString) {
+  'use strict';
   return goog.string.format.demuxes_['f'](
       parseInt(value, 10) /* value */, flags, width, dotp, 0 /* precision */,
       type, offset, wholeString);

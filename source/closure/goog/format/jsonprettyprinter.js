@@ -1,21 +1,12 @@
-// Copyright 2010 The Closure Library Authors. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS-IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+/**
+ * @license
+ * Copyright The Closure Library Authors.
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
 /**
  * @fileoverview Creates a string of a JSON object, properly indented for
  * display.
- *
  */
 
 goog.provide('goog.format.JsonPrettyPrinter');
@@ -56,17 +47,17 @@ goog.require('goog.string.format');
  * @constructor
  */
 goog.format.JsonPrettyPrinter = function(opt_delimiters) {
-
+  'use strict';
   /**
    * The set of characters to use as delimiters.
-   * @private @const
+   * @private @const {!goog.format.JsonPrettyPrinter.TextDelimiters}
    */
   this.delimiters_ =
       opt_delimiters || new goog.format.JsonPrettyPrinter.TextDelimiters();
 
   /**
    * Used to serialize property names and values.
-   * @private @const
+   * @private @const {!goog.json.Serializer}
    */
   this.jsonSerializer_ = new goog.json.Serializer();
 };
@@ -80,6 +71,7 @@ goog.format.JsonPrettyPrinter = function(opt_delimiters) {
  *     display.
  */
 goog.format.JsonPrettyPrinter.prototype.format = function(json) {
+  'use strict';
   var buffer = this.format_(json);
   var output = '';
   for (var i = 0; i < buffer.length; i++) {
@@ -99,6 +91,7 @@ goog.format.JsonPrettyPrinter.prototype.format = function(json) {
  * @return {!goog.html.SafeHtml} A HTML code of the JSON object.
  */
 goog.format.JsonPrettyPrinter.prototype.formatSafeHtml = function(json) {
+  'use strict';
   return goog.html.SafeHtml.concat(this.format_(json));
 };
 
@@ -110,16 +103,17 @@ goog.format.JsonPrettyPrinter.prototype.formatSafeHtml = function(json) {
  * @private
  */
 goog.format.JsonPrettyPrinter.prototype.format_ = function(json) {
+  'use strict';
   // If input is undefined, null, or empty, return an empty string.
-  if (!goog.isDefAndNotNull(json)) {
+  if (json == null) {
     return [];
   }
-  if (goog.isString(json)) {
+  if (typeof json === 'string') {
     if (goog.string.isEmptyOrWhitespace(json)) {
       return [];
     }
     // Try to coerce a string into a JSON object.
-    json = goog.json.parse(json);
+    json = JSON.parse(json);
   }
   var outputBuffer = [];
   this.printObject_(json, outputBuffer, 0);
@@ -135,9 +129,11 @@ goog.format.JsonPrettyPrinter.prototype.format_ = function(json) {
  * @param {number} indent The number of spaces to indent each line of the
  *     output.
  * @private
+ * @suppress {strictMissingProperties} Part of the go/strict_warnings_migration
  */
 goog.format.JsonPrettyPrinter.prototype.printObject_ = function(
     val, outputBuffer, indent) {
+  'use strict';
   var typeOf = goog.typeOf(val);
   switch (typeOf) {
     case 'null':
@@ -236,6 +232,7 @@ goog.format.JsonPrettyPrinter.prototype.printObject_ = function(
  */
 goog.format.JsonPrettyPrinter.prototype.printName_ = function(
     name, outputBuffer) {
+  'use strict';
   outputBuffer.push(
       this.delimiters_.formatName(this.jsonSerializer_.serialize(name)));
 };
@@ -256,6 +253,7 @@ goog.format.JsonPrettyPrinter.prototype.printName_ = function(
  */
 goog.format.JsonPrettyPrinter.prototype.printValue_ = function(
     val, typeOf, outputBuffer) {
+  'use strict';
   var value = this.jsonSerializer_.serialize(val);
   outputBuffer.push(this.delimiters_.formatValue(value, typeOf));
 };
@@ -270,6 +268,7 @@ goog.format.JsonPrettyPrinter.prototype.printValue_ = function(
  */
 goog.format.JsonPrettyPrinter.prototype.printSpaces_ = function(
     indent, outputBuffer) {
+  'use strict';
   outputBuffer.push(goog.string.repeat(this.delimiters_.space, indent));
 };
 
@@ -366,6 +365,7 @@ goog.format.JsonPrettyPrinter.TextDelimiters.prototype.postName = '';
  */
 goog.format.JsonPrettyPrinter.TextDelimiters.prototype.formatName = function(
     name) {
+  'use strict';
   return this.preName + name + this.postName;
 };
 
@@ -394,6 +394,7 @@ goog.format.JsonPrettyPrinter.TextDelimiters.prototype.postValue = '';
  */
 goog.format.JsonPrettyPrinter.TextDelimiters.prototype.formatValue = function(
     value, typeOf) {
+  'use strict';
   return goog.string.format(this.preValue, typeOf) + value + this.postValue;
 };
 
@@ -415,6 +416,7 @@ goog.format.JsonPrettyPrinter.TextDelimiters.prototype.indent = 2;
  * @extends {goog.format.JsonPrettyPrinter.TextDelimiters}
  */
 goog.format.JsonPrettyPrinter.SafeHtmlDelimiters = function() {
+  'use strict';
   goog.format.JsonPrettyPrinter.TextDelimiters.call(this);
 };
 goog.inherits(
@@ -425,6 +427,7 @@ goog.inherits(
 /** @override */
 goog.format.JsonPrettyPrinter.SafeHtmlDelimiters.prototype.formatName =
     function(name) {
+  'use strict';
   var classes = goog.getCssName('goog-jsonprettyprinter-propertyname');
   return goog.html.SafeHtml.create('span', {'class': classes}, name);
 };
@@ -433,6 +436,7 @@ goog.format.JsonPrettyPrinter.SafeHtmlDelimiters.prototype.formatName =
 /** @override */
 goog.format.JsonPrettyPrinter.SafeHtmlDelimiters.prototype.formatValue =
     function(value, typeOf) {
+  'use strict';
   var classes = this.getValueCssName(typeOf);
   return goog.html.SafeHtml.create('span', {'class': classes}, value);
 };
@@ -446,6 +450,7 @@ goog.format.JsonPrettyPrinter.SafeHtmlDelimiters.prototype.formatValue =
  */
 goog.format.JsonPrettyPrinter.SafeHtmlDelimiters.prototype.getValueCssName =
     function(typeOf) {
+  'use strict';
   // This switch is needed because goog.getCssName requires a constant string.
   switch (typeOf) {
     case 'null':

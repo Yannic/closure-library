@@ -1,21 +1,11 @@
-// Copyright 2007 The Closure Library Authors. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS-IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+/**
+ * @license
+ * Copyright The Closure Library Authors.
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
 /**
  * @fileoverview Support class for spell checker components.
- *
- * @author eae@google.com (Emil A Eklund)
  */
 
 goog.provide('goog.spell.SpellCheck');
@@ -32,7 +22,8 @@ goog.require('goog.structs.Set');
  * Support class for spell checker components. Provides basic functionality
  * such as word lookup and caching.
  *
- * @param {Function=} opt_lookupFunction Function to use for word lookup. Must
+ * @param {function(!Array<string>, !goog.spell.SpellCheck, !Function)=}
+ *     opt_lookupFunction Function to use for word lookup. Must
  *     accept an array of words, an object reference and a callback function as
  *     parameters. It must also call the callback function (as a method on the
  *     object), once ready, with an array containing the original words, their
@@ -43,12 +34,12 @@ goog.require('goog.structs.Set');
  * @final
  */
 goog.spell.SpellCheck = function(opt_lookupFunction, opt_language) {
+  'use strict';
   goog.events.EventTarget.call(this);
 
   /**
    * Function used to lookup spelling of words.
-   * @type {Function}
-   * @private
+   * @private {?function(!Array<string>, !goog.spell.SpellCheck, !Function)}
    */
   this.lookupFunction_ = opt_lookupFunction || null;
 
@@ -98,7 +89,7 @@ goog.spell.SpellCheck.EventType = {
 
 
 /**
- * Cache. Shared across all spell checker instances. Map with langauge as the
+ * Cache. Shared across all spell checker instances. Map with language as the
  * key and a cache for that language as the value.
  *
  * @type {Object}
@@ -174,7 +165,7 @@ goog.spell.SpellCheck.CacheIndex = {
  * @type {string}
  */
 goog.spell.SpellCheck.WORD_BOUNDARY_CHARS =
-    '\t\r\n\u00A0 !\"#$%&()*+,\-.\/:;<=>?@\[\\\]^_`{|}~';
+    '\t\r\n\u00A0 !\"#$%&()*+,-./\\\\:;<=>?@\\[\\]^_`{|}~';
 
 
 /**
@@ -207,6 +198,7 @@ goog.spell.SpellCheck.SPLIT_REGEX = new RegExp(
  *     spelling status and optionally an array of suggestions.
  */
 goog.spell.SpellCheck.prototype.setLookupFunction = function(f) {
+  'use strict';
   this.lookupFunction_ = f;
 };
 
@@ -217,6 +209,7 @@ goog.spell.SpellCheck.prototype.setLookupFunction = function(f) {
  * @param {string=} opt_language Content language.
  */
 goog.spell.SpellCheck.prototype.setLanguage = function(opt_language) {
+  'use strict';
   this.language_ = opt_language || '';
 
   if (!goog.spell.SpellCheck.cache_[this.language_]) {
@@ -232,6 +225,7 @@ goog.spell.SpellCheck.prototype.setLanguage = function(opt_language) {
  * @return {string} Content language.
  */
 goog.spell.SpellCheck.prototype.getLanguage = function() {
+  'use strict';
   return this.language_;
 };
 
@@ -242,6 +236,7 @@ goog.spell.SpellCheck.prototype.getLanguage = function() {
  * @param {string} text Block of text to spell check.
  */
 goog.spell.SpellCheck.prototype.checkBlock = function(text) {
+  'use strict';
   var words = text.split(goog.spell.SpellCheck.WORD_BOUNDARY_REGEX);
 
   var len = words.length;
@@ -269,6 +264,7 @@ goog.spell.SpellCheck.prototype.checkBlock = function(text) {
  *     or UNKNOWN if it's not cached.
  */
 goog.spell.SpellCheck.prototype.checkWord = function(word) {
+  'use strict';
   var status = this.checkWord_(word);
 
   if (status == goog.spell.SpellCheck.WordStatus.UNKNOWN && !this.queueTimer_ &&
@@ -291,6 +287,7 @@ goog.spell.SpellCheck.prototype.checkWord = function(word) {
  * @private
  */
 goog.spell.SpellCheck.prototype.checkWord_ = function(word) {
+  'use strict';
   if (!word) {
     return goog.spell.SpellCheck.WordStatus.INVALID;
   }
@@ -312,6 +309,7 @@ goog.spell.SpellCheck.prototype.checkWord_ = function(word) {
  * @throws {Error}
  */
 goog.spell.SpellCheck.prototype.processPending = function() {
+  'use strict';
   if (this.unknownWords_.getCount()) {
     if (!this.queueTimer_ && !this.lookupInProgress_) {
       this.processPending_();
@@ -329,8 +327,9 @@ goog.spell.SpellCheck.prototype.processPending = function() {
  * @private
  */
 goog.spell.SpellCheck.prototype.processPending_ = function() {
+  'use strict';
   if (!this.lookupFunction_) {
-    throw Error('No lookup function provided for spell checker.');
+    throw new Error('No lookup function provided for spell checker.');
   }
 
   if (this.unknownWords_.getCount()) {
@@ -360,7 +359,7 @@ goog.spell.SpellCheck.prototype.processPending_ = function() {
  * ]);
  */
 goog.spell.SpellCheck.prototype.lookupCallback_ = function(data) {
-
+  'use strict';
   // Lookup function failed; abort then dispatch error event.
   if (data == null) {
     if (this.queueTimer_) {
@@ -403,6 +402,7 @@ goog.spell.SpellCheck.prototype.lookupCallback_ = function(data) {
  */
 goog.spell.SpellCheck.prototype.setWordStatus = function(
     word, status, opt_suggestions) {
+  'use strict';
   this.setWordStatus_(word, status, opt_suggestions);
 };
 
@@ -417,6 +417,7 @@ goog.spell.SpellCheck.prototype.setWordStatus = function(
  */
 goog.spell.SpellCheck.prototype.setWordStatus_ = function(
     word, status, opt_suggestions) {
+  'use strict';
   var suggestions = opt_suggestions || [];
   this.cache_[word] = [status, suggestions];
   this.unknownWords_.remove(word);
@@ -433,6 +434,7 @@ goog.spell.SpellCheck.prototype.setWordStatus_ = function(
  * @return {Array<string>} An array of suggestions for the given word.
  */
 goog.spell.SpellCheck.prototype.getSuggestions = function(word) {
+  'use strict';
   var cacheEntry = this.cache_[word];
 
   if (!cacheEntry) {
@@ -460,6 +462,7 @@ goog.spell.SpellCheck.prototype.getSuggestions = function(word) {
  * @final
  */
 goog.spell.SpellCheck.WordChangedEvent = function(target, word, status) {
+  'use strict';
   goog.events.Event.call(
       this, goog.spell.SpellCheck.EventType.WORD_CHANGED, target);
 

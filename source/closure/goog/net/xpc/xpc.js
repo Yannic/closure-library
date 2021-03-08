@@ -1,16 +1,8 @@
-// Copyright 2007 The Closure Library Authors. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS-IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+/**
+ * @license
+ * Copyright The Closure Library Authors.
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
 /**
  * @fileoverview Provides the namesspace for client-side communication
@@ -32,15 +24,6 @@
  * @suppress {underscore}
  */
 
-/*
-TODO(user)
-- resolve fastback issues in Safari (IframeRelayTransport)
- */
-
-
-/**
- * Namespace for CrossPageChannel
- */
 goog.provide('goog.net.xpc');
 goog.provide('goog.net.xpc.CfgFields');
 goog.provide('goog.net.xpc.ChannelStates');
@@ -56,13 +39,9 @@ goog.require('goog.log');
  * @enum {number}
  */
 goog.net.xpc.TransportTypes = {
+  UNDEFINED: 0,
   NATIVE_MESSAGING: 1,
-  FRAME_ELEMENT_METHOD: 2,
-  IFRAME_RELAY: 3,
-  IFRAME_POLLING: 4,
-  FLASH: 5,
-  NIX: 6,
-  DIRECT: 7
+  DIRECT: 2,
 };
 
 
@@ -73,12 +52,7 @@ goog.net.xpc.TransportTypes = {
  */
 goog.net.xpc.TransportNames = {
   '1': 'NativeMessagingTransport',
-  '2': 'FrameElementMethodTransport',
-  '3': 'IframeRelayTransport',
-  '4': 'IframePollingTransport',
-  '5': 'FlashTransport',
-  '6': 'NixTransport',
-  '7': 'DirectTransport'
+  '2': 'DirectTransport',
 };
 
 
@@ -119,8 +93,9 @@ goog.net.xpc.CfgFields = {
   /**
    * Transport type identifier.
    * The transport type to use. Possible values are entries from
-   * goog.net.xpc.TransportTypes. If not present, the transport is
-   * determined automatically based on the useragent's capabilities.
+   * goog.net.xpc.TransportTypes or a Transport constructor fuction. If not
+   * present, the transport is determined automatically based on the useragent's
+   * capabilities.
    */
   TRANSPORT: 'tp',
   /**
@@ -197,7 +172,7 @@ goog.net.xpc.CfgFields = {
    * circumstances where syncronous calls are required. If this property is
    * set to true, the transport will send the messages synchronously.
    */
-  DIRECT_TRANSPORT_SYNC_MODE: 'directSyncMode'
+  DIRECT_TRANSPORT_SYNC_MODE: 'directSyncMode',
 };
 
 
@@ -206,9 +181,11 @@ goog.net.xpc.CfgFields = {
  * @type {Array<string>}
  */
 goog.net.xpc.UriCfgFields = [
-  goog.net.xpc.CfgFields.PEER_URI, goog.net.xpc.CfgFields.LOCAL_RELAY_URI,
-  goog.net.xpc.CfgFields.PEER_RELAY_URI, goog.net.xpc.CfgFields.LOCAL_POLL_URI,
-  goog.net.xpc.CfgFields.PEER_POLL_URI
+  goog.net.xpc.CfgFields.PEER_URI,
+  goog.net.xpc.CfgFields.LOCAL_RELAY_URI,
+  goog.net.xpc.CfgFields.PEER_RELAY_URI,
+  goog.net.xpc.CfgFields.LOCAL_POLL_URI,
+  goog.net.xpc.CfgFields.PEER_POLL_URI,
 ];
 
 
@@ -218,7 +195,7 @@ goog.net.xpc.UriCfgFields = [
 goog.net.xpc.ChannelStates = {
   NOT_CONNECTED: 1,
   CONNECTED: 2,
-  CLOSED: 3
+  CLOSED: 3,
 };
 
 
@@ -260,23 +237,16 @@ goog.net.xpc.SETUP_ACK_NTPV2 = 'SETUP_ACK_NTPV2';
 
 
 /**
- * Object holding active channels.
- *
- * @package {Object<string, goog.net.xpc.CrossPageChannel>}
- */
-goog.net.xpc.channels = {};
-
-
-/**
  * Returns a random string.
  * @param {number} length How many characters the string shall contain.
  * @param {string=} opt_characters The characters used.
  * @return {string} The random string.
  */
 goog.net.xpc.getRandomString = function(length, opt_characters) {
-  var chars = opt_characters || goog.net.xpc.randomStringCharacters_;
-  var charsLength = chars.length;
-  var s = '';
+  'use strict';
+  const chars = opt_characters || goog.net.xpc.randomStringCharacters_;
+  const charsLength = chars.length;
+  let s = '';
   while (length-- > 0) {
     s += chars.charAt(Math.floor(Math.random() * charsLength));
   }

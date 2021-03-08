@@ -1,21 +1,12 @@
-// Copyright 2011 The Closure Library Authors. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS-IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+/**
+ * @license
+ * Copyright The Closure Library Authors.
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
 /**
  * @fileoverview Utility methods to deal with CSS3 transitions
  * programmatically.
- * @author chrishenry@google.com (Chris Henry)
  */
 
 goog.provide('goog.style.transition');
@@ -57,24 +48,27 @@ goog.style.transition.Css3Property;
  * @param {goog.style.transition.Css3Property|
  *     Array<goog.style.transition.Css3Property>} properties A single CSS3
  *     transition property or array of properties.
+ * @suppress {strictMissingProperties} Part of the go/strict_warnings_migration
  */
 goog.style.transition.set = function(element, properties) {
-  if (!goog.isArray(properties)) {
+  'use strict';
+  if (!Array.isArray(properties)) {
     properties = [properties];
   }
   goog.asserts.assert(
       properties.length > 0, 'At least one Css3Property should be specified.');
 
   var values = goog.array.map(properties, function(p) {
-    if (goog.isString(p)) {
+    'use strict';
+    if (typeof p === 'string') {
       return p;
     } else {
       goog.asserts.assertObject(p, 'Expected css3 property to be an object.');
       var propString =
           p.property + ' ' + p.duration + 's ' + p.timing + ' ' + p.delay + 's';
       goog.asserts.assert(
-          p.property && goog.isNumber(p.duration) && p.timing &&
-              goog.isNumber(p.delay),
+          p.property && typeof p.duration === 'number' && p.timing &&
+              typeof p.delay === 'number',
           'Unexpected css3 property value: %s', propString);
       return propString;
     }
@@ -88,6 +82,7 @@ goog.style.transition.set = function(element, properties) {
  * @param {Element} element The element to remove transition from.
  */
 goog.style.transition.removeAll = function(element) {
+  'use strict';
   goog.style.transition.setPropertyValue_(element, '');
 };
 
@@ -96,6 +91,7 @@ goog.style.transition.removeAll = function(element) {
  * @return {boolean} Whether CSS3 transition is supported.
  */
 goog.style.transition.isSupported = goog.functions.cacheReturnValue(function() {
+  'use strict';
   // Since IE would allow any attribute, we need to explicitly check the
   // browser version here instead.
   if (goog.userAgent.IE) {
@@ -129,5 +125,6 @@ goog.style.transition.isSupported = goog.functions.cacheReturnValue(function() {
  * @private
  */
 goog.style.transition.setPropertyValue_ = function(element, transitionValue) {
+  'use strict';
   goog.style.setStyle(element, 'transition', transitionValue);
 };

@@ -1,20 +1,11 @@
-// Copyright 2012 The Closure Library Authors. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS-IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+/**
+ * @license
+ * Copyright The Closure Library Authors.
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
 /**
  * @fileoverview Test helpers to compare goog.proto2.Messages.
- *
  */
 
 goog.setTestOnly('goog.testing.proto2');
@@ -35,6 +26,7 @@ goog.require('goog.testing.asserts');
  * @private
  */
 goog.testing.proto2.findDifferences_ = function(expected, actual, path) {
+  'use strict';
   var fields = expected.getDescriptor().getFields();
   for (var i = 0; i < fields.length; i++) {
     var field = fields[i];
@@ -110,6 +102,7 @@ goog.testing.proto2.findDifferences_ = function(expected, actual, path) {
  */
 goog.testing.proto2.assertEquals = function(
     expected, actual, opt_failureMessage) {
+  'use strict';
   var failureSummary = opt_failureMessage || '';
   if (!(expected instanceof goog.proto2.Message) ||
       !(actual instanceof goog.proto2.Message)) {
@@ -133,12 +126,13 @@ goog.testing.proto2.assertEquals = function(
 /**
  * Helper function to quickly build protocol buffer messages from JSON objects.
  * @param {function(new:MessageType)} messageCtor A constructor that
- *     creates a {@code goog.proto2.Message} subclass instance.
+ *     creates a `goog.proto2.Message` subclass instance.
  * @param {!Object} json JSON object which uses field names as keys.
  * @return {MessageType} The deserialized protocol buffer.
  * @template MessageType
  */
 goog.testing.proto2.fromObject = function(messageCtor, json) {
+  'use strict';
   var serializer = new goog.proto2.ObjectSerializer(
       goog.proto2.ObjectSerializer.KeyOption.NAME);
   var message = new messageCtor;

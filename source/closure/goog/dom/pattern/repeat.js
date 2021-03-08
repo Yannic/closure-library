@@ -1,21 +1,11 @@
-// Copyright 2007 The Closure Library Authors. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS-IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+/**
+ * @license
+ * Copyright The Closure Library Authors.
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
 /**
  * @fileoverview DOM pattern to match a tag and all of its children.
- *
- * @author robbyw@google.com (Robby Walker)
  */
 
 goog.provide('goog.dom.pattern.Repeat');
@@ -23,6 +13,7 @@ goog.provide('goog.dom.pattern.Repeat');
 goog.require('goog.dom.NodeType');
 goog.require('goog.dom.pattern.AbstractPattern');
 goog.require('goog.dom.pattern.MatchType');
+goog.requireType('goog.dom.TagWalkType');
 
 
 
@@ -39,6 +30,7 @@ goog.require('goog.dom.pattern.MatchType');
  * @final
  */
 goog.dom.pattern.Repeat = function(pattern, opt_minimum, opt_maximum) {
+  'use strict';
   /**
    * Pattern to repetitively match.
    *
@@ -54,7 +46,7 @@ goog.dom.pattern.Repeat = function(pattern, opt_minimum, opt_maximum) {
   this.minimum_ = opt_minimum || 0;
 
   /**
-   * Optional maximum number of times to match the pattern. A {@code null} value
+   * Optional maximum number of times to match the pattern. A `null` value
    * will be treated as infinity.
    *
    * @private {?number}
@@ -100,6 +92,7 @@ goog.inherits(goog.dom.pattern.Repeat, goog.dom.pattern.AbstractPattern);
  * @override
  */
 goog.dom.pattern.Repeat.prototype.matchToken = function(token, type) {
+  'use strict';
   // Reset if we're starting a new match
   if (this.needsReset_) {
     this.reset();
@@ -142,7 +135,7 @@ goog.dom.pattern.Repeat.prototype.matchToken = function(token, type) {
       this.count++;
 
       // NOTE(nicksantos): This line of code is broken. this.patterns_ doesn't
-      // exist, and this.currentPosition_ doesn't exit. When this is fixed,
+      // exist, and this.currentPosition_ doesn't exist. When this is fixed,
       // remove the missingProperties suppression above.
       if (this.currentPosition_ == this.patterns_.length) {
         this.needsReset_ = true;
@@ -168,6 +161,7 @@ goog.dom.pattern.Repeat.prototype.matchToken = function(token, type) {
  * @override
  */
 goog.dom.pattern.Repeat.prototype.reset = function() {
+  'use strict';
   this.pattern_.reset();
   this.count = 0;
   this.needsReset_ = false;

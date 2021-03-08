@@ -1,16 +1,8 @@
-// Copyright 2006 The Closure Library Authors. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS-IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+/**
+ * @license
+ * Copyright The Closure Library Authors.
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
 /**
  * @fileoverview Flash detection.
@@ -26,7 +18,8 @@ goog.require('goog.string');
  * @define {boolean} Whether we know at compile-time that the browser doesn't
  * have flash.
  */
-goog.define('goog.userAgent.flash.ASSUME_NO_FLASH', false);
+goog.userAgent.flash.ASSUME_NO_FLASH =
+    goog.define('goog.userAgent.flash.ASSUME_NO_FLASH', false);
 
 
 /**
@@ -53,6 +46,7 @@ goog.userAgent.flash.detectedFlashVersion_ = '';
  * @private
  */
 goog.userAgent.flash.init_ = function() {
+  'use strict';
   if (navigator.plugins && navigator.plugins.length) {
     var plugin = navigator.plugins['Shockwave Flash'];
     if (plugin) {
@@ -82,40 +76,41 @@ goog.userAgent.flash.init_ = function() {
     }
   }
 
-  /** @preserveTry */
-  try {
-    // Try 7 first, since we know we can use GetVariable with it
-    var ax = new ActiveXObject('ShockwaveFlash.ShockwaveFlash.7');
-    goog.userAgent.flash.detectedFlash_ = true;
-    goog.userAgent.flash.detectedFlashVersion_ =
-        goog.userAgent.flash.getVersion_(ax.GetVariable('$version'));
-    return;
-  } catch (e) {
-    /* Fall through */
-  }
+  if (typeof ActiveXObject != 'undefined') {
+    try {
+      // Try 7 first, since we know we can use GetVariable with it
+      var ax = new ActiveXObject('ShockwaveFlash.ShockwaveFlash.7');
+      goog.userAgent.flash.detectedFlash_ = true;
+      goog.userAgent.flash.detectedFlashVersion_ =
+          goog.userAgent.flash.getVersion_(ax.GetVariable('$version'));
+      return;
+    } catch (e) {
+      /* Fall through */
+    }
 
-  // Try 6 next, some versions are known to crash with GetVariable calls
-  /** @preserveTry */
-  try {
-    var ax = new ActiveXObject('ShockwaveFlash.ShockwaveFlash.6');
-    goog.userAgent.flash.detectedFlash_ = true;
-    // First public version of Flash 6
-    goog.userAgent.flash.detectedFlashVersion_ = '6.0.21';
-    return;
-  } catch (e) {
-    /* Fall through */
-  }
+    // Try 6 next, some versions are known to crash with GetVariable calls
 
-  /** @preserveTry */
-  try {
-    // Try the default activeX
-    var ax = new ActiveXObject('ShockwaveFlash.ShockwaveFlash');
-    goog.userAgent.flash.detectedFlash_ = true;
-    goog.userAgent.flash.detectedFlashVersion_ =
-        goog.userAgent.flash.getVersion_(ax.GetVariable('$version'));
-    return;
-  } catch (e) {
-    // No flash
+    try {
+      var ax = new ActiveXObject('ShockwaveFlash.ShockwaveFlash.6');
+      goog.userAgent.flash.detectedFlash_ = true;
+      // First public version of Flash 6
+      goog.userAgent.flash.detectedFlashVersion_ = '6.0.21';
+      return;
+    } catch (e) {
+      /* Fall through */
+    }
+
+
+    try {
+      // Try the default activeX
+      var ax = new ActiveXObject('ShockwaveFlash.ShockwaveFlash');
+      goog.userAgent.flash.detectedFlash_ = true;
+      goog.userAgent.flash.detectedFlashVersion_ =
+          goog.userAgent.flash.getVersion_(ax.GetVariable('$version'));
+      return;
+    } catch (e) {
+      // No flash
+    }
   }
 };
 
@@ -127,6 +122,7 @@ goog.userAgent.flash.init_ = function() {
  * @private
  */
 goog.userAgent.flash.getVersion_ = function(desc) {
+  'use strict';
   var matches = desc.match(/[\d]+/g);
   if (!matches) {
     return '';
@@ -162,6 +158,7 @@ goog.userAgent.flash.VERSION = goog.userAgent.flash.detectedFlashVersion_;
  *     than a given version.
  */
 goog.userAgent.flash.isVersion = function(version) {
+  'use strict';
   return goog.string.compareVersions(goog.userAgent.flash.VERSION, version) >=
       0;
 };

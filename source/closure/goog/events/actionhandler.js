@@ -1,16 +1,8 @@
-// Copyright 2007 The Closure Library Authors. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS-IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+/**
+ * @license
+ * Copyright The Closure Library Authors.
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
 /**
  * @fileoverview This file contains a class to provide a unified mechanism for
@@ -28,7 +20,6 @@
  *    new goog.events.ActionHandler(el),
  *    ACTION,
  *    this.onAction_);<code>
- *
  */
 
 goog.provide('goog.events.ActionEvent');
@@ -53,6 +44,7 @@ goog.require('goog.userAgent');
  * @final
  */
 goog.events.ActionHandler = function(element) {
+  'use strict';
   goog.events.EventTarget.call(this);
 
   /**
@@ -63,8 +55,7 @@ goog.events.ActionHandler = function(element) {
   this.element_ = element;
 
   goog.events.listen(
-      element, goog.events.ActionHandler.KEY_EVENT_TYPE_, this.handleKeyDown_,
-      false, this);
+      element, goog.events.EventType.KEYDOWN, this.handleKeyDown_, false, this);
   goog.events.listen(
       element, goog.events.EventType.CLICK, this.handleClick_, false, this);
 };
@@ -82,21 +73,12 @@ goog.events.ActionHandler.EventType = {
 
 
 /**
- * Key event type to listen for.
- * @type {string}
- * @private
- */
-goog.events.ActionHandler.KEY_EVENT_TYPE_ = goog.userAgent.GECKO ?
-    goog.events.EventType.KEYPRESS :
-    goog.events.EventType.KEYDOWN;
-
-
-/**
  * Handles key press events.
  * @param {!goog.events.BrowserEvent} e The key press event.
  * @private
  */
 goog.events.ActionHandler.prototype.handleKeyDown_ = function(e) {
+  'use strict';
   if (e.keyCode == goog.events.KeyCodes.ENTER ||
       goog.userAgent.WEBKIT && e.keyCode == goog.events.KeyCodes.MAC_ENTER) {
     this.dispatchEvents_(e);
@@ -110,6 +92,7 @@ goog.events.ActionHandler.prototype.handleKeyDown_ = function(e) {
  * @private
  */
 goog.events.ActionHandler.prototype.handleClick_ = function(e) {
+  'use strict';
   this.dispatchEvents_(e);
 };
 
@@ -120,6 +103,7 @@ goog.events.ActionHandler.prototype.handleClick_ = function(e) {
  * @private
  */
 goog.events.ActionHandler.prototype.dispatchEvents_ = function(e) {
+  'use strict';
   var beforeActionEvent = new goog.events.BeforeActionEvent(e);
 
   // Allow application specific logic here before the ACTION event.
@@ -144,10 +128,11 @@ goog.events.ActionHandler.prototype.dispatchEvents_ = function(e) {
 
 /** @override */
 goog.events.ActionHandler.prototype.disposeInternal = function() {
+  'use strict';
   goog.events.ActionHandler.superClass_.disposeInternal.call(this);
   goog.events.unlisten(
-      this.element_, goog.events.ActionHandler.KEY_EVENT_TYPE_,
-      this.handleKeyDown_, false, this);
+      this.element_, goog.events.EventType.KEYDOWN, this.handleKeyDown_, false,
+      this);
   goog.events.unlisten(
       this.element_, goog.events.EventType.CLICK, this.handleClick_, false,
       this);
@@ -164,6 +149,7 @@ goog.events.ActionHandler.prototype.disposeInternal = function() {
  * @final
  */
 goog.events.ActionEvent = function(browserEvent) {
+  'use strict';
   goog.events.BrowserEvent.call(this, browserEvent.getBrowserEvent());
   this.type = goog.events.ActionHandler.EventType.ACTION;
 };
@@ -181,6 +167,7 @@ goog.inherits(goog.events.ActionEvent, goog.events.BrowserEvent);
  * @final
  */
 goog.events.BeforeActionEvent = function(browserEvent) {
+  'use strict';
   goog.events.BrowserEvent.call(this, browserEvent.getBrowserEvent());
   this.type = goog.events.ActionHandler.EventType.BEFOREACTION;
 };

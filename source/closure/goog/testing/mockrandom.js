@@ -1,21 +1,12 @@
-// Copyright 2008 The Closure Library Authors. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS-IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+/**
+ * @license
+ * Copyright The Closure Library Authors.
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
 /**
  * @fileoverview MockRandom provides a mechanism for specifying a stream of
  * numbers to expect from calls to Math.random().
- *
  */
 
 goog.setTestOnly('goog.testing.MockRandom');
@@ -28,7 +19,8 @@ goog.require('goog.Disposable');
 /**
  * Class for unit testing code that uses Math.random.
  *
- * @param {Array<number>} sequence The sequence of numbers to return.
+ * @param {Array<number>} sequence The sequence of numbers to return. This
+ *     object will modify this array.
  * @param {boolean=} opt_install Whether to install the MockRandom at
  *     construction time.
  * @extends {goog.Disposable}
@@ -36,6 +28,7 @@ goog.require('goog.Disposable');
  * @final
  */
 goog.testing.MockRandom = function(sequence, opt_install) {
+  'use strict';
   goog.Disposable.call(this);
 
   /**
@@ -79,6 +72,7 @@ goog.testing.MockRandom.prototype.installed_;
  * Installs this MockRandom as the system number generator.
  */
 goog.testing.MockRandom.prototype.install = function() {
+  'use strict';
   if (!this.installed_) {
     Math.random = goog.bind(this.random, this);
     this.installed_ = true;
@@ -89,10 +83,11 @@ goog.testing.MockRandom.prototype.install = function() {
 /**
  * @return {number} The next number in the sequence. If there are no more values
  *     left, this will return a random number, unless
- *     {@code this.strictlyFromSequence_} is true, in which case an error will
+ *     `this.strictlyFromSequence_` is true, in which case an error will
  *     be thrown.
  */
 goog.testing.MockRandom.prototype.random = function() {
+  'use strict';
   if (this.hasMoreValues()) {
     return this.sequence_.shift();
   }
@@ -107,6 +102,7 @@ goog.testing.MockRandom.prototype.random = function() {
  * @return {boolean} Whether there are more numbers left in the sequence.
  */
 goog.testing.MockRandom.prototype.hasMoreValues = function() {
+  'use strict';
   return this.sequence_.length > 0;
 };
 
@@ -116,7 +112,8 @@ goog.testing.MockRandom.prototype.hasMoreValues = function() {
  * @param {!Array<number>|number} values Number or array of numbers to inject.
  */
 goog.testing.MockRandom.prototype.inject = function(values) {
-  if (goog.isArray(values)) {
+  'use strict';
+  if (Array.isArray(values)) {
     this.sequence_ = values.concat(this.sequence_);
   } else {
     this.sequence_.splice(0, 0, values);
@@ -128,6 +125,7 @@ goog.testing.MockRandom.prototype.inject = function(values) {
  * Uninstalls the MockRandom.
  */
 goog.testing.MockRandom.prototype.uninstall = function() {
+  'use strict';
   if (this.installed_) {
     Math.random = this.mathRandom_;
     this.installed_ = false;
@@ -137,6 +135,7 @@ goog.testing.MockRandom.prototype.uninstall = function() {
 
 /** @override */
 goog.testing.MockRandom.prototype.disposeInternal = function() {
+  'use strict';
   this.uninstall();
   delete this.sequence_;
   delete this.mathRandom_;
@@ -150,5 +149,6 @@ goog.testing.MockRandom.prototype.disposeInternal = function() {
  */
 goog.testing.MockRandom.prototype.setStrictlyFromSequence = function(
     strictlyFromSequence) {
+  'use strict';
   this.strictlyFromSequence_ = strictlyFromSequence;
 };

@@ -1,16 +1,8 @@
-// Copyright 2008 The Closure Library Authors. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS-IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+/**
+ * @license
+ * Copyright The Closure Library Authors.
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
 /**
  * @fileoverview Protocol Buffer Field Descriptor class.
@@ -20,6 +12,8 @@ goog.provide('goog.proto2.FieldDescriptor');
 
 goog.require('goog.asserts');
 goog.require('goog.string');
+goog.requireType('goog.proto2.Descriptor');
+goog.requireType('goog.proto2.Message');
 
 
 
@@ -29,13 +23,22 @@ goog.require('goog.string');
  * @param {function(new:goog.proto2.Message)} messageType Constructor for the
  *     message class to which the field described by this class belongs.
  * @param {number|string} tag The field's tag index.
- * @param {Object} metadata The metadata about this field that will be used
- *     to construct this descriptor.
+ * @param {{
+ *       name: string,
+ *       fieldType: !goog.proto2.FieldDescriptor.FieldType,
+ *       type: !Function,
+ *       repeated: (*|undefined),
+ *       required: (*|undefined),
+ *       packed: (*|undefined),
+ *       defaultValue: (*|undefined)
+ *     }} metadata The metadata about this field
+ *     that will be used to construct this descriptor.
  *
  * @constructor
  * @final
  */
 goog.proto2.FieldDescriptor = function(messageType, tag, metadata) {
+  'use strict';
   /**
    * The message type that contains the field that this
    * descriptor describes.
@@ -57,18 +60,6 @@ goog.proto2.FieldDescriptor = function(messageType, tag, metadata) {
    * @private {string}
    */
   this.name_ = metadata.name;
-
-  /** @type {goog.proto2.FieldDescriptor.FieldType} */
-  metadata.fieldType;
-
-  /** @type {*} */
-  metadata.repeated;
-
-  /** @type {*} */
-  metadata.required;
-
-  /** @type {*} */
-  metadata.packed;
 
   /**
    * If true, this field is a packed field.
@@ -165,6 +156,7 @@ goog.proto2.FieldDescriptor.FieldType = {
  * @return {number} The tag number.
  */
 goog.proto2.FieldDescriptor.prototype.getTag = function() {
+  'use strict';
   return this.tag_;
 };
 
@@ -174,6 +166,7 @@ goog.proto2.FieldDescriptor.prototype.getTag = function() {
  * @return {!goog.proto2.Descriptor} The descriptor.
  */
 goog.proto2.FieldDescriptor.prototype.getContainingType = function() {
+  'use strict';
   // Generated JS proto_library messages have getDescriptor() method which can
   // be called with or without an instance.
   return this.parent_.prototype.getDescriptor();
@@ -185,6 +178,7 @@ goog.proto2.FieldDescriptor.prototype.getContainingType = function() {
  * @return {string} The name.
  */
 goog.proto2.FieldDescriptor.prototype.getName = function() {
+  'use strict';
   return this.name_;
 };
 
@@ -194,6 +188,7 @@ goog.proto2.FieldDescriptor.prototype.getName = function() {
  * @return {*} The default value.
  */
 goog.proto2.FieldDescriptor.prototype.getDefaultValue = function() {
+  'use strict';
   if (this.defaultValue_ === undefined) {
     // Set the default value based on a new instance of the native type.
     // This will be (0, false, "") for (number, boolean, string) and will
@@ -224,6 +219,7 @@ goog.proto2.FieldDescriptor.prototype.getDefaultValue = function() {
  * @return {goog.proto2.FieldDescriptor.FieldType} The field type.
  */
 goog.proto2.FieldDescriptor.prototype.getFieldType = function() {
+  'use strict';
   return this.fieldType_;
 };
 
@@ -235,6 +231,7 @@ goog.proto2.FieldDescriptor.prototype.getFieldType = function() {
  * @return {Object} The native type.
  */
 goog.proto2.FieldDescriptor.prototype.getNativeType = function() {
+  'use strict';
   return this.nativeType_;
 };
 
@@ -247,6 +244,7 @@ goog.proto2.FieldDescriptor.prototype.getNativeType = function() {
  */
 goog.proto2.FieldDescriptor.prototype.deserializationConversionPermitted =
     function() {
+  'use strict';
   return this.deserializationConversionPermitted_;
 };
 
@@ -258,6 +256,7 @@ goog.proto2.FieldDescriptor.prototype.deserializationConversionPermitted =
  * @return {!goog.proto2.Descriptor} The message descriptor.
  */
 goog.proto2.FieldDescriptor.prototype.getFieldMessageType = function() {
+  'use strict';
   // Generated JS proto_library messages have getDescriptor() method which can
   // be called with or without an instance.
   var messageClass =
@@ -271,6 +270,7 @@ goog.proto2.FieldDescriptor.prototype.getFieldMessageType = function() {
  *     composite data (message or group).
  */
 goog.proto2.FieldDescriptor.prototype.isCompositeType = function() {
+  'use strict';
   return this.fieldType_ == goog.proto2.FieldDescriptor.FieldType.MESSAGE ||
       this.fieldType_ == goog.proto2.FieldDescriptor.FieldType.GROUP;
 };
@@ -281,6 +281,7 @@ goog.proto2.FieldDescriptor.prototype.isCompositeType = function() {
  * @return {boolean} Whether the field is packed.
  */
 goog.proto2.FieldDescriptor.prototype.isPacked = function() {
+  'use strict';
   return this.isPacked_;
 };
 
@@ -290,6 +291,7 @@ goog.proto2.FieldDescriptor.prototype.isPacked = function() {
  * @return {boolean} Whether the field is repeated.
  */
 goog.proto2.FieldDescriptor.prototype.isRepeated = function() {
+  'use strict';
   return this.isRepeated_;
 };
 
@@ -299,6 +301,7 @@ goog.proto2.FieldDescriptor.prototype.isRepeated = function() {
  * @return {boolean} Whether the field is required.
  */
 goog.proto2.FieldDescriptor.prototype.isRequired = function() {
+  'use strict';
   return this.isRequired_;
 };
 
@@ -308,5 +311,6 @@ goog.proto2.FieldDescriptor.prototype.isRequired = function() {
  * @return {boolean} Whether the field is optional.
  */
 goog.proto2.FieldDescriptor.prototype.isOptional = function() {
+  'use strict';
   return !this.isRepeated_ && !this.isRequired_;
 };

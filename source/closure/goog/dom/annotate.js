@@ -1,21 +1,12 @@
-// Copyright 2006 The Closure Library Authors. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS-IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+/**
+ * @license
+ * Copyright The Closure Library Authors.
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
 /**
  * @fileoverview Methods for annotating occurrences of query terms in text or
  *   in a DOM tree. Adapted from Gmail code.
- *
  */
 
 goog.provide('goog.dom.annotate');
@@ -42,8 +33,8 @@ goog.dom.annotate.AnnotateFn;
 
 
 /**
- * Calls {@code annotateFn} for each occurrence of a search term in text nodes
- * under {@code node}. Returns the number of hits.
+ * Calls `annotateFn` for each occurrence of a search term in text nodes
+ * under `node`. Returns the number of hits.
  *
  * @param {Node} node  A DOM node.
  * @param {Array<!Array<string|boolean>>} terms
@@ -63,10 +54,11 @@ goog.dom.annotate.AnnotateFn;
  */
 goog.dom.annotate.annotateTerms = function(
     node, terms, annotateFn, opt_ignoreCase, opt_classesToSkip, opt_maxMs) {
+  'use strict';
   if (opt_ignoreCase) {
     terms = goog.dom.annotate.lowercaseTerms_(terms);
   }
-  var stopTime = opt_maxMs > 0 ? goog.now() + opt_maxMs : 0;
+  var stopTime = +opt_maxMs > 0 ? goog.now() + opt_maxMs : 0;
 
   return goog.dom.annotate.annotateTermsInNode_(
       node, terms, annotateFn, opt_ignoreCase, opt_classesToSkip || [],
@@ -114,6 +106,7 @@ goog.dom.annotate.NODES_TO_SKIP_ = goog.object.createSet(
 goog.dom.annotate.annotateTermsInNode_ = function(
     node, terms, annotateFn, ignoreCase, classesToSkip, stopTime,
     recursionLevel) {
+  'use strict';
   if ((stopTime > 0 && goog.now() >= stopTime) ||
       recursionLevel > goog.dom.annotate.MAX_RECURSION_) {
     return false;
@@ -138,7 +131,7 @@ goog.dom.annotate.annotateTermsInNode_ = function(
       while ((nodeToInsert = tempNode.firstChild) != null) {
         // Each parentNode.insertBefore call removes the inserted node from
         // tempNode's list of children.
-        parentNode.insertBefore(nodeToInsert, node);
+        parentNode.insertBefore(/** @type {!Node} */ (nodeToInsert), node);
       }
 
       parentNode.removeChild(node);
@@ -150,6 +143,7 @@ goog.dom.annotate.annotateTermsInNode_ = function(
            .NODES_TO_SKIP_[/** @type {!Element} */ (node).tagName]) {
     var classes = /** @type {!Element} */ (node).className.split(/\s+/);
     var skip = goog.array.some(classes, function(className) {
+      'use strict';
       return goog.array.contains(classesToSkip, className);
     });
 
@@ -202,11 +196,12 @@ goog.dom.annotate.NONWORD_RE_ = /\W/;
  * @param {goog.dom.annotate.AnnotateFn} annotateFn
  * @param {*=} opt_ignoreCase  Whether to ignore the case of the query
  *   terms when looking for matches.
- * @return {goog.html.SafeHtml} The HTML equivalent of {@code text} with terms
+ * @return {goog.html.SafeHtml} The HTML equivalent of `text` with terms
  *   annotated, or null if the text did not contain any of the terms.
  */
 goog.dom.annotate.annotateText = function(
     text, terms, annotateFn, opt_ignoreCase) {
+  'use strict';
   if (opt_ignoreCase) {
     terms = goog.dom.annotate.lowercaseTerms_(terms);
   }
@@ -224,19 +219,20 @@ goog.dom.annotate.annotateText = function(
  * @param {string} text  The plain text to be searched.
  * @param {Array<Array<?>>} terms  An array of
  *   [{string} searchTerm, {boolean} matchWholeWordOnly] tuples.
- *   If {@code ignoreCase} is true, each search term must already be lowercase.
+ *   If `ignoreCase` is true, each search term must already be lowercase.
  *   The matchWholeWordOnly value is a per-term attribute because some terms
  *   may be CJK, while others are not. (For correctness, matchWholeWordOnly
  *   should always be false for CJK terms.).
  * @param {goog.dom.annotate.AnnotateFn} annotateFn
  * @param {*} ignoreCase  Whether to ignore the case of the query terms
  *   when looking for matches.
- * @return {goog.html.SafeHtml} The HTML equivalent of {@code text} with terms
+ * @return {goog.html.SafeHtml} The HTML equivalent of `text` with terms
  *   annotated, or null if the text did not contain any of the terms.
  * @private
  */
 goog.dom.annotate.helpAnnotateText_ = function(
     text, terms, annotateFn, ignoreCase) {
+  'use strict';
   var hit = false;
   var textToSearch = ignoreCase ? text.toLowerCase() : text;
   var textLen = textToSearch.length;
@@ -349,6 +345,7 @@ goog.dom.annotate.helpAnnotateText_ = function(
  * @private
  */
 goog.dom.annotate.lowercaseTerms_ = function(terms) {
+  'use strict';
   var lowercaseTerms = [];
   for (var i = 0; i < terms.length; ++i) {
     var term = terms[i];

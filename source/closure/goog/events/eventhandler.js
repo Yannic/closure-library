@@ -1,16 +1,8 @@
-// Copyright 2005 The Closure Library Authors. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS-IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+/**
+ * @license
+ * Copyright The Closure Library Authors.
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
 /**
  * @fileoverview Class to create objects which want to handle multiple events
@@ -52,7 +44,6 @@
  *   }
  * }
  * </pre>
- *
  */
 
 goog.provide('goog.events.EventHandler');
@@ -60,8 +51,10 @@ goog.provide('goog.events.EventHandler');
 goog.require('goog.Disposable');
 goog.require('goog.events');
 goog.require('goog.object');
-
-goog.forwardDeclare('goog.events.EventWrapper');
+goog.requireType('goog.events.Event');
+goog.requireType('goog.events.EventId');
+goog.requireType('goog.events.EventTarget');
+goog.requireType('goog.events.EventWrapper');
 
 
 
@@ -75,6 +68,7 @@ goog.forwardDeclare('goog.events.EventWrapper');
  * @template SCOPE
  */
 goog.events.EventHandler = function(opt_scope) {
+  'use strict';
   goog.Disposable.call(this);
   // TODO(mknichel): Rename this to this.scope_ and fix the classes in google3
   // that access this private variable. :(
@@ -111,14 +105,16 @@ goog.events.EventHandler.typeArray_ = [];
  * @param {function(this:SCOPE, EVENTOBJ):?|{handleEvent:function(?):?}|null=}
  *     opt_fn Optional callback function to be used as the listener or an object
  *     with handleEvent function.
- * @param {boolean=} opt_capture Optional whether to use capture phase.
- * @return {!goog.events.EventHandler<SCOPE>} This object, allowing for
- *     chaining of calls.
- * @template EVENTOBJ
+ * @param {(boolean|!AddEventListenerOptions)=} opt_options
+ * @return {THIS} This object, allowing for chaining of calls.
+ * @this {THIS}
+ * @template EVENTOBJ, THIS
  */
 goog.events.EventHandler.prototype.listen = function(
-    src, type, opt_fn, opt_capture) {
-  return this.listen_(src, type, opt_fn, opt_capture);
+    src, type, opt_fn, opt_options) {
+  'use strict';
+  var self = /** @type {!goog.events.EventHandler} */ (this);
+  return self.listen_(src, type, opt_fn, opt_options);
 };
 
 
@@ -132,16 +128,18 @@ goog.events.EventHandler.prototype.listen = function(
  * @param {function(this:T, EVENTOBJ):?|{handleEvent:function(this:T, ?):?}|
  *     null|undefined} fn Optional callback function to be used as the
  *     listener or an object with handleEvent function.
- * @param {boolean|undefined} capture Optional whether to use capture phase.
+ * @param {boolean|!AddEventListenerOptions|undefined} options
  * @param {T} scope Object in whose scope to call the listener.
- * @return {!goog.events.EventHandler<SCOPE>} This object, allowing for
- *     chaining of calls.
- * @template T,EVENTOBJ
+ * @return {THIS} This object, allowing for chaining of calls.
+ * @this {THIS}
+ * @template T, EVENTOBJ, THIS
  */
 goog.events.EventHandler.prototype.listenWithScope = function(
-    src, type, fn, capture, scope) {
+    src, type, fn, options, scope) {
+  'use strict';
+  var self = /** @type {!goog.events.EventHandler} */ (this);
   // TODO(mknichel): Deprecate this function.
-  return this.listen_(src, type, fn, capture, scope);
+  return self.listen_(src, type, fn, options, scope);
 };
 
 
@@ -155,16 +153,18 @@ goog.events.EventHandler.prototype.listenWithScope = function(
  * @param {function(EVENTOBJ):?|{handleEvent:function(?):?}|null=} opt_fn
  *     Optional callback function to be used as the listener or an object with
  *     handleEvent function.
- * @param {boolean=} opt_capture Optional whether to use capture phase.
+ * @param {(boolean|!AddEventListenerOptions)=} opt_options
  * @param {Object=} opt_scope Object in whose scope to call the listener.
- * @return {!goog.events.EventHandler<SCOPE>} This object, allowing for
- *     chaining of calls.
- * @template EVENTOBJ
+ * @return {THIS} This object, allowing for chaining of calls.
+ * @this {THIS}
+ * @template EVENTOBJ, THIS
  * @private
  */
 goog.events.EventHandler.prototype.listen_ = function(
-    src, type, opt_fn, opt_capture, opt_scope) {
-  if (!goog.isArray(type)) {
+    src, type, opt_fn, opt_options, opt_scope) {
+  'use strict';
+  var self = /** @type {!goog.events.EventHandler} */ (this);
+  if (!Array.isArray(type)) {
     if (type) {
       goog.events.EventHandler.typeArray_[0] = type.toString();
     }
@@ -172,21 +172,21 @@ goog.events.EventHandler.prototype.listen_ = function(
   }
   for (var i = 0; i < type.length; i++) {
     var listenerObj = goog.events.listen(
-        src, type[i], opt_fn || this.handleEvent, opt_capture || false,
-        opt_scope || this.handler_ || this);
+        src, type[i], opt_fn || self.handleEvent, opt_options || false,
+        opt_scope || self.handler_ || self);
 
     if (!listenerObj) {
       // When goog.events.listen run on OFF_AND_FAIL or OFF_AND_SILENT
       // (goog.events.CaptureSimulationMode) in IE8-, it will return null
       // value.
-      return this;
+      return self;
     }
 
     var key = listenerObj.key;
-    this.keys_[key] = listenerObj;
+    self.keys_[key] = listenerObj;
   }
 
-  return this;
+  return self;
 };
 
 
@@ -203,14 +203,16 @@ goog.events.EventHandler.prototype.listen_ = function(
  * opt_fn
  *    Optional callback function to be used as the listener or an object with
  *    handleEvent function.
- * @param {boolean=} opt_capture Optional whether to use capture phase.
- * @return {!goog.events.EventHandler<SCOPE>} This object, allowing for
- *     chaining of calls.
- * @template EVENTOBJ
+ * @param {(boolean|!AddEventListenerOptions)=} opt_options
+ * @return {THIS} This object, allowing for chaining of calls.
+ * @this {THIS}
+ * @template EVENTOBJ, THIS
  */
 goog.events.EventHandler.prototype.listenOnce = function(
-    src, type, opt_fn, opt_capture) {
-  return this.listenOnce_(src, type, opt_fn, opt_capture);
+    src, type, opt_fn, opt_options) {
+  'use strict';
+  var self = /** @type {!goog.events.EventHandler} */ (this);
+  return self.listenOnce_(src, type, opt_fn, opt_options);
 };
 
 
@@ -228,14 +230,16 @@ goog.events.EventHandler.prototype.listenOnce = function(
  *     listener or an object with handleEvent function.
  * @param {boolean|undefined} capture Optional whether to use capture phase.
  * @param {T} scope Object in whose scope to call the listener.
- * @return {!goog.events.EventHandler<SCOPE>} This object, allowing for
- *     chaining of calls.
- * @template T,EVENTOBJ
+ * @return {THIS} This object, allowing for chaining of calls.
+ * @this {THIS}
+ * @template T, EVENTOBJ, THIS
  */
 goog.events.EventHandler.prototype.listenOnceWithScope = function(
     src, type, fn, capture, scope) {
+  'use strict';
+  var self = /** @type {!goog.events.EventHandler} */ (this);
   // TODO(mknichel): Deprecate this function.
-  return this.listenOnce_(src, type, fn, capture, scope);
+  return self.listenOnce_(src, type, fn, capture, scope);
 };
 
 
@@ -251,35 +255,37 @@ goog.events.EventHandler.prototype.listenOnceWithScope = function(
  * @param {function(EVENTOBJ):?|{handleEvent:function(?):?}|null=} opt_fn
  *    Optional callback function to be used as the listener or an object with
  *    handleEvent function.
- * @param {boolean=} opt_capture Optional whether to use capture phase.
+ * @param {(boolean|!AddEventListenerOptions)=} opt_options
  * @param {Object=} opt_scope Object in whose scope to call the listener.
- * @return {!goog.events.EventHandler<SCOPE>} This object, allowing for
- *     chaining of calls.
- * @template EVENTOBJ
+ * @return {THIS} This object, allowing for chaining of calls.
+ * @this {THIS}
+ * @template EVENTOBJ, THIS
  * @private
  */
 goog.events.EventHandler.prototype.listenOnce_ = function(
-    src, type, opt_fn, opt_capture, opt_scope) {
-  if (goog.isArray(type)) {
+    src, type, opt_fn, opt_options, opt_scope) {
+  'use strict';
+  var self = /** @type {!goog.events.EventHandler} */ (this);
+  if (Array.isArray(type)) {
     for (var i = 0; i < type.length; i++) {
-      this.listenOnce_(src, type[i], opt_fn, opt_capture, opt_scope);
+      self.listenOnce_(src, type[i], opt_fn, opt_options, opt_scope);
     }
   } else {
     var listenerObj = goog.events.listenOnce(
-        src, type, opt_fn || this.handleEvent, opt_capture,
-        opt_scope || this.handler_ || this);
+        src, type, opt_fn || self.handleEvent, opt_options,
+        opt_scope || self.handler_ || self);
     if (!listenerObj) {
       // When goog.events.listen run on OFF_AND_FAIL or OFF_AND_SILENT
       // (goog.events.CaptureSimulationMode) in IE8-, it will return null
       // value.
-      return this;
+      return self;
     }
 
     var key = listenerObj.key;
-    this.keys_[key] = listenerObj;
+    self.keys_[key] = listenerObj;
   }
 
-  return this;
+  return self;
 };
 
 
@@ -295,14 +301,17 @@ goog.events.EventHandler.prototype.listenOnce_ = function(
  *     Callback method, or an object with a handleEvent function.
  * @param {boolean=} opt_capt Whether to fire in capture phase (defaults to
  *     false).
- * @return {!goog.events.EventHandler<SCOPE>} This object, allowing for
- *     chaining of calls.
+ * @return {THIS} This object, allowing for chaining of calls.
+ * @this {THIS}
+ * @template THIS
  */
 goog.events.EventHandler.prototype.listenWithWrapper = function(
     src, wrapper, listener, opt_capt) {
+  'use strict';
+  var self = /** @type {!goog.events.EventHandler} */ (this);
   // TODO(mknichel): Remove the opt_scope from this function and then
   // templatize it.
-  return this.listenWithWrapper_(src, wrapper, listener, opt_capt);
+  return self.listenWithWrapper_(src, wrapper, listener, opt_capt);
 };
 
 
@@ -319,14 +328,16 @@ goog.events.EventHandler.prototype.listenWithWrapper = function(
  *     listener or an object with handleEvent function.
  * @param {boolean|undefined} capture Optional whether to use capture phase.
  * @param {T} scope Object in whose scope to call the listener.
- * @return {!goog.events.EventHandler<SCOPE>} This object, allowing for
- *     chaining of calls.
- * @template T
+ * @return {THIS} This object, allowing for chaining of calls.
+ * @this {THIS}
+ * @template T, THIS
  */
 goog.events.EventHandler.prototype.listenWithWrapperAndScope = function(
     src, wrapper, listener, capture, scope) {
+  'use strict';
+  var self = /** @type {!goog.events.EventHandler} */ (this);
   // TODO(mknichel): Deprecate this function.
-  return this.listenWithWrapper_(src, wrapper, listener, capture, scope);
+  return self.listenWithWrapper_(src, wrapper, listener, capture, scope);
 };
 
 
@@ -343,15 +354,18 @@ goog.events.EventHandler.prototype.listenWithWrapperAndScope = function(
  * @param {boolean=} opt_capt Whether to fire in capture phase (defaults to
  *     false).
  * @param {Object=} opt_scope Element in whose scope to call the listener.
- * @return {!goog.events.EventHandler<SCOPE>} This object, allowing for
- *     chaining of calls.
+ * @return {THIS} This object, allowing for chaining of calls.
+ * @this {THIS}
+ * @template THIS
  * @private
  */
 goog.events.EventHandler.prototype.listenWithWrapper_ = function(
     src, wrapper, listener, opt_capt, opt_scope) {
+  'use strict';
+  var self = /** @type {!goog.events.EventHandler} */ (this);
   wrapper.listen(
-      src, listener, opt_capt, opt_scope || this.handler_ || this, this);
-  return this;
+      src, listener, opt_capt, opt_scope || self.handler_ || self, self);
+  return self;
 };
 
 
@@ -359,6 +373,7 @@ goog.events.EventHandler.prototype.listenWithWrapper_ = function(
  * @return {number} Number of listeners registered by this handler.
  */
 goog.events.EventHandler.prototype.getListenerCount = function() {
+  'use strict';
   var count = 0;
   for (var key in this.keys_) {
     if (Object.prototype.hasOwnProperty.call(this.keys_, key)) {
@@ -375,33 +390,37 @@ goog.events.EventHandler.prototype.getListenerCount = function() {
  * @param {string|Array<string>|
  *     !goog.events.EventId<EVENTOBJ>|!Array<!goog.events.EventId<EVENTOBJ>>}
  *     type Event type or array of event types to unlisten to.
- * @param {function(EVENTOBJ):?|{handleEvent:function(?):?}|null=} opt_fn
- *     Optional callback function to be used as the listener or an object with
- *     handleEvent function.
- * @param {boolean=} opt_capture Optional whether to use capture phase.
+ * @param {function(this:?, EVENTOBJ):?|{handleEvent:function(?):?}|null=}
+ *     opt_fn Optional callback function to be used as the listener or an object
+ *     with handleEvent function.
+ * @param {(boolean|!EventListenerOptions)=} opt_options
  * @param {Object=} opt_scope Object in whose scope to call the listener.
- * @return {!goog.events.EventHandler} This object, allowing for chaining of
- *     calls.
- * @template EVENTOBJ
+ * @return {THIS} This object, allowing for chaining of calls.
+ * @this {THIS}
+ * @template EVENTOBJ, THIS
  */
 goog.events.EventHandler.prototype.unlisten = function(
-    src, type, opt_fn, opt_capture, opt_scope) {
-  if (goog.isArray(type)) {
+    src, type, opt_fn, opt_options, opt_scope) {
+  'use strict';
+  var self = /** @type {!goog.events.EventHandler} */ (this);
+  if (Array.isArray(type)) {
     for (var i = 0; i < type.length; i++) {
-      this.unlisten(src, type[i], opt_fn, opt_capture, opt_scope);
+      self.unlisten(src, type[i], opt_fn, opt_options, opt_scope);
     }
   } else {
+    var capture =
+        goog.isObject(opt_options) ? !!opt_options.capture : !!opt_options;
     var listener = goog.events.getListener(
-        src, type, opt_fn || this.handleEvent, opt_capture,
-        opt_scope || this.handler_ || this);
+        src, type, opt_fn || self.handleEvent, capture,
+        opt_scope || self.handler_ || self);
 
     if (listener) {
       goog.events.unlistenByKey(listener);
-      delete this.keys_[listener.key];
+      delete self.keys_[listener.key];
     }
   }
 
-  return this;
+  return self;
 };
 
 
@@ -417,14 +436,17 @@ goog.events.EventHandler.prototype.unlisten = function(
  *     whether the listener is fired during the capture or bubble phase of the
  *     event.
  * @param {Object=} opt_scope Element in whose scope to call the listener.
- * @return {!goog.events.EventHandler} This object, allowing for chaining of
- *     calls.
+ * @return {THIS} This object, allowing for chaining of calls.
+ * @this {THIS}
+ * @template THIS
  */
 goog.events.EventHandler.prototype.unlistenWithWrapper = function(
     src, wrapper, listener, opt_capt, opt_scope) {
+  'use strict';
+  var self = /** @type {!goog.events.EventHandler} */ (this);
   wrapper.unlisten(
-      src, listener, opt_capt, opt_scope || this.handler_ || this, this);
-  return this;
+      src, listener, opt_capt, opt_scope || self.handler_ || self, self);
+  return self;
 };
 
 
@@ -432,7 +454,9 @@ goog.events.EventHandler.prototype.unlistenWithWrapper = function(
  * Unlistens to all events.
  */
 goog.events.EventHandler.prototype.removeAll = function() {
+  'use strict';
   goog.object.forEach(this.keys_, function(listenerObj, key) {
+    'use strict';
     if (this.keys_.hasOwnProperty(key)) {
       goog.events.unlistenByKey(listenerObj);
     }
@@ -448,6 +472,7 @@ goog.events.EventHandler.prototype.removeAll = function() {
  * @protected
  */
 goog.events.EventHandler.prototype.disposeInternal = function() {
+  'use strict';
   goog.events.EventHandler.superClass_.disposeInternal.call(this);
   this.removeAll();
 };
@@ -458,5 +483,6 @@ goog.events.EventHandler.prototype.disposeInternal = function() {
  * @param {goog.events.Event} e Event object.
  */
 goog.events.EventHandler.prototype.handleEvent = function(e) {
-  throw Error('EventHandler.handleEvent not implemented');
+  'use strict';
+  throw new Error('EventHandler.handleEvent not implemented');
 };

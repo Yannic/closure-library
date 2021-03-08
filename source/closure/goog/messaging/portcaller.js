@@ -1,31 +1,24 @@
-// Copyright 2011 The Closure Library Authors. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS-IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+/**
+ * @license
+ * Copyright The Closure Library Authors.
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
 /**
  * @fileoverview The leaf node of a {@link goog.messaging.PortNetwork}. Callers
  * connect to the operator, and request connections with other contexts from it.
- *
  */
 
 goog.provide('goog.messaging.PortCaller');
 
 goog.require('goog.Disposable');
 goog.require('goog.async.Deferred');
+goog.require('goog.dispose');
 goog.require('goog.messaging.DeferredChannel');
 goog.require('goog.messaging.PortChannel');
 goog.require('goog.messaging.PortNetwork');  // interface
 goog.require('goog.object');
+goog.requireType('goog.messaging.MessageChannel');
 
 
 
@@ -43,6 +36,7 @@ goog.require('goog.object');
  * @final
  */
 goog.messaging.PortCaller = function(operatorPort) {
+  'use strict';
   goog.messaging.PortCaller.base(this, 'constructor');
 
   /**
@@ -88,6 +82,7 @@ goog.inherits(goog.messaging.PortCaller, goog.Disposable);
 
 /** @override */
 goog.messaging.PortCaller.prototype.dial = function(name) {
+  'use strict';
   if (name in this.connections_) {
     return this.connections_[name].channel;
   }
@@ -118,6 +113,7 @@ goog.messaging.PortCaller.prototype.dial = function(name) {
  * @private
  */
 goog.messaging.PortCaller.prototype.connectionGranted_ = function(message) {
+  'use strict';
   var args = /** @type {{name: string, port: MessagePort}} */ (message);
   var port = args['port'];
   var entry = this.connections_[args['name']];
@@ -128,7 +124,7 @@ goog.messaging.PortCaller.prototype.connectionGranted_ = function(message) {
     // close any future ports.
     port.close();
   } else if (!args['success']) {
-    throw Error(args['message']);
+    throw new Error(args['message']);
   } else {
     port.start();
     var channel = new goog.messaging.PortChannel(port);
@@ -143,6 +139,7 @@ goog.messaging.PortCaller.prototype.connectionGranted_ = function(message) {
 
 /** @override */
 goog.messaging.PortCaller.prototype.disposeInternal = function() {
+  'use strict';
   goog.dispose(this.operatorPort_);
   goog.object.forEach(this.connections_, goog.dispose);
   delete this.operatorPort_;

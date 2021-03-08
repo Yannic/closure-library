@@ -1,16 +1,8 @@
-// Copyright 2013 The Closure Library Authors. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS-IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+/**
+ * @license
+ * Copyright The Closure Library Authors.
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
 /**
  * @fileoverview Transitional utilities to unsafely trust random strings as
@@ -61,15 +53,13 @@
  * which it is prohibitively expensive to refactor to use goog.html types.
  * Generally, this is code where safety from XSS is either hopeless or
  * unimportant.
- *
- * @visibility {//closure/goog/html:approved_for_legacy_conversion}
- * @visibility {//closure/goog/bin/sizetests:__pkg__}
  */
 
 
 goog.provide('goog.html.legacyconversions');
 
 goog.require('goog.html.SafeHtml');
+goog.require('goog.html.SafeScript');
 goog.require('goog.html.SafeStyle');
 goog.require('goog.html.SafeStyleSheet');
 goog.require('goog.html.SafeUrl');
@@ -87,9 +77,28 @@ goog.require('goog.html.TrustedResourceUrl');
  *     object.
  */
 goog.html.legacyconversions.safeHtmlFromString = function(html) {
+  'use strict';
   goog.html.legacyconversions.reportCallback_();
   return goog.html.SafeHtml.createSafeHtmlSecurityPrivateDoNotAccessOrElse(
       html, null /* dir */);
+};
+
+
+/**
+ * Performs an "unchecked conversion" from string to SafeScript for legacy API
+ * purposes.
+ *
+ * Please read fileoverview documentation before using.
+ *
+ * @param {string} script A string to be converted to SafeScript.
+ * @return {!goog.html.SafeScript} The value of script, wrapped in a SafeScript
+ *     object.
+ */
+goog.html.legacyconversions.safeScriptFromString = function(script) {
+  'use strict';
+  goog.html.legacyconversions.reportCallback_();
+  return goog.html.SafeScript.createSafeScriptSecurityPrivateDoNotAccessOrElse(
+      script);
 };
 
 
@@ -104,6 +113,7 @@ goog.html.legacyconversions.safeHtmlFromString = function(html) {
  *     object.
  */
 goog.html.legacyconversions.safeStyleFromString = function(style) {
+  'use strict';
   goog.html.legacyconversions.reportCallback_();
   return goog.html.SafeStyle.createSafeStyleSecurityPrivateDoNotAccessOrElse(
       style);
@@ -121,6 +131,7 @@ goog.html.legacyconversions.safeStyleFromString = function(style) {
  *     a SafeStyleSheet object.
  */
 goog.html.legacyconversions.safeStyleSheetFromString = function(styleSheet) {
+  'use strict';
   goog.html.legacyconversions.reportCallback_();
   return goog.html.SafeStyleSheet
       .createSafeStyleSheetSecurityPrivateDoNotAccessOrElse(styleSheet);
@@ -138,6 +149,7 @@ goog.html.legacyconversions.safeStyleSheetFromString = function(styleSheet) {
  *     object.
  */
 goog.html.legacyconversions.safeUrlFromString = function(url) {
+  'use strict';
   goog.html.legacyconversions.reportCallback_();
   return goog.html.SafeUrl.createSafeUrlSecurityPrivateDoNotAccessOrElse(url);
 };
@@ -154,6 +166,7 @@ goog.html.legacyconversions.safeUrlFromString = function(url) {
  *     TrustedResourceUrl object.
  */
 goog.html.legacyconversions.trustedResourceUrlFromString = function(url) {
+  'use strict';
   goog.html.legacyconversions.reportCallback_();
   return goog.html.TrustedResourceUrl
       .createTrustedResourceUrlSecurityPrivateDoNotAccessOrElse(url);
@@ -173,5 +186,6 @@ goog.html.legacyconversions.reportCallback_ = goog.nullFunction;
  * @param {function(): undefined} callback Error callback as defined above.
  */
 goog.html.legacyconversions.setReportCallback = function(callback) {
+  'use strict';
   goog.html.legacyconversions.reportCallback_ = callback;
 };

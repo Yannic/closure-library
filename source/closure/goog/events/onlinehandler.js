@@ -1,20 +1,12 @@
-// Copyright 2008 The Closure Library Authors. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS-IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+/**
+ * @license
+ * Copyright The Closure Library Authors.
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
 /**
  * @fileoverview This event handler will dispatch events when
- * {@code navigator.onLine} changes.  HTML5 defines two events, online and
+ * `navigator.onLine` changes.  HTML5 defines two events, online and
  * offline that is fired on the window.  As of today 3 browsers support these
  * events: Firefox 3 (Gecko 1.9), Opera 9.5, and IE8.  If we have any of these
  * we listen to the 'online' and 'offline' events on the current window
@@ -23,7 +15,6 @@
  * Note that this class only reflects what the browser tells us and this usually
  * only reflects changes to the File -> Work Offline menu item.
  *
- * @author arv@google.com (Erik Arvidsson)
  * @see ../demos/onlinehandler.html
  */
 
@@ -50,6 +41,7 @@ goog.require('goog.net.NetworkStatusMonitor');
  * @implements {goog.net.NetworkStatusMonitor}
  */
 goog.events.OnlineHandler = function() {
+  'use strict';
   goog.events.OnlineHandler.base(this, 'constructor');
 
   /**
@@ -89,7 +81,7 @@ goog.events.OnlineHandler.EventType = goog.net.NetworkStatusMonitor.EventType;
 
 
 /**
- * The time to wait before checking the {@code navigator.onLine} again.
+ * The time to wait before checking the `navigator.onLine` again.
  * @type {number}
  * @private
  */
@@ -115,6 +107,7 @@ goog.events.OnlineHandler.prototype.timer_;
 
 /** @override */
 goog.events.OnlineHandler.prototype.isOnline = function() {
+  'use strict';
   return goog.events.BrowserFeature.HAS_NAVIGATOR_ONLINE_PROPERTY ?
       navigator.onLine :
       true;
@@ -127,6 +120,7 @@ goog.events.OnlineHandler.prototype.isOnline = function() {
  * @private
  */
 goog.events.OnlineHandler.prototype.handleTick_ = function() {
+  'use strict';
   var online = this.isOnline();
   if (online != this.online_) {
     this.online_ = online;
@@ -137,10 +131,11 @@ goog.events.OnlineHandler.prototype.handleTick_ = function() {
 
 /**
  * Called when the online state changes.  This dispatches the
- * {@code ONLINE} and {@code OFFLINE} events respectively.
+ * `ONLINE` and `OFFLINE` events respectively.
  * @private
  */
 goog.events.OnlineHandler.prototype.handleChange_ = function() {
+  'use strict';
   var type = this.isOnline() ? goog.net.NetworkStatusMonitor.EventType.ONLINE :
                                goog.net.NetworkStatusMonitor.EventType.OFFLINE;
   this.dispatchEvent(type);
@@ -149,6 +144,7 @@ goog.events.OnlineHandler.prototype.handleChange_ = function() {
 
 /** @override */
 goog.events.OnlineHandler.prototype.disposeInternal = function() {
+  'use strict';
   goog.events.OnlineHandler.base(this, 'disposeInternal');
   this.eventHandler_.dispose();
   this.eventHandler_ = null;

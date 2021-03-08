@@ -1,21 +1,12 @@
-// Copyright 2006 The Closure Library Authors. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS-IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+/**
+ * @license
+ * Copyright The Closure Library Authors.
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
 /**
  * @fileoverview Character counter widget implementation.
  *
- * @author eae@google.com (Emil A Eklund)
  * @see ../demos/charcounter.html
  */
 
@@ -26,6 +17,7 @@ goog.require('goog.dom');
 goog.require('goog.events');
 goog.require('goog.events.EventTarget');
 goog.require('goog.events.InputHandler');
+goog.requireType('goog.events.BrowserEvent');
 
 
 
@@ -47,6 +39,7 @@ goog.require('goog.events.InputHandler');
  * @final
  */
 goog.ui.CharCounter = function(elInput, elCount, maxLength, opt_displayMode) {
+  'use strict';
   goog.events.EventTarget.call(this);
 
   /**
@@ -113,6 +106,7 @@ goog.ui.CharCounter.Display = {
  * @param {number} maxLength The maximum length.
  */
 goog.ui.CharCounter.prototype.setMaxLength = function(maxLength) {
+  'use strict';
   this.maxLength_ = maxLength;
   this.checkLength();
 };
@@ -124,6 +118,7 @@ goog.ui.CharCounter.prototype.setMaxLength = function(maxLength) {
  * @return {number} The maximum length.
  */
 goog.ui.CharCounter.prototype.getMaxLength = function() {
+  'use strict';
   return this.maxLength_;
 };
 
@@ -134,6 +129,7 @@ goog.ui.CharCounter.prototype.getMaxLength = function() {
  * @param {!goog.ui.CharCounter.Display} displayMode The display mode.
  */
 goog.ui.CharCounter.prototype.setDisplayMode = function(displayMode) {
+  'use strict';
   this.display_ = displayMode;
   this.checkLength();
 };
@@ -145,6 +141,7 @@ goog.ui.CharCounter.prototype.setDisplayMode = function(displayMode) {
  * @return {!goog.ui.CharCounter.Display} The display mode.
  */
 goog.ui.CharCounter.prototype.getDisplayMode = function() {
+  'use strict';
   return this.display_;
 };
 
@@ -156,6 +153,7 @@ goog.ui.CharCounter.prototype.getDisplayMode = function() {
  * @private
  */
 goog.ui.CharCounter.prototype.onChange_ = function(event) {
+  'use strict';
   this.checkLength();
 };
 
@@ -165,6 +163,7 @@ goog.ui.CharCounter.prototype.onChange_ = function(event) {
  * if the maximum lengths is exceeded.
  */
 goog.ui.CharCounter.prototype.checkLength = function() {
+  'use strict';
   var count = this.elInput_.value.length;
 
   // There's no maxlength property for textareas so instead we truncate the
@@ -191,6 +190,7 @@ goog.ui.CharCounter.prototype.checkLength = function() {
 
 /** @override */
 goog.ui.CharCounter.prototype.disposeInternal = function() {
+  'use strict';
   goog.ui.CharCounter.superClass_.disposeInternal.call(this);
   delete this.elInput_;
   this.inputHandler_.dispose();

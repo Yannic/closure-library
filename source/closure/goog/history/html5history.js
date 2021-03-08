@@ -1,16 +1,8 @@
-// Copyright 2010 The Closure Library Authors. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS-IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+/**
+ * @license
+ * Copyright The Closure Library Authors.
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
 /**
  * @fileoverview HTML5 based history implementation, compatible with
@@ -18,7 +10,6 @@
  *
  * TODO(user): There should really be a history interface and multiple
  * implementations.
- *
  */
 
 
@@ -30,6 +21,7 @@ goog.require('goog.events');
 goog.require('goog.events.EventTarget');
 goog.require('goog.events.EventType');
 goog.require('goog.history.Event');
+goog.requireType('goog.events.BrowserEvent');
 
 
 
@@ -46,6 +38,7 @@ goog.require('goog.history.Event');
  * @final
  */
 goog.history.Html5History = function(opt_win, opt_transformer) {
+  'use strict';
   goog.events.EventTarget.call(this);
   goog.asserts.assert(
       goog.history.Html5History.isSupported(opt_win),
@@ -90,6 +83,7 @@ goog.inherits(goog.history.Html5History, goog.events.EventTarget);
  * @return {boolean} Whether html5 history is supported.
  */
 goog.history.Html5History.isSupported = function(opt_win) {
+  'use strict';
   var win = opt_win || window;
   return !!(win.history && win.history.pushState);
 };
@@ -129,6 +123,7 @@ goog.history.Html5History.prototype.pathPrefix_ = '/';
  * @param {boolean} enable Whether to enable history.
  */
 goog.history.Html5History.prototype.setEnabled = function(enable) {
+  'use strict';
   if (enable == this.enabled_) {
     return;
   }
@@ -146,6 +141,7 @@ goog.history.Html5History.prototype.setEnabled = function(enable) {
  * @return {string} The current token.
  */
 goog.history.Html5History.prototype.getToken = function() {
+  'use strict';
   if (this.useFragment_) {
     return goog.asserts.assertString(this.getFragment_());
   } else {
@@ -163,6 +159,7 @@ goog.history.Html5History.prototype.getToken = function() {
  * @param {string=} opt_title Optional title to associate with history entry.
  */
 goog.history.Html5History.prototype.setToken = function(token, opt_title) {
+  'use strict';
   if (token == this.getToken()) {
     return;
   }
@@ -182,6 +179,7 @@ goog.history.Html5History.prototype.setToken = function(token, opt_title) {
  * @param {string=} opt_title Optional title to associate with history entry.
  */
 goog.history.Html5History.prototype.replaceToken = function(token, opt_title) {
+  'use strict';
   // Per externs/gecko_dom.js document.title can be null.
   this.window_.history.replaceState(
       null, opt_title || this.window_.document.title || '',
@@ -192,6 +190,7 @@ goog.history.Html5History.prototype.replaceToken = function(token, opt_title) {
 
 /** @override */
 goog.history.Html5History.prototype.disposeInternal = function() {
+  'use strict';
   goog.events.unlisten(
       this.window_, goog.events.EventType.POPSTATE, this.onHistoryEvent_, false,
       this);
@@ -208,6 +207,7 @@ goog.history.Html5History.prototype.disposeInternal = function() {
  * @param {boolean} useFragment Whether to use the fragment.
  */
 goog.history.Html5History.prototype.setUseFragment = function(useFragment) {
+  'use strict';
   if (this.useFragment_ != useFragment) {
     if (useFragment) {
       goog.events.listen(
@@ -229,6 +229,7 @@ goog.history.Html5History.prototype.setUseFragment = function(useFragment) {
  * @param {string} pathPrefix Sets the path prefix.
  */
 goog.history.Html5History.prototype.setPathPrefix = function(pathPrefix) {
+  'use strict';
   this.pathPrefix_ = pathPrefix;
 };
 
@@ -238,6 +239,7 @@ goog.history.Html5History.prototype.setPathPrefix = function(pathPrefix) {
  * @return {string} The path prefix.
  */
 goog.history.Html5History.prototype.getPathPrefix = function() {
+  'use strict';
   return this.pathPrefix_;
 };
 
@@ -248,6 +250,7 @@ goog.history.Html5History.prototype.getPathPrefix = function() {
  * @private
  */
 goog.history.Html5History.prototype.getFragment_ = function() {
+  'use strict';
   if (this.useFragment_) {
     var loc = this.window_.location.href;
     var index = loc.indexOf('#');
@@ -265,6 +268,7 @@ goog.history.Html5History.prototype.getFragment_ = function() {
  * @private
  */
 goog.history.Html5History.prototype.getUrl_ = function(token) {
+  'use strict';
   if (this.useFragment_) {
     return '#' + token;
   } else {
@@ -282,6 +286,7 @@ goog.history.Html5History.prototype.getUrl_ = function(token) {
  * @private
  */
 goog.history.Html5History.prototype.onHistoryEvent_ = function(e) {
+  'use strict';
   if (this.enabled_) {
     var fragment = this.getFragment_();
     // Only fire NAVIGATE event if it's POPSTATE or if the fragment has changed
@@ -299,12 +304,12 @@ goog.history.Html5History.prototype.onHistoryEvent_ = function(e) {
 
 /**
  * A token transformer that can create a URL from a history
- * token. This is used by {@code goog.history.Html5History} to create
+ * token. This is used by `goog.history.Html5History` to create
  * URL when storing token without the hash fragment.
  *
- * Given a {@code window.location} object containing the location
- * created by {@code createUrl}, the token transformer allows
- * retrieval of the token back via {@code retrieveToken}.
+ * Given a `window.location` object containing the location
+ * created by `createUrl`, the token transformer allows
+ * retrieval of the token back via `retrieveToken`.
  *
  * @interface
  */
@@ -313,11 +318,11 @@ goog.history.Html5History.TokenTransformer = function() {};
 
 /**
  * Retrieves a history token given the path prefix and
- * {@code window.location} object.
+ * `window.location` object.
  *
  * @param {string} pathPrefix The path prefix to use when storing token
  *     in a path; always begin with a slash.
- * @param {Location} location The {@code window.location} object.
+ * @param {Location} location The `window.location` object.
  *     Treat this object as read-only.
  * @return {string} token The history token.
  */
@@ -332,7 +337,7 @@ goog.history.Html5History.TokenTransformer.prototype.retrieveToken = function(
  * @param {string} token The history token.
  * @param {string} pathPrefix The path prefix to use when storing token
  *     in a path; always begin with a slash.
- * @param {Location} location The {@code window.location} object.
+ * @param {Location} location The `window.location` object.
  *     Treat this object as read-only.
  * @return {string} url The complete URL string from path onwards
  *     (without {@code protocol://host:port} part); must begin with a

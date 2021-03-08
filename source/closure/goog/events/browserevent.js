@@ -1,16 +1,8 @@
-// Copyright 2005 The Closure Library Authors. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS-IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+/**
+ * @license
+ * Copyright The Closure Library Authors.
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
 /**
  * @fileoverview A patched, standardized event object for browser events.
@@ -33,26 +25,36 @@
  * - altKey         {boolean}   Was alt key depressed
  * - shiftKey       {boolean}   Was shift key depressed
  * - metaKey        {boolean}   Was meta key depressed
+ * - pointerId      {number}    Pointer ID
+ * - pointerType    {string}    Pointer type, e.g. 'mouse', 'pen', or 'touch'
  * - defaultPrevented {boolean} Whether the default action has been prevented
  * - state          {Object}    History state object
  *
  * NOTE: The keyCode member contains the raw browser keyCode. For normalized
  * key and character code use {@link goog.events.KeyHandler}.
  * </pre>
- *
- * @author arv@google.com (Erik Arvidsson)
+ * @suppress {missingRequire} TODO(user): this shouldn't be needed
  */
 
 goog.provide('goog.events.BrowserEvent');
 goog.provide('goog.events.BrowserEvent.MouseButton');
+goog.provide('goog.events.BrowserEvent.PointerType');
 
+goog.require('goog.debug');
 goog.require('goog.events.BrowserFeature');
 goog.require('goog.events.Event');
 goog.require('goog.events.EventType');
 goog.require('goog.reflect');
 goog.require('goog.userAgent');
 
-
+/**
+ * @define {boolean} If true, use the layerX and layerY properties of a native
+ * browser event over the offsetX and offsetY properties, which cause expensive
+ * reflow. If layerX or layerY is not defined, offsetX and offsetY will be used
+ * as usual.
+ */
+goog.events.USE_LAYER_XY_AS_OFFSET_XY =
+    goog.define('goog.events.USE_LAYER_XY_AS_OFFSET_XY', false);
 
 /**
  * Accepts a browser event object and creates a patched, cross browser event
@@ -65,25 +67,26 @@ goog.require('goog.userAgent');
  * @extends {goog.events.Event}
  */
 goog.events.BrowserEvent = function(opt_e, opt_currentTarget) {
+  'use strict';
   goog.events.BrowserEvent.base(this, 'constructor', opt_e ? opt_e.type : '');
 
   /**
    * Target that fired the event.
    * @override
-   * @type {Node}
+   * @type {?Node}
    */
   this.target = null;
 
   /**
    * Node that had the listener attached.
    * @override
-   * @type {Node|undefined}
+   * @type {?Node|undefined}
    */
   this.currentTarget = null;
 
   /**
    * For mouseover and mouseout events, the related object for the event.
-   * @type {Node}
+   * @type {?Node}
    */
   this.relatedTarget = null;
 
@@ -130,6 +133,12 @@ goog.events.BrowserEvent = function(opt_e, opt_currentTarget) {
   this.button = 0;
 
   /**
+   * Key of key press.
+   * @type {string}
+   */
+  this.key = '';
+
+  /**
    * Keycode of key press.
    * @type {number}
    */
@@ -168,7 +177,7 @@ goog.events.BrowserEvent = function(opt_e, opt_currentTarget) {
   /**
    * History state object, only set for PopState events where it's a copy of the
    * state object provided to pushState or replaceState.
-   * @type {Object}
+   * @type {?Object}
    */
   this.state = null;
 
@@ -180,8 +189,18 @@ goog.events.BrowserEvent = function(opt_e, opt_currentTarget) {
   this.platformModifierKey = false;
 
   /**
+   * @type {number}
+   */
+  this.pointerId = 0;
+
+  /**
+   * @type {string}
+   */
+  this.pointerType = '';
+
+  /**
    * The browser event object.
-   * @private {Event}
+   * @private {?Event}
    */
   this.event_ = null;
 
@@ -204,14 +223,44 @@ goog.events.BrowserEvent.MouseButton = {
 
 
 /**
+ * Normalized pointer type constants for pointer events.
+ * @enum {string}
+ */
+goog.events.BrowserEvent.PointerType = {
+  MOUSE: 'mouse',
+  PEN: 'pen',
+  TOUCH: 'touch'
+};
+
+
+/**
  * Static data for mapping mouse buttons.
  * @type {!Array<number>}
+ * @deprecated Use `goog.events.BrowserEvent.IE_BUTTON_MAP` instead.
  */
-goog.events.BrowserEvent.IEButtonMap = [
+goog.events.BrowserEvent.IEButtonMap = goog.debug.freeze([
   1,  // LEFT
   4,  // MIDDLE
   2   // RIGHT
-];
+]);
+
+
+/**
+ * Static data for mapping mouse buttons.
+ * @const {!Array<number>}
+ */
+goog.events.BrowserEvent.IE_BUTTON_MAP = goog.events.BrowserEvent.IEButtonMap;
+
+
+/**
+ * Static data for mapping MSPointerEvent types to PointerEvent types.
+ * @const {!Object<number, goog.events.BrowserEvent.PointerType>}
+ */
+goog.events.BrowserEvent.IE_POINTER_TYPE_MAP = goog.debug.freeze({
+  2: goog.events.BrowserEvent.PointerType.TOUCH,
+  3: goog.events.BrowserEvent.PointerType.PEN,
+  4: goog.events.BrowserEvent.PointerType.MOUSE
+});
 
 
 /**
@@ -221,13 +270,15 @@ goog.events.BrowserEvent.IEButtonMap = [
  * @param {EventTarget=} opt_currentTarget Current target for event.
  */
 goog.events.BrowserEvent.prototype.init = function(e, opt_currentTarget) {
+  'use strict';
   var type = this.type = e.type;
 
   /**
    * On touch devices use the first "changed touch" as the relevant touch.
-   * @type {Touch}
+   * @type {?Touch}
    */
-  var relevantTouch = e.changedTouches ? e.changedTouches[0] : null;
+  var relevantTouch =
+      e.changedTouches && e.changedTouches.length ? e.changedTouches[0] : null;
 
   // TODO(nicksantos): Change this.target to type EventTarget.
   this.target = /** @type {Node} */ (e.target) || e.srcElement;
@@ -246,8 +297,6 @@ goog.events.BrowserEvent.prototype.init = function(e, opt_currentTarget) {
         relatedTarget = null;
       }
     }
-    // TODO(arv): Use goog.events.EventType when it has been refactored into its
-    // own file.
   } else if (type == goog.events.EventType.MOUSEOVER) {
     relatedTarget = e.fromElement;
   } else if (type == goog.events.EventType.MOUSEOUT) {
@@ -256,7 +305,7 @@ goog.events.BrowserEvent.prototype.init = function(e, opt_currentTarget) {
 
   this.relatedTarget = relatedTarget;
 
-  if (!goog.isNull(relevantTouch)) {
+  if (relevantTouch) {
     this.clientX = relevantTouch.clientX !== undefined ? relevantTouch.clientX :
                                                          relevantTouch.pageX;
     this.clientY = relevantTouch.clientY !== undefined ? relevantTouch.clientY :
@@ -264,14 +313,19 @@ goog.events.BrowserEvent.prototype.init = function(e, opt_currentTarget) {
     this.screenX = relevantTouch.screenX || 0;
     this.screenY = relevantTouch.screenY || 0;
   } else {
-    // Webkit emits a lame warning whenever layerX/layerY is accessed.
-    // http://code.google.com/p/chromium/issues/detail?id=101733
-    this.offsetX = (goog.userAgent.WEBKIT || e.offsetX !== undefined) ?
-        e.offsetX :
-        e.layerX;
-    this.offsetY = (goog.userAgent.WEBKIT || e.offsetY !== undefined) ?
-        e.offsetY :
-        e.layerY;
+    if (goog.events.USE_LAYER_XY_AS_OFFSET_XY) {
+      this.offsetX = (e.layerX !== undefined) ? e.layerX : e.offsetX;
+      this.offsetY = (e.layerY !== undefined) ? e.layerY : e.offsetY;
+    } else {
+      // Webkit emits a lame warning whenever layerX/layerY is accessed.
+      // http://code.google.com/p/chromium/issues/detail?id=101733
+      this.offsetX = (goog.userAgent.WEBKIT || e.offsetX !== undefined) ?
+          e.offsetX :
+          e.layerX;
+      this.offsetY = (goog.userAgent.WEBKIT || e.offsetY !== undefined) ?
+          e.offsetY :
+          e.layerY;
+    }
     this.clientX = e.clientX !== undefined ? e.clientX : e.pageX;
     this.clientY = e.clientY !== undefined ? e.clientY : e.pageY;
     this.screenX = e.screenX || 0;
@@ -281,16 +335,21 @@ goog.events.BrowserEvent.prototype.init = function(e, opt_currentTarget) {
   this.button = e.button;
 
   this.keyCode = e.keyCode || 0;
+  this.key = e.key || '';
   this.charCode = e.charCode || (type == 'keypress' ? e.keyCode : 0);
   this.ctrlKey = e.ctrlKey;
   this.altKey = e.altKey;
   this.shiftKey = e.shiftKey;
   this.metaKey = e.metaKey;
   this.platformModifierKey = goog.userAgent.MAC ? e.metaKey : e.ctrlKey;
+  this.pointerId = e.pointerId || 0;
+  this.pointerType = goog.events.BrowserEvent.getPointerType_(e);
   this.state = e.state;
   this.event_ = e;
   if (e.defaultPrevented) {
-    this.preventDefault();
+    // Sync native event state to internal state via super class, where default
+    // prevention is implemented and managed.
+    goog.events.BrowserEvent.superClass_.preventDefault.call(this);
   }
 };
 
@@ -312,12 +371,13 @@ goog.events.BrowserEvent.prototype.init = function(e, opt_currentTarget) {
  * @return {boolean} True if button was pressed.
  */
 goog.events.BrowserEvent.prototype.isButton = function(button) {
+  'use strict';
   if (!goog.events.BrowserFeature.HAS_W3C_BUTTON) {
     if (this.type == 'click') {
       return button == goog.events.BrowserEvent.MouseButton.LEFT;
     } else {
       return !!(
-          this.event_.button & goog.events.BrowserEvent.IEButtonMap[button]);
+          this.event_.button & goog.events.BrowserEvent.IE_BUTTON_MAP[button]);
     }
   } else {
     return this.event_.button == button;
@@ -334,10 +394,12 @@ goog.events.BrowserEvent.prototype.isButton = function(button) {
  * @return {boolean} The result.
  */
 goog.events.BrowserEvent.prototype.isMouseActionButton = function() {
-  // Webkit does not ctrl+click to be a right-click, so we
-  // normalize it to behave like Gecko and Opera.
+  'use strict';
+  // Ctrl+click should never behave like a left-click on mac, regardless of
+  // whether or not the browser will actually ever emit such an event.  If
+  // we see it, treat it like right-click always.
   return this.isButton(goog.events.BrowserEvent.MouseButton.LEFT) &&
-      !(goog.userAgent.WEBKIT && goog.userAgent.MAC && this.ctrlKey);
+      !(goog.userAgent.MAC && this.ctrlKey);
 };
 
 
@@ -345,6 +407,7 @@ goog.events.BrowserEvent.prototype.isMouseActionButton = function() {
  * @override
  */
 goog.events.BrowserEvent.prototype.stopPropagation = function() {
+  'use strict';
   goog.events.BrowserEvent.superClass_.stopPropagation.call(this);
   if (this.event_.stopPropagation) {
     this.event_.stopPropagation();
@@ -358,12 +421,13 @@ goog.events.BrowserEvent.prototype.stopPropagation = function() {
  * @override
  */
 goog.events.BrowserEvent.prototype.preventDefault = function() {
+  'use strict';
   goog.events.BrowserEvent.superClass_.preventDefault.call(this);
   var be = this.event_;
   if (!be.preventDefault) {
     be.returnValue = false;
     if (goog.events.BrowserFeature.SET_KEY_CODE_TO_PREVENT_DEFAULT) {
-      /** @preserveTry */
+
       try {
         // Most keys can be prevented using returnValue. Some special keys
         // require setting the keyCode to -1 as well:
@@ -398,5 +462,23 @@ goog.events.BrowserEvent.prototype.preventDefault = function() {
  * @return {Event} The underlying browser event object.
  */
 goog.events.BrowserEvent.prototype.getBrowserEvent = function() {
+  'use strict';
   return this.event_;
+};
+
+
+/**
+ * Extracts the pointer type from the given event.
+ * @param {!Event} e
+ * @return {string} The pointer type, e.g. 'mouse', 'pen', or 'touch'.
+ * @private
+ */
+goog.events.BrowserEvent.getPointerType_ = function(e) {
+  'use strict';
+  if (typeof (e.pointerType) === 'string') {
+    return e.pointerType;
+  }
+  // IE10 uses integer codes for pointer type.
+  // https://msdn.microsoft.com/en-us/library/hh772359(v=vs.85).aspx
+  return goog.events.BrowserEvent.IE_POINTER_TYPE_MAP[e.pointerType] || '';
 };

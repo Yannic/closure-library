@@ -1,38 +1,27 @@
-// Copyright 2013 The Closure Library Authors. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS-IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+/**
+ * @license
+ * Copyright The Closure Library Authors.
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
 /**
  * @fileoverview Interface and shared data structures for implementing
  * different wire protocol versions.
- * @visibility {//closure/goog/bin/sizetests:__pkg__}
  */
-
-
 goog.provide('goog.labs.net.webChannel.Wire');
+goog.provide('goog.labs.net.webChannel.Wire.QueuedMap');
+
+goog.requireType('goog.structs.Map');
 
 
 
 /**
  * The interface class.
- *
  * @interface
  */
-goog.labs.net.webChannel.Wire = function() {};
-
-
-goog.scope(function() {
-var Wire = goog.labs.net.webChannel.Wire;
+goog.labs.net.webChannel.Wire = class {
+  constructor() {}
+};
 
 
 /**
@@ -41,35 +30,60 @@ var Wire = goog.labs.net.webChannel.Wire;
  * LATEST_CHANNEL_VERSION on the server code.
  * @type {number}
  */
-Wire.LATEST_CHANNEL_VERSION = 8;
+goog.labs.net.webChannel.Wire.LATEST_CHANNEL_VERSION = 8;
+
+
+/**
+ * The JSON field key for the raw data wrapper object.
+ * @type {string}
+ */
+goog.labs.net.webChannel.Wire.RAW_DATA_KEY = '__data__';
 
 
 
 /**
  * Simple container class for a (mapId, map) pair.
- * @param {number} mapId The id for this map.
- * @param {!Object|!goog.structs.Map} map The map itself.
- * @param {!Object=} opt_context The context associated with the map.
- * @constructor
- * @struct
  */
-Wire.QueuedMap = function(mapId, map, opt_context) {
+goog.labs.net.webChannel.Wire.QueuedMap = class {
   /**
-   * The id for this map.
-   * @type {number}
+   * @param {number} mapId The id for this map.
+   * @param {!Object|!goog.structs.Map} map The map itself.
+   * @param {!Object=} opt_context The context associated with the map.
    */
-  this.mapId = mapId;
+  constructor(mapId, map, opt_context) {
+    'use strict';
+    /**
+     * The id for this map.
+     * @type {number}
+     */
+    this.mapId = mapId;
+
+    /**
+     * The map itself.
+     * @type {!Object|!goog.structs.Map}
+     */
+    this.map = map;
+
+    /**
+     * The context for the map.
+     * @type {Object}
+     */
+    this.context = opt_context || null;
+  }
 
   /**
-   * The map itself.
-   * @type {!Object|!goog.structs.Map}
+   * @return {number|undefined} the size of the raw JSON message or
+   * undefined if the message is not encoded as a raw JSON message
    */
-  this.map = map;
+  getRawDataSize() {
+    'use strict';
+    if (goog.labs.net.webChannel.Wire.RAW_DATA_KEY in this.map) {
+      const data = this.map[goog.labs.net.webChannel.Wire.RAW_DATA_KEY];
+      if (typeof data === 'string') {
+        return data.length;
+      }
+    }
 
-  /**
-   * The context for the map.
-   * @type {Object}
-   */
-  this.context = opt_context || null;
+    return undefined;
+  }
 };
-});  // goog.scope

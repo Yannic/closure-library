@@ -1,20 +1,11 @@
-// Copyright 2011 The Closure Library Authors. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS-IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+/**
+ * @license
+ * Copyright The Closure Library Authors.
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
 /**
  * @fileoverview Mock blob object.
- *
  */
 
 goog.setTestOnly('goog.testing.fs.Blob');
@@ -40,6 +31,7 @@ goog.require('goog.crypt.base64');
  * @constructor
  */
 goog.testing.fs.Blob = function(opt_data, opt_type) {
+  'use strict';
   /**
    * @see http://www.w3.org/TR/FileAPI/#dfn-type
    * @type {string}
@@ -75,15 +67,16 @@ goog.testing.fs.Blob = function(opt_data, opt_type) {
  */
 goog.testing.fs.Blob.prototype.slice = function(
     opt_start, opt_end, opt_contentType) {
+  'use strict';
   var relativeStart;
-  if (goog.isNumber(opt_start)) {
+  if (typeof opt_start === 'number') {
     relativeStart = (opt_start < 0) ? Math.max(this.size + opt_start, 0) :
                                       Math.min(opt_start, this.size);
   } else {
     relativeStart = 0;
   }
   var relativeEnd;
-  if (goog.isNumber(opt_end)) {
+  if (typeof opt_end === 'number') {
     relativeEnd = (opt_end < 0) ? Math.max(this.size + opt_end, 0) :
                                   Math.min(opt_end, this.size);
   } else {
@@ -101,6 +94,7 @@ goog.testing.fs.Blob.prototype.slice = function(
  * @override
  */
 goog.testing.fs.Blob.prototype.toString = function() {
+  'use strict';
   return goog.crypt.utf8ByteArrayToString(this.data_);
 };
 
@@ -110,6 +104,7 @@ goog.testing.fs.Blob.prototype.toString = function() {
  *     ArrayBuffer.
  */
 goog.testing.fs.Blob.prototype.toArrayBuffer = function() {
+  'use strict';
   var buf = new ArrayBuffer(this.data_.length);
   var arr = new Uint8Array(buf);
   for (var i = 0; i < this.data_.length; i++) {
@@ -123,6 +118,7 @@ goog.testing.fs.Blob.prototype.toArrayBuffer = function() {
  * @return {string} The string data encapsulated by the blob as a data: URI.
  */
 goog.testing.fs.Blob.prototype.toDataUrl = function() {
+  'use strict';
   return 'data:' + this.type + ';base64,' +
       goog.crypt.base64.encodeByteArray(this.data_);
 };
@@ -130,24 +126,26 @@ goog.testing.fs.Blob.prototype.toDataUrl = function() {
 
 /**
  * Sets the internal contents of the blob to an Array of bytes. This should
- *     only be called by other functions inside the {@code goog.testing.fs}
+ *     only be called by other functions inside the `goog.testing.fs`
  *     namespace.
  * @param {string|Array<string|number|!Uint8Array>} data The data to write
  *     into the blob.
  * @package
  */
 goog.testing.fs.Blob.prototype.setDataInternal = function(data) {
+  'use strict';
   this.data_ = [];
   if (typeof data === 'string') {
     this.appendString_(data);
   } else if (data instanceof Array) {
     for (var i = 0; i < data.length; i++) {
-      if (typeof data[i] === 'string') {
-        this.appendString_(data[i]);
-      } else if (typeof data[i] === 'number') {  // Assume Bytes array.
-        this.appendByte_(data[i]);
-      } else if (data[i] instanceof Uint8Array) {
-        this.appendUint8_(data[i]);
+      var value = data[i];
+      if (typeof value === 'string') {
+        this.appendString_(value);
+      } else if (typeof value === 'number') {  // Assume Bytes array.
+        this.appendByte_(value);
+      } else if (value instanceof Uint8Array) {
+        this.appendUint8_(value);
       }
     }
   }
@@ -162,6 +160,7 @@ goog.testing.fs.Blob.prototype.setDataInternal = function(data) {
  * @private
  */
 goog.testing.fs.Blob.prototype.appendString_ = function(data) {
+  'use strict';
   Array.prototype.push.apply(
       this.data_, goog.crypt.stringToUtf8ByteArray(data));
 };
@@ -173,6 +172,7 @@ goog.testing.fs.Blob.prototype.appendString_ = function(data) {
  * @private
  */
 goog.testing.fs.Blob.prototype.appendByte_ = function(data) {
+  'use strict';
   this.data_.push(data);
 };
 
@@ -184,7 +184,7 @@ goog.testing.fs.Blob.prototype.appendByte_ = function(data) {
  * @private
  */
 goog.testing.fs.Blob.prototype.appendUint8_ = function(data) {
-  var result = [];
+  'use strict';
   for (var i = 0; i < data.length; i++) {
     this.data_.push(data[i]);
   }

@@ -1,26 +1,18 @@
-// Copyright 2006 The Closure Library Authors. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS-IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+/**
+ * @license
+ * Copyright The Closure Library Authors.
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
 /**
  * @fileoverview Animated zippy widget implementation.
  *
- * @author eae@google.com (Emil A Eklund)
  * @see ../demos/zippy.html
  */
 
 goog.provide('goog.ui.AnimatedZippy');
 
+goog.require('goog.a11y.aria.Role');
 goog.require('goog.dom');
 goog.require('goog.dom.TagName');
 goog.require('goog.events');
@@ -29,6 +21,7 @@ goog.require('goog.fx.Transition');
 goog.require('goog.fx.easing');
 goog.require('goog.ui.Zippy');
 goog.require('goog.ui.ZippyEvent');
+goog.requireType('goog.events.Event');
 
 
 
@@ -43,10 +36,13 @@ goog.require('goog.ui.ZippyEvent');
  * @param {boolean=} opt_expanded Initial expanded/visibility state. Defaults to
  *     false.
  * @param {goog.dom.DomHelper=} opt_domHelper An optional DOM helper.
+ * @param {goog.a11y.aria.Role<string>=} opt_role ARIA role, default TAB.
  * @constructor
  * @extends {goog.ui.Zippy}
  */
-goog.ui.AnimatedZippy = function(header, content, opt_expanded, opt_domHelper) {
+goog.ui.AnimatedZippy = function(
+    header, content, opt_expanded, opt_domHelper, opt_role) {
+  'use strict';
   var domHelper = opt_domHelper || goog.dom.getDomHelper();
 
   // Create wrapper element and move content into it.
@@ -65,14 +61,14 @@ goog.ui.AnimatedZippy = function(header, content, opt_expanded, opt_domHelper) {
 
   /**
    * Reference to animation or null if animation is not active.
-   * @type {goog.fx.Animation}
+   * @type {?goog.fx.Animation}
    * @private
    */
   this.anim_ = null;
 
   // Call constructor of super class.
   goog.ui.Zippy.call(
-      this, header, elContent, opt_expanded, undefined, domHelper);
+      this, header, elContent, opt_expanded, undefined, domHelper, opt_role);
 
   // Set initial state.
   // NOTE: Set the class names as well otherwise animated zippys
@@ -82,7 +78,6 @@ goog.ui.AnimatedZippy = function(header, content, opt_expanded, opt_domHelper) {
   this.updateHeaderClassName(expanded);
 };
 goog.inherits(goog.ui.AnimatedZippy, goog.ui.Zippy);
-goog.tagUnsealableClass(goog.ui.AnimatedZippy);
 
 
 /**
@@ -117,6 +112,7 @@ goog.ui.AnimatedZippy.prototype.animationAcceleration = goog.fx.easing.easeOut;
  *     collapsed.
  */
 goog.ui.AnimatedZippy.prototype.isBusy = function() {
+  'use strict';
   return this.anim_ != null;
 };
 
@@ -128,6 +124,7 @@ goog.ui.AnimatedZippy.prototype.isBusy = function() {
  * @override
  */
 goog.ui.AnimatedZippy.prototype.setExpanded = function(expanded) {
+  'use strict';
   if (this.isExpanded() == expanded && !this.anim_) {
     return;
   }
@@ -144,7 +141,6 @@ goog.ui.AnimatedZippy.prototype.setExpanded = function(expanded) {
   // Stop active animation (if any) and determine starting height.
   var startH = 0;
   if (this.anim_) {
-    expanded = this.isExpanded();
     goog.events.removeAll(this.anim_);
     this.anim_.stop(false);
 
@@ -186,6 +182,7 @@ goog.ui.AnimatedZippy.prototype.setExpanded = function(expanded) {
  * @private
  */
 goog.ui.AnimatedZippy.prototype.onAnimate_ = function(e) {
+  'use strict';
   var contentElement = this.getContentElement();
   var h = contentElement.offsetHeight;
   contentElement.style.marginTop = (e.y - h) + 'px';
@@ -199,6 +196,7 @@ goog.ui.AnimatedZippy.prototype.onAnimate_ = function(e) {
  * @private
  */
 goog.ui.AnimatedZippy.prototype.onAnimationBegin_ = function(expanding) {
+  'use strict';
   this.dispatchEvent(new goog.ui.ZippyEvent(
       goog.ui.AnimatedZippy.Events.TOGGLE_ANIMATION_BEGIN, this, expanding));
 };
@@ -211,6 +209,7 @@ goog.ui.AnimatedZippy.prototype.onAnimationBegin_ = function(expanding) {
  * @private
  */
 goog.ui.AnimatedZippy.prototype.onAnimationCompleted_ = function(expanded) {
+  'use strict';
   // Fix wrong end position if the content has changed during the animation.
   if (expanded) {
     this.getContentElement().style.marginTop = '0';

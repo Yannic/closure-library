@@ -1,33 +1,53 @@
-// Copyright 2014 The Closure Library Authors. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS-IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+/**
+ * @license
+ * Copyright The Closure Library Authors.
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
-goog.provide('goog.soy.dataTest');
-goog.setTestOnly('goog.soy.dataTest');
+goog.module('goog.soy.dataTest');
+goog.setTestOnly();
 
-goog.require('goog.html.SafeHtml');
+const SafeHtml = goog.require('goog.html.SafeHtml');
+const SafeStyleSheet = goog.require('goog.html.SafeStyleSheet');
+const SafeUrl = goog.require('goog.html.SafeUrl');
+const TrustedResourceUrl = goog.require('goog.html.TrustedResourceUrl');
 /** @suppress {extraRequire} */
-goog.require('goog.soy.testHelper');
-goog.require('goog.testing.jsunit');
+const testHelper = goog.require('goog.soy.testHelper');
+const testSuite = goog.require('goog.testing.testSuite');
 
+testSuite({
+  testToSafeHtml() {
+    let html;
 
-function testToSafeHtml() {
-  var html;
+    /** @suppress {checkTypes} suppression added to enable type checking */
+    html = example.sanitizedHtmlTemplate().toSafeHtml();
+    assertEquals('Hello <b>World</b>', SafeHtml.unwrap(html));
+  },
 
-  html = example.unsanitizedTextTemplate().toSafeHtml();
-  assertEquals(
-      'I &lt;3 Puppies &amp; Kittens', goog.html.SafeHtml.unwrap(html));
+  testToSafeUrl() {
+    let url;
 
-  html = example.sanitizedHtmlTemplate().toSafeHtml();
-  assertEquals('Hello <b>World</b>', goog.html.SafeHtml.unwrap(html));
-}
+    /** @suppress {checkTypes} suppression added to enable type checking */
+    url = example.sanitizedSmsUrlTemplate().toSafeUrl();
+    assertEquals('sms:123456789', SafeUrl.unwrap(url));
+
+    /** @suppress {checkTypes} suppression added to enable type checking */
+    url = example.sanitizedHttpUrlTemplate().toSafeUrl();
+    assertEquals('https://google.com/foo?n=917', SafeUrl.unwrap(url));
+  },
+
+  testToSafeStyleSheet() {
+    /** @suppress {checkTypes} suppression added to enable type checking */
+    const url = example.sanitizedCssTemplate().toSafeStyleSheet();
+    assertEquals('html{display:none}', SafeStyleSheet.unwrap(url));
+  },
+
+  testToTrustedResourceUrl() {
+    let url;
+
+    /** @suppress {checkTypes} suppression added to enable type checking */
+    url =
+        example.sanitizedTrustedResourceUriTemplate({}).toTrustedResourceUrl();
+    assertEquals('https://google.com/a.js', TrustedResourceUrl.unwrap(url));
+  },
+});

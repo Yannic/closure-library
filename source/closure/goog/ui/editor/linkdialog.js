@@ -1,21 +1,11 @@
-// Copyright 2008 The Closure Library Authors. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS-IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+/**
+ * @license
+ * Copyright The Closure Library Authors.
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
 /**
  * @fileoverview A dialog for editing/creating a link.
- *
- * @author robbyw@google.com (Robby Walker)
  */
 
 goog.provide('goog.ui.editor.LinkDialog');
@@ -49,6 +39,7 @@ goog.require('goog.ui.editor.TabPane');
 goog.require('goog.ui.editor.messages');
 goog.require('goog.userAgent');
 goog.require('goog.window');
+goog.requireType('goog.ui.Tab');
 
 
 
@@ -62,6 +53,7 @@ goog.require('goog.window');
  * @final
  */
 goog.ui.editor.LinkDialog = function(domHelper, link) {
+  'use strict';
   goog.ui.editor.LinkDialog.base(this, 'constructor', domHelper);
 
   /**
@@ -81,7 +73,7 @@ goog.ui.editor.LinkDialog = function(domHelper, link) {
 
   /**
    * Optional warning to show about email addresses.
-   * @type {goog.html.SafeHtml}
+   * @type {?goog.html.SafeHtml}
    * @private
    */
   this.emailWarning_ = null;
@@ -93,6 +85,14 @@ goog.ui.editor.LinkDialog = function(domHelper, link) {
    * @private
    */
   this.showOpenLinkInNewWindow_ = false;
+
+  /**
+   * Whether to focus the text to display input instead of the url input if the
+   * text to display input is empty when the dialog opens.
+   * @type {boolean}
+   * @private
+   */
+  this.focusTextToDisplayOnOpenIfEmpty_ = false;
 
   /**
    * Whether the "open link in new window" checkbox should be checked when the
@@ -113,14 +113,14 @@ goog.ui.editor.LinkDialog = function(domHelper, link) {
 
   /**
    * InputHandler object to listen for changes in the url input field.
-   * @type {goog.events.InputHandler}
+   * @type {?goog.events.InputHandler}
    * @private
    */
   this.urlInputHandler_ = null;
 
   /**
    * InputHandler object to listen for changes in the email input field.
-   * @type {goog.events.InputHandler}
+   * @type {?goog.events.InputHandler}
    * @private
    */
   this.emailInputHandler_ = null;
@@ -128,28 +128,28 @@ goog.ui.editor.LinkDialog = function(domHelper, link) {
   /**
    * InputHandler object to listen for changes in the text to display input
    * field.
-   * @type {goog.events.InputHandler}
+   * @type {?goog.events.InputHandler}
    * @private
    */
   this.textInputHandler_ = null;
 
   /**
    * The tab bar where the url and email tabs are.
-   * @type {goog.ui.editor.TabPane}
+   * @type {?goog.ui.editor.TabPane}
    * @private
    */
   this.tabPane_ = null;
 
   /**
    * The div element holding the link's display text input.
-   * @type {HTMLDivElement}
+   * @type {?HTMLDivElement}
    * @private
    */
   this.textToDisplayDiv_ = null;
 
   /**
    * The input element holding the link's display text.
-   * @type {HTMLInputElement}
+   * @type {?HTMLInputElement}
    * @private
    */
   this.textToDisplayInput_ = null;
@@ -179,7 +179,7 @@ goog.ui.editor.LinkDialog = function(domHelper, link) {
   /**
    * The input element (checkbox) to indicate that the link should open in a new
    * window.
-   * @type {HTMLInputElement}
+   * @type {?HTMLInputElement}
    * @private
    */
   this.openInNewWindowCheckbox_ = null;
@@ -187,7 +187,7 @@ goog.ui.editor.LinkDialog = function(domHelper, link) {
   /**
    * The input element (checkbox) to indicate that the link should have
    * 'rel=nofollow' attribute.
-   * @type {HTMLInputElement}
+   * @type {?HTMLInputElement}
    * @private
    */
   this.relNoFollowCheckbox_ = null;
@@ -195,10 +195,17 @@ goog.ui.editor.LinkDialog = function(domHelper, link) {
   /**
    * Whether to stop leaking the page's url via the referrer header when the
    * "test this link" link is clicked.
-   * @type {boolean}
-   * @private
+   * @private {boolean}
    */
   this.stopReferrerLeaks_ = false;
+
+  /**
+   * Whether to remove access to the current window object in the newly created
+   * window when the "test this link" is clicked, since it can be used to launch
+   * a reverse tabnabbing attack.
+   * @private {boolean}
+   */
+  this.stopTabNabbing_ = false;
 };
 goog.inherits(goog.ui.editor.LinkDialog, goog.ui.editor.AbstractDialog);
 
@@ -227,6 +234,7 @@ goog.ui.editor.LinkDialog.EventType = {
  */
 goog.ui.editor.LinkDialog.OkEvent = function(
     linkText, linkUrl, openInNewWindow, noFollow) {
+  'use strict';
   goog.ui.editor.LinkDialog.OkEvent.base(
       this, 'constructor', goog.ui.editor.AbstractDialog.EventType.OK);
 
@@ -267,6 +275,7 @@ goog.inherits(goog.ui.editor.LinkDialog.OkEvent, goog.events.Event);
  * @final
  */
 goog.ui.editor.LinkDialog.BeforeTestLinkEvent = function(url) {
+  'use strict';
   goog.ui.editor.LinkDialog.BeforeTestLinkEvent.base(
       this, 'constructor',
       goog.ui.editor.LinkDialog.EventType.BEFORE_TEST_LINK);
@@ -287,6 +296,7 @@ goog.inherits(goog.ui.editor.LinkDialog.BeforeTestLinkEvent, goog.events.Event);
  *     including email addresses on the web.
  */
 goog.ui.editor.LinkDialog.prototype.setEmailWarning = function(emailWarning) {
+  'use strict';
   this.emailWarning_ = emailWarning;
 };
 
@@ -300,8 +310,20 @@ goog.ui.editor.LinkDialog.prototype.setEmailWarning = function(emailWarning) {
  */
 goog.ui.editor.LinkDialog.prototype.showOpenLinkInNewWindow = function(
     startChecked) {
+  'use strict';
   this.showOpenLinkInNewWindow_ = true;
   this.isOpenLinkInNewWindowChecked_ = startChecked;
+};
+
+
+/**
+ * Tells the dialog to focus the text to display input instead of the url field
+ * if the text to display input is empty when the dialog is opened.
+ */
+goog.ui.editor.LinkDialog.prototype.focusTextToDisplayOnOpenIfEmpty =
+    function() {
+  'use strict';
+  this.focusTextToDisplayOnOpenIfEmpty_ = true;
 };
 
 
@@ -310,17 +332,25 @@ goog.ui.editor.LinkDialog.prototype.showOpenLinkInNewWindow = function(
  * 'rel=nofollow' attribute to the link.
  */
 goog.ui.editor.LinkDialog.prototype.showRelNoFollow = function() {
+  'use strict';
   this.showRelNoFollow_ = true;
 };
 
 
 /** @override */
 goog.ui.editor.LinkDialog.prototype.show = function() {
+  'use strict';
   goog.ui.editor.LinkDialog.base(this, 'show');
 
 
   this.selectAppropriateTab_(
       this.textToDisplayInput_.value, this.getTargetUrl_());
+
+  if (this.focusTextToDisplayOnOpenIfEmpty_ &&
+      !this.targetLink_.getCurrentText()) {
+    goog.editor.focus.focusInputField(this.textToDisplayInput_);
+  }
+
   this.syncOkButton_();
 
   if (this.showOpenLinkInNewWindow_) {
@@ -341,6 +371,7 @@ goog.ui.editor.LinkDialog.prototype.show = function() {
 
 /** @override */
 goog.ui.editor.LinkDialog.prototype.hide = function() {
+  'use strict';
   this.disableAutogenFlag_(false);
   goog.ui.editor.LinkDialog.base(this, 'hide');
 };
@@ -354,6 +385,7 @@ goog.ui.editor.LinkDialog.prototype.hide = function() {
  */
 goog.ui.editor.LinkDialog.prototype.setTextToDisplayVisible = function(
     visible) {
+  'use strict';
   if (this.textToDisplayDiv_) {
     goog.style.setStyle(
         this.textToDisplayDiv_, 'display', visible ? 'block' : 'none');
@@ -367,7 +399,21 @@ goog.ui.editor.LinkDialog.prototype.setTextToDisplayVisible = function(
  * @param {boolean} stop Whether to stop leaking the referrer.
  */
 goog.ui.editor.LinkDialog.prototype.setStopReferrerLeaks = function(stop) {
+  'use strict';
   this.stopReferrerLeaks_ = stop;
+};
+
+
+/**
+ * Tells the plugin whether to remove access to the current window object in the
+ * newly created window when the "test this link" is clicked, since it can be
+ * used to launch a reverse tabnabbing attack.
+ * @param {boolean} stop Whether to remove the reference to the current window
+ *     in the new window.
+ */
+goog.ui.editor.LinkDialog.prototype.setStopTabNabbing = function(stop) {
+  'use strict';
+  this.stopTabNabbing_ = stop;
 };
 
 
@@ -378,29 +424,32 @@ goog.ui.editor.LinkDialog.prototype.setStopReferrerLeaks = function(stop) {
  */
 goog.ui.editor.LinkDialog.prototype.setAutogenFeatureEnabled = function(
     enable) {
+  'use strict';
   this.autogenFeatureEnabled_ = enable;
 };
 
 
 /**
- * Checks if {@code str} contains {@code "nofollow"} as a separate word.
- * @param {string} str String to be tested.  This is usually {@code rel}
- *     attribute of an {@code HTMLAnchorElement} object.
- * @return {boolean} {@code true} if {@code str} contains {@code nofollow}.
+ * Checks if `str` contains {@code "nofollow"} as a separate word.
+ * @param {string} str String to be tested.  This is usually `rel`
+ *     attribute of an `HTMLAnchorElement` object.
+ * @return {boolean} `true` if `str` contains `nofollow`.
  */
 goog.ui.editor.LinkDialog.hasNoFollow = function(str) {
+  'use strict';
   return goog.ui.editor.LinkDialog.NO_FOLLOW_REGEX_.test(str);
 };
 
 
 /**
- * Removes {@code "nofollow"} from {@code rel} if it's present as a separate
+ * Removes {@code "nofollow"} from `rel` if it's present as a separate
  * word.
- * @param {string} rel Input string.  This is usually {@code rel} attribute of
- *     an {@code HTMLAnchorElement} object.
- * @return {string} {@code rel} with any {@code "nofollow"} removed.
+ * @param {string} rel Input string.  This is usually `rel` attribute of
+ *     an `HTMLAnchorElement` object.
+ * @return {string} `rel` with any {@code "nofollow"} removed.
  */
 goog.ui.editor.LinkDialog.removeNoFollow = function(rel) {
+  'use strict';
   return rel.replace(goog.ui.editor.LinkDialog.NO_FOLLOW_REGEX_, '');
 };
 
@@ -410,6 +459,7 @@ goog.ui.editor.LinkDialog.removeNoFollow = function(rel) {
 
 /** @override */
 goog.ui.editor.LinkDialog.prototype.createDialogControl = function() {
+  'use strict';
   var builder = new goog.ui.editor.AbstractDialog.Builder(this);
   builder.setTitle(goog.ui.editor.messages.MSG_EDIT_LINK)
       .setContent(this.createDialogContent_());
@@ -427,6 +477,7 @@ goog.ui.editor.LinkDialog.prototype.createDialogControl = function() {
  * @override
  */
 goog.ui.editor.LinkDialog.prototype.createOkEvent = function() {
+  'use strict';
   if (this.tabPane_.getCurrentTabId() ==
       goog.ui.editor.LinkDialog.Id_.EMAIL_ADDRESS_TAB) {
     return this.createOkEventFromEmailTab_();
@@ -440,8 +491,8 @@ goog.ui.editor.LinkDialog.prototype.createOkEvent = function() {
 
 
 /**
- * Regular expression that matches {@code nofollow} value in an
- * {@code * HTMLAnchorElement}'s {@code rel} element.
+ * Regular expression that matches `nofollow` value in an
+ * {@code * HTMLAnchorElement}'s `rel` element.
  * @type {RegExp}
  * @private
  */
@@ -454,6 +505,7 @@ goog.ui.editor.LinkDialog.NO_FOLLOW_REGEX_ = /\bnofollow\b/i;
  * @private
  */
 goog.ui.editor.LinkDialog.prototype.createDialogContent_ = function() {
+  'use strict';
   this.textToDisplayDiv_ =
       /** @type {!HTMLDivElement} */ (this.buildTextToDisplayDiv_());
   var content =
@@ -492,8 +544,10 @@ goog.ui.editor.LinkDialog.prototype.createDialogContent_ = function() {
  * Builds and returns the text to display section of the edit link dialog.
  * @return {!Element} A div element to be appended into the dialog div.
  * @private
+ * @suppress {strictMissingProperties} Part of the go/strict_warnings_migration
  */
 goog.ui.editor.LinkDialog.prototype.buildTextToDisplayDiv_ = function() {
+  'use strict';
   var table = this.dom.createTable(1, 2);
   table.cellSpacing = '0';
   table.cellPadding = '0';
@@ -545,6 +599,7 @@ goog.ui.editor.LinkDialog.prototype.buildTextToDisplayDiv_ = function() {
  * @private
  */
 goog.ui.editor.LinkDialog.prototype.buildOpenInNewWindowDiv_ = function() {
+  'use strict';
   this.openInNewWindowCheckbox_ = this.dom.createDom(
       goog.dom.TagName.INPUT, {'type': goog.dom.InputType.CHECKBOX});
   return this.dom.createDom(
@@ -561,6 +616,7 @@ goog.ui.editor.LinkDialog.prototype.buildOpenInNewWindowDiv_ = function() {
  * @private
  */
 goog.ui.editor.LinkDialog.prototype.buildRelNoFollowDiv_ = function() {
+  'use strict';
   var formatter = new goog.html.SafeHtmlFormatter();
   /** @desc Checkbox text for adding 'rel=nofollow' attribute to a link. */
   var MSG_ADD_REL_NOFOLLOW_ATTR = goog.getMsg(
@@ -591,6 +647,7 @@ goog.ui.editor.LinkDialog.prototype.buildRelNoFollowDiv_ = function() {
 * @private
 */
 goog.ui.editor.LinkDialog.prototype.buildTabOnTheWeb_ = function() {
+  'use strict';
   var onTheWebDiv = this.dom.createElement(goog.dom.TagName.DIV);
 
   var headingDiv = this.dom.createDom(
@@ -651,6 +708,7 @@ goog.ui.editor.LinkDialog.prototype.buildTabOnTheWeb_ = function() {
  * @private
  */
 goog.ui.editor.LinkDialog.prototype.buildTabEmailAddress_ = function() {
+  'use strict';
   var emailTab = this.dom.createDom(goog.dom.TagName.DIV);
 
   var headingDiv = this.dom.createDom(
@@ -707,6 +765,7 @@ goog.ui.editor.LinkDialog.prototype.buildTabEmailAddress_ = function() {
  * @private
  */
 goog.ui.editor.LinkDialog.prototype.getTargetUrl_ = function() {
+  'use strict';
   // Get the href-attribute through getAttribute() rather than the href property
   // because Google-Toolbar on Firefox with "Send with Gmail" turned on
   // modifies the href-property of 'mailto:' links but leaves the attribute
@@ -721,9 +780,11 @@ goog.ui.editor.LinkDialog.prototype.getTargetUrl_ = function() {
  * @param {string} text The inner text of the link.
  * @param {string} url The href for the link.
  * @private
+ * @suppress {strictMissingProperties} Part of the go/strict_warnings_migration
  */
 goog.ui.editor.LinkDialog.prototype.selectAppropriateTab_ = function(
     text, url) {
+  'use strict';
   if (this.isNewLink_()) {
     // Newly created non-empty link: try to infer URL from the link text.
     this.guessUrlAndSelectTab_(text);
@@ -749,8 +810,10 @@ goog.ui.editor.LinkDialog.prototype.selectAppropriateTab_ = function(
  * the isNewLink_() == true case of selectAppropriateTab_().
  * @param {string} text The inner text of the link.
  * @private
+ * @suppress {strictMissingProperties} Part of the go/strict_warnings_migration
  */
 goog.ui.editor.LinkDialog.prototype.guessUrlAndSelectTab_ = function(text) {
+  'use strict';
   if (goog.editor.Link.isLikelyEmailAddress(text)) {
     // The text is for an email address.
     this.tabPane_.setSelectedTabId(
@@ -782,8 +845,10 @@ goog.ui.editor.LinkDialog.prototype.guessUrlAndSelectTab_ = function(text) {
  * Called on a change to the url or email input. If either one of those tabs
  * is active, sets the OK button to enabled/disabled accordingly.
  * @private
+ * @suppress {strictMissingProperties} Part of the go/strict_warnings_migration
  */
 goog.ui.editor.LinkDialog.prototype.syncOkButton_ = function() {
+  'use strict';
   var inputValue;
   if (this.tabPane_.getCurrentTabId() ==
       goog.ui.editor.LinkDialog.Id_.EMAIL_ADDRESS_TAB) {
@@ -811,6 +876,7 @@ goog.ui.editor.LinkDialog.prototype.syncOkButton_ = function() {
  * @private
  */
 goog.ui.editor.LinkDialog.prototype.toggleInvalidEmailWarning_ = function(on) {
+  'use strict';
   this.dom.getElement(goog.ui.editor.LinkDialog.Id_.EMAIL_WARNING)
       .style.visibility = (on ? 'visible' : 'hidden');
 };
@@ -822,6 +888,7 @@ goog.ui.editor.LinkDialog.prototype.toggleInvalidEmailWarning_ = function(on) {
  * @private
  */
 goog.ui.editor.LinkDialog.prototype.onTextToDisplayEdit_ = function() {
+  'use strict';
   var inputEmpty = this.textToDisplayInput_.value == '';
   if (inputEmpty) {
     this.setAutogenFlag_(true);
@@ -838,6 +905,7 @@ goog.ui.editor.LinkDialog.prototype.onTextToDisplayEdit_ = function() {
  * @private
  */
 goog.ui.editor.LinkDialog.prototype.createOkEventFromWebTab_ = function() {
+  'use strict';
   var input = /** @type {HTMLInputElement} */ (
       this.dom.getElement(goog.ui.editor.LinkDialog.Id_.ON_WEB_INPUT));
   var linkURL = input.value;
@@ -860,9 +928,11 @@ goog.ui.editor.LinkDialog.prototype.createOkEventFromWebTab_ = function() {
  * @return {!goog.ui.editor.LinkDialog.OkEvent} The event object to be used when
  *     dispatching the OK event to listeners.
  * @private
+ * @suppress {strictMissingProperties} Part of the go/strict_warnings_migration
  */
 goog.ui.editor.LinkDialog.prototype.createOkEventFromEmailTab_ = function(
     opt_inputId) {
+  'use strict';
   var linkURL =
       this.dom
           .getElement(
@@ -878,6 +948,7 @@ goog.ui.editor.LinkDialog.prototype.createOkEventFromEmailTab_ = function(
  * @private
  */
 goog.ui.editor.LinkDialog.prototype.onWebTestLink_ = function() {
+  'use strict';
   var input = /** @type {HTMLInputElement} */ (
       this.dom.getElement(goog.ui.editor.LinkDialog.Id_.ON_WEB_INPUT));
   var url = input.value;
@@ -896,7 +967,10 @@ goog.ui.editor.LinkDialog.prototype.onWebTestLink_ = function() {
       scrollbars: true,
       location: true,
       statusbar: false,
-      menubar: true, 'resizable': true, 'noreferrer': this.stopReferrerLeaks_
+      menubar: true,
+      resizable: true,
+      noreferrer: this.stopReferrerLeaks_,
+      noopener: this.stopTabNabbing_
     };
     goog.window.open(url, openOptions, win);
   }
@@ -910,6 +984,7 @@ goog.ui.editor.LinkDialog.prototype.onWebTestLink_ = function() {
  * @private
  */
 goog.ui.editor.LinkDialog.prototype.onUrlOrEmailInputChange_ = function() {
+  'use strict';
   if (this.autogenerateTextToDisplay_) {
     this.setTextToDisplayFromAuto_();
   } else if (this.textToDisplayInput_.value == '') {
@@ -925,6 +1000,7 @@ goog.ui.editor.LinkDialog.prototype.onUrlOrEmailInputChange_ = function() {
  * @private
  */
 goog.ui.editor.LinkDialog.prototype.onChangeTab_ = function(e) {
+  'use strict';
   var tab = /** @type {goog.ui.Tab} */ (e.target);
 
   // Focus on the input field in the selected tab.
@@ -935,7 +1011,6 @@ goog.ui.editor.LinkDialog.prototype.onChangeTab_ = function(e) {
 
   // For some reason, IE does not fire onpropertychange events when the width
   // is specified as a percentage, which breaks the InputHandlers.
-  input.style.width = '';
   input.style.width = input.offsetWidth + 'px';
 
   this.syncOkButton_();
@@ -949,6 +1024,7 @@ goog.ui.editor.LinkDialog.prototype.onChangeTab_ = function(e) {
  * @private
  */
 goog.ui.editor.LinkDialog.prototype.setTextToDisplayFromAuto_ = function() {
+  'use strict';
   if (this.autogenFeatureEnabled_ && this.autogenerateTextToDisplay_) {
     var inputId = this.tabPane_.getCurrentTabId() +
         goog.ui.editor.LinkDialog.Id_.TAB_INPUT_SUFFIX;
@@ -965,6 +1041,7 @@ goog.ui.editor.LinkDialog.prototype.setTextToDisplayFromAuto_ = function() {
  * @private
  */
 goog.ui.editor.LinkDialog.prototype.setAutogenFlag_ = function(val) {
+  'use strict';
   // TODO(user): This whole autogen thing is very confusing. It needs
   // to be refactored and/or explained.
   this.autogenerateTextToDisplay_ = val;
@@ -978,6 +1055,7 @@ goog.ui.editor.LinkDialog.prototype.setAutogenFlag_ = function(val) {
  * @private
  */
 goog.ui.editor.LinkDialog.prototype.disableAutogenFlag_ = function(autogen) {
+  'use strict';
   this.setAutogenFlag_(!autogen);
   this.disableAutogen_ = autogen;
 };
@@ -992,6 +1070,7 @@ goog.ui.editor.LinkDialog.prototype.disableAutogenFlag_ = function(autogen) {
  * @private
  */
 goog.ui.editor.LinkDialog.prototype.createOkEventFromUrl_ = function(url) {
+  'use strict';
   // Fill in the text to display input in case it is empty.
   this.setTextToDisplayFromAuto_();
   if (this.showOpenLinkInNewWindow_) {
@@ -1009,8 +1088,10 @@ goog.ui.editor.LinkDialog.prototype.createOkEventFromUrl_ = function(url) {
  * If an email or url is being edited, set autogenerate to on if the text to
  * display matches the url.
  * @private
+ * @suppress {strictMissingProperties} Part of the go/strict_warnings_migration
  */
 goog.ui.editor.LinkDialog.prototype.setAutogenFlagFromCurInput_ = function() {
+  'use strict';
   var autogen = false;
   if (!this.disableAutogen_) {
     var tabInput = this.dom.getElement(
@@ -1027,6 +1108,7 @@ goog.ui.editor.LinkDialog.prototype.setAutogenFlagFromCurInput_ = function() {
  * @private
  */
 goog.ui.editor.LinkDialog.prototype.isNewLink_ = function() {
+  'use strict';
   return this.targetLink_.isNew();
 };
 

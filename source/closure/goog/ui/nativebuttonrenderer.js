@@ -1,21 +1,12 @@
-// Copyright 2008 The Closure Library Authors. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS-IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+/**
+ * @license
+ * Copyright The Closure Library Authors.
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
 /**
  * @fileoverview Native browser button renderer for {@link goog.ui.Button}s.
- *
- * @author attila@google.com (Attila Bodis)
+ * @suppress {missingRequire} TODO(user): this shouldn't be needed
  */
 
 goog.provide('goog.ui.NativeButtonRenderer');
@@ -39,6 +30,7 @@ goog.require('goog.ui.Component');
  * @extends {goog.ui.ButtonRenderer}
  */
 goog.ui.NativeButtonRenderer = function() {
+  'use strict';
   goog.ui.ButtonRenderer.call(this);
 };
 goog.inherits(goog.ui.NativeButtonRenderer, goog.ui.ButtonRenderer);
@@ -47,6 +39,7 @@ goog.addSingletonGetter(goog.ui.NativeButtonRenderer);
 
 /** @override */
 goog.ui.NativeButtonRenderer.prototype.getAriaRole = function() {
+  'use strict';
   // Native buttons don't need ARIA roles to be recognized by screen readers.
   return undefined;
 };
@@ -56,10 +49,12 @@ goog.ui.NativeButtonRenderer.prototype.getAriaRole = function() {
  * Returns the button's contents wrapped in a native HTML button element.  Sets
  * the button's disabled attribute as needed.
  * @param {goog.ui.Control} button Button to render.
- * @return {Element} Root element for the button (a native HTML button element).
+ * @return {!Element} Root element for the button (a native HTML button
+ *     element).
  * @override
  */
 goog.ui.NativeButtonRenderer.prototype.createDom = function(button) {
+  'use strict';
   this.setUpNativeButton_(button);
   return button.getDomHelper().createDom(
       goog.dom.TagName.BUTTON, {
@@ -80,6 +75,7 @@ goog.ui.NativeButtonRenderer.prototype.createDom = function(button) {
  * @override
  */
 goog.ui.NativeButtonRenderer.prototype.canDecorate = function(element) {
+  'use strict';
   return element.tagName == goog.dom.TagName.BUTTON ||
       (element.tagName == goog.dom.TagName.INPUT &&
        (element.type == goog.dom.InputType.BUTTON ||
@@ -90,6 +86,7 @@ goog.ui.NativeButtonRenderer.prototype.canDecorate = function(element) {
 
 /** @override */
 goog.ui.NativeButtonRenderer.prototype.decorate = function(button, element) {
+  'use strict';
   this.setUpNativeButton_(button);
   if (element.disabled) {
     // Add the marker class for the DISABLED state before letting the superclass
@@ -109,6 +106,7 @@ goog.ui.NativeButtonRenderer.prototype.decorate = function(button, element) {
  * @override
  */
 goog.ui.NativeButtonRenderer.prototype.initializeDom = function(button) {
+  'use strict';
   // WARNING:  This is a hack, and it is only applicable to native buttons,
   // which are special because they do natively what most goog.ui.Controls
   // do programmatically.  Do not use your renderer's initializeDom method
@@ -139,6 +137,7 @@ goog.ui.NativeButtonRenderer.prototype.setRightToLeft = goog.nullFunction;
  * Native buttons are always focusable as long as they are enabled.
  */
 goog.ui.NativeButtonRenderer.prototype.isFocusable = function(button) {
+  'use strict';
   return button.isEnabled();
 };
 
@@ -153,10 +152,11 @@ goog.ui.NativeButtonRenderer.prototype.setFocusable = goog.nullFunction;
 /**
  * @override
  * Native buttons also expose the DISABLED state in the HTML button's
- * {@code disabled} attribute.
+ * `disabled` attribute.
  */
 goog.ui.NativeButtonRenderer.prototype.setState = function(
     button, state, enable) {
+  'use strict';
   goog.ui.NativeButtonRenderer.superClass_.setState.call(
       this, button, state, enable);
   var element = button.getElement();
@@ -168,10 +168,11 @@ goog.ui.NativeButtonRenderer.prototype.setState = function(
 
 /**
  * @override
- * Native buttons store their value in the HTML button's {@code value}
+ * Native buttons store their value in the HTML button's `value`
  * attribute.
  */
 goog.ui.NativeButtonRenderer.prototype.getValue = function(element) {
+  'use strict';
   // TODO(attila): Make this work on IE!  This never worked...
   // See http://www.fourmilab.ch/fourmilog/archives/2007-03/000824.html
   // for a description of the problem.
@@ -181,10 +182,11 @@ goog.ui.NativeButtonRenderer.prototype.getValue = function(element) {
 
 /**
  * @override
- * Native buttons also expose their value in the HTML button's {@code value}
+ * Native buttons also expose their value in the HTML button's `value`
  * attribute.
  */
 goog.ui.NativeButtonRenderer.prototype.setValue = function(element, value) {
+  'use strict';
   if (element) {
     // TODO(attila): Make this work on IE!  This never worked...
     // See http://www.fourmilab.ch/fourmilog/archives/2007-03/000824.html
@@ -210,6 +212,7 @@ goog.ui.NativeButtonRenderer.prototype.updateAriaState = goog.nullFunction;
  * @private
  */
 goog.ui.NativeButtonRenderer.prototype.setUpNativeButton_ = function(button) {
+  'use strict';
   button.setHandleMouseEvents(false);
   button.setAutoStates(goog.ui.Component.State.ALL, false);
   button.setSupportedState(goog.ui.Component.State.FOCUSED, false);

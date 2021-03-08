@@ -1,16 +1,8 @@
-// Copyright 2009 The Closure Library Authors. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS-IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+/**
+ * @license
+ * Copyright The Closure Library Authors.
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
 /**
  * @fileoverview Character Picker widget for picking any Unicode character.
@@ -24,6 +16,7 @@ goog.require('goog.a11y.aria');
 goog.require('goog.a11y.aria.State');
 goog.require('goog.array');
 goog.require('goog.asserts');
+goog.require('goog.dispose');
 goog.require('goog.dom');
 goog.require('goog.dom.TagName');
 goog.require('goog.dom.classlist');
@@ -35,7 +28,9 @@ goog.require('goog.events.InputHandler');
 goog.require('goog.events.KeyCodes');
 goog.require('goog.events.KeyHandler');
 goog.require('goog.i18n.CharListDecompressor');
+goog.require('goog.i18n.CharPickerData');
 goog.require('goog.i18n.uChar');
+goog.require('goog.i18n.uChar.NameFetcher');
 goog.require('goog.structs.Set');
 goog.require('goog.style');
 goog.require('goog.ui.Button');
@@ -48,6 +43,7 @@ goog.require('goog.ui.Menu');
 goog.require('goog.ui.MenuButton');
 goog.require('goog.ui.MenuItem');
 goog.require('goog.ui.Tooltip');
+goog.requireType('goog.events.KeyEvent');
 
 
 
@@ -75,6 +71,7 @@ goog.require('goog.ui.Tooltip');
 goog.ui.CharPicker = function(
     charPickerData, charNameFetcher, opt_recents, opt_initCategory,
     opt_initSubcategory, opt_rowCount, opt_columnCount, opt_domHelper) {
+  'use strict';
   goog.ui.Component.call(this, opt_domHelper);
 
   /**
@@ -162,7 +159,7 @@ goog.ui.CharPicker.prototype.selectedChar_ = null;
 /**
  * Set of formatting characters whose display need to be swapped with nbsp
  * to prevent layout issues.
- * @type {goog.structs.Set}
+ * @type {?goog.structs.Set}
  * @private
  */
 goog.ui.CharPicker.prototype.layoutAlteringChars_ = null;
@@ -170,7 +167,7 @@ goog.ui.CharPicker.prototype.layoutAlteringChars_ = null;
 
 /**
  * The top category menu.
- * @type {goog.ui.Menu}
+ * @type {?goog.ui.Menu}
  * @private
  */
 goog.ui.CharPicker.prototype.menu_ = null;
@@ -178,7 +175,7 @@ goog.ui.CharPicker.prototype.menu_ = null;
 
 /**
  * The top category menu button.
- * @type {goog.ui.MenuButton}
+ * @type {?goog.ui.MenuButton}
  * @private
  */
 goog.ui.CharPicker.prototype.menubutton_ = null;
@@ -186,7 +183,7 @@ goog.ui.CharPicker.prototype.menubutton_ = null;
 
 /**
  * The subcategory menu.
- * @type {goog.ui.Menu}
+ * @type {?goog.ui.Menu}
  * @private
  */
 goog.ui.CharPicker.prototype.submenu_ = null;
@@ -194,7 +191,7 @@ goog.ui.CharPicker.prototype.submenu_ = null;
 
 /**
  * The subcategory menu button.
- * @type {goog.ui.MenuButton}
+ * @type {?goog.ui.MenuButton}
  * @private
  */
 goog.ui.CharPicker.prototype.submenubutton_ = null;
@@ -219,7 +216,7 @@ goog.ui.CharPicker.prototype.keyHandler_;
 goog.ui.CharPicker.prototype.category;
 
 
-/** @private {Element} */
+/** @private {?Element} */
 goog.ui.CharPicker.prototype.stick_ = null;
 
 
@@ -227,7 +224,7 @@ goog.ui.CharPicker.prototype.stick_ = null;
  * The element representing the number of rows visible in the grid.
  * This along with goog.ui.CharPicker.stick_ would help to create a scrollbar
  * of right size.
- * @type {HTMLElement}
+ * @type {?HTMLElement}
  * @private
  */
 goog.ui.CharPicker.prototype.stickwrap_ = null;
@@ -235,7 +232,7 @@ goog.ui.CharPicker.prototype.stickwrap_ = null;
 
 /**
  * The component containing all the buttons for each character in display.
- * @type {goog.ui.Component}
+ * @type {?goog.ui.Component}
  * @private
  */
 goog.ui.CharPicker.prototype.grid_ = null;
@@ -243,7 +240,7 @@ goog.ui.CharPicker.prototype.grid_ = null;
 
 /**
  * The component used for extra information about the character set displayed.
- * @type {goog.ui.Component}
+ * @type {?goog.ui.Component}
  * @private
  */
 goog.ui.CharPicker.prototype.notice_ = null;
@@ -251,7 +248,7 @@ goog.ui.CharPicker.prototype.notice_ = null;
 
 /**
  * Grid displaying recently selected characters.
- * @type {goog.ui.Component}
+ * @type {?goog.ui.Component}
  * @private
  */
 goog.ui.CharPicker.prototype.recentgrid_ = null;
@@ -259,7 +256,7 @@ goog.ui.CharPicker.prototype.recentgrid_ = null;
 
 /**
  * Input field for entering the hex value of the character.
- * @type {goog.ui.Component}
+ * @type {?goog.ui.Component}
  * @private
  */
 goog.ui.CharPicker.prototype.input_ = null;
@@ -267,14 +264,14 @@ goog.ui.CharPicker.prototype.input_ = null;
 
 /**
  * OK button for entering hex value of the character.
- * @private {goog.ui.Button}
+ * @private {?goog.ui.Button}
  */
 goog.ui.CharPicker.prototype.okbutton_ = null;
 
 
 /**
  * Element displaying character name in preview.
- * @type {Element}
+ * @type {?Element}
  * @private
  */
 goog.ui.CharPicker.prototype.charNameEl_ = null;
@@ -282,7 +279,7 @@ goog.ui.CharPicker.prototype.charNameEl_ = null;
 
 /**
  * Element displaying character in preview.
- * @type {Element}
+ * @type {?Element}
  * @private
  */
 goog.ui.CharPicker.prototype.zoomEl_ = null;
@@ -290,7 +287,7 @@ goog.ui.CharPicker.prototype.zoomEl_ = null;
 
 /**
  * Element displaying character number (codepoint) in preview.
- * @type {Element}
+ * @type {?Element}
  * @private
  */
 goog.ui.CharPicker.prototype.unicodeEl_ = null;
@@ -300,7 +297,7 @@ goog.ui.CharPicker.prototype.unicodeEl_ = null;
  * Hover card for displaying the preview of a character.
  * Preview would contain character in large size and its U+ notation. It would
  * also display the name, if available.
- * @type {goog.ui.HoverCard}
+ * @type {?goog.ui.HoverCard}
  * @private
  */
 goog.ui.CharPicker.prototype.hc_ = null;
@@ -311,6 +308,7 @@ goog.ui.CharPicker.prototype.hc_ = null;
  * @return {?string} The last selected character.
  */
 goog.ui.CharPicker.prototype.getSelectedChar = function() {
+  'use strict';
   return this.selectedChar_;
 };
 
@@ -320,12 +318,14 @@ goog.ui.CharPicker.prototype.getSelectedChar = function() {
  * @return {Array<string>} The recent character list.
  */
 goog.ui.CharPicker.prototype.getRecentChars = function() {
+  'use strict';
   return this.recents_;
 };
 
 
 /** @override */
 goog.ui.CharPicker.prototype.createDom = function() {
+  'use strict';
   goog.ui.CharPicker.superClass_.createDom.call(this);
 
   this.decorateInternal(
@@ -335,6 +335,7 @@ goog.ui.CharPicker.prototype.createDom = function() {
 
 /** @override */
 goog.ui.CharPicker.prototype.disposeInternal = function() {
+  'use strict';
   goog.dispose(this.hc_);
   this.hc_ = null;
   goog.dispose(this.eventHandler_);
@@ -345,6 +346,7 @@ goog.ui.CharPicker.prototype.disposeInternal = function() {
 
 /** @override */
 goog.ui.CharPicker.prototype.decorateInternal = function(element) {
+  'use strict';
   goog.ui.CharPicker.superClass_.decorateInternal.call(this, element);
 
   // The chars below cause layout disruption or too narrow to hover:
@@ -459,6 +461,7 @@ goog.ui.CharPicker.prototype.decorateInternal = function(element) {
       // it is retrieved asynchronously and the DOM object is re-used
       goog.dom.setTextContent(self.charNameEl_, '');
       self.charNameFetcher_.getName(ch, function(charName) {
+        'use strict';
         if (charName) {
           goog.dom.setTextContent(self.charNameEl_, charName);
         }
@@ -525,6 +528,7 @@ goog.ui.CharPicker.prototype.decorateInternal = function(element) {
 
 /** @override */
 goog.ui.CharPicker.prototype.enterDocument = function() {
+  'use strict';
   goog.ui.CharPicker.superClass_.enterDocument.call(this);
   var inputkh = new goog.events.InputHandler(this.input_.getElement());
   this.keyHandler_ = new goog.events.KeyHandler(this.input_.getElement());
@@ -572,8 +576,9 @@ goog.ui.CharPicker.prototype.enterDocument = function() {
  * @private
  */
 goog.ui.CharPicker.prototype.handleFocus_ = function(e) {
+  'use strict';
   var button = e.target;
-  var element = button.getElement();
+  var element = /** @type {!Element} */ (button.getElement());
   var ch = this.getChar_(element);
 
   // Clear the aria label to avoid speaking the old value in case the button
@@ -590,6 +595,7 @@ goog.ui.CharPicker.prototype.handleFocus_ = function(e) {
     // method that lets the caller retrieve multiple character names at once
     // so that this asynchronous gymnastic can be avoided.
     this.charNameFetcher_.getName(ch, function(charName) {
+      'use strict';
       if (charName) {
         goog.a11y.aria.setState(element, goog.a11y.aria.State.LABEL, charName);
       }
@@ -604,6 +610,7 @@ goog.ui.CharPicker.prototype.handleFocus_ = function(e) {
  * @private
  */
 goog.ui.CharPicker.prototype.handleScroll_ = function(e) {
+  'use strict';
   var height = e.target.scrollHeight;
   var top = e.target.scrollTop;
   var itempos =
@@ -625,6 +632,7 @@ goog.ui.CharPicker.prototype.handleScroll_ = function(e) {
  * @private
  */
 goog.ui.CharPicker.prototype.handleSelectedItem_ = function(e) {
+  'use strict';
   var parent = /** @type {goog.ui.Component} */ (e.target).getParent();
   if (parent == this.menu_) {
     this.menu_.setVisible(false);
@@ -649,6 +657,7 @@ goog.ui.CharPicker.prototype.handleSelectedItem_ = function(e) {
  * @private
  */
 goog.ui.CharPicker.prototype.handleInput_ = function(e) {
+  'use strict';
   var ch = this.getInputChar();
   if (ch) {
     goog.dom.setTextContent(this.zoomEl_, ch);
@@ -674,6 +683,7 @@ goog.ui.CharPicker.prototype.handleInput_ = function(e) {
  * @private
  */
 goog.ui.CharPicker.prototype.handleOkClick_ = function(opt_event) {
+  'use strict';
   var ch = this.getInputChar();
   if (ch && ch.charCodeAt(0)) {
     this.selectedChar_ = ch;
@@ -691,6 +701,7 @@ goog.ui.CharPicker.prototype.handleOkClick_ = function(opt_event) {
  * @private
  */
 goog.ui.CharPicker.prototype.handleEnter_ = function(e) {
+  'use strict';
   if (e.keyCode == goog.events.KeyCodes.ENTER) {
     return this.handleOkClick_() ?
         this.dispatchEvent(goog.ui.Component.EventType.ACTION) :
@@ -707,6 +718,7 @@ goog.ui.CharPicker.prototype.handleEnter_ = function(e) {
  * @private
  */
 goog.ui.CharPicker.prototype.getChar_ = function(e) {
+  'use strict';
   return e.getAttribute('char');
 };
 
@@ -719,6 +731,7 @@ goog.ui.CharPicker.prototype.getChar_ = function(e) {
  * @private
  */
 goog.ui.CharPicker.prototype.createMenuItem_ = function(id, caption) {
+  'use strict';
   var item = new goog.ui.MenuItem(caption, /* model */ id, this.getDomHelper());
   item.setVisible(true);
   return item;
@@ -733,6 +746,7 @@ goog.ui.CharPicker.prototype.createMenuItem_ = function(id, caption) {
  */
 goog.ui.CharPicker.prototype.setSelectedCategory_ = function(
     category, opt_subcategory) {
+  'use strict';
   this.category = category;
   this.menubutton_.setCaption(this.data_.categories[category]);
   while (this.submenu_.hasChildren()) {
@@ -740,7 +754,6 @@ goog.ui.CharPicker.prototype.setSelectedCategory_ = function(
   }
 
   var subcategories = this.data_.subcategories[category];
-  var charList = this.data_.charList[category];
   for (var i = 0; i < subcategories.length; i++) {
     var item = this.createMenuItem_(i, subcategories[i]);
     this.submenu_.addChild(item, true);
@@ -755,6 +768,7 @@ goog.ui.CharPicker.prototype.setSelectedCategory_ = function(
  * @private
  */
 goog.ui.CharPicker.prototype.setSelectedSubcategory_ = function(subcategory) {
+  'use strict';
   var subcategories = this.data_.subcategories;
   var name = subcategories[this.category][subcategory];
   this.submenubutton_.setCaption(name);
@@ -770,6 +784,7 @@ goog.ui.CharPicker.prototype.setSelectedSubcategory_ = function(subcategory) {
  */
 goog.ui.CharPicker.prototype.setSelectedGrid_ = function(
     category, subcategory) {
+  'use strict';
   var charLists = this.data_.charList;
   var charListStr = charLists[category][subcategory];
   var content = this.decompressor_.toCharList(charListStr);
@@ -786,6 +801,7 @@ goog.ui.CharPicker.prototype.setSelectedGrid_ = function(
  * @private
  */
 goog.ui.CharPicker.prototype.updateGrid_ = function(grid, items) {
+  'use strict';
   if (grid == this.grid_) {
     /**
      * @desc The message used when there are invisible characters like space
@@ -804,7 +820,7 @@ goog.ui.CharPicker.prototype.updateGrid_ = function(grid, items) {
           this.stickwrap_.offsetHeight * items.length / this.gridsize_ + 'px';
     } else {
       // This is the last ditch effort if height is not avaialble.
-      // Maximum of 3em is assumed to the the cell height. Extra space after
+      // Maximum of 3em is assumed to the cell height. Extra space after
       // last character in the grid is OK.
       this.stick_.style.height =
           3 * this.columnCount_ * items.length / this.gridsize_ + 'em';
@@ -827,6 +843,7 @@ goog.ui.CharPicker.prototype.updateGrid_ = function(grid, items) {
  */
 goog.ui.CharPicker.prototype.modifyGridWithItems_ = function(
     grid, items, start) {
+  'use strict';
   for (var buttonpos = 0, itempos = start;
        buttonpos < grid.buttoncount && itempos < items.length;
        buttonpos++, itempos++) {
@@ -848,6 +865,7 @@ goog.ui.CharPicker.prototype.modifyGridWithItems_ = function(
  * @private
  */
 goog.ui.CharPicker.prototype.populateGridWithButtons_ = function(grid) {
+  'use strict';
   for (var i = 0; i < grid.buttoncount; i++) {
     var button = new goog.ui.Button(
         ' ', goog.ui.FlatButtonRenderer.getInstance(), this.getDomHelper());
@@ -876,6 +894,7 @@ goog.ui.CharPicker.prototype.populateGridWithButtons_ = function(grid) {
  * @private
  */
 goog.ui.CharPicker.prototype.modifyCharNode_ = function(button, ch) {
+  'use strict';
   var text = this.displayChar_(ch);
   var buttonEl = button.getElement();
   goog.dom.setTextContent(buttonEl, text);
@@ -890,6 +909,7 @@ goog.ui.CharPicker.prototype.modifyCharNode_ = function(button, ch) {
  * @private
  */
 goog.ui.CharPicker.prototype.updateRecents_ = function(character) {
+  'use strict';
   if (character && character.charCodeAt(0) &&
       !goog.array.contains(this.recents_, character)) {
     this.recents_.unshift(character);
@@ -906,6 +926,7 @@ goog.ui.CharPicker.prototype.updateRecents_ = function(character) {
  * @return {string} Unicode character inputed by user.
  */
 goog.ui.CharPicker.prototype.getInputChar = function() {
+  'use strict';
   var text = this.input_.getValue();
   var code = parseInt(text, 16);
   return /** @type {string} */ (goog.i18n.uChar.fromCharCode(code));
@@ -919,5 +940,6 @@ goog.ui.CharPicker.prototype.getInputChar = function() {
  * @private
  */
 goog.ui.CharPicker.prototype.displayChar_ = function(ch) {
+  'use strict';
   return this.layoutAlteringChars_.contains(ch) ? '\u00A0' : ch;
 };

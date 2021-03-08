@@ -1,267 +1,289 @@
-// Copyright 2009 The Closure Library Authors. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS-IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+/**
+ * @license
+ * Copyright The Closure Library Authors.
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
+goog.module('goog.i18n.currencyTest');
+goog.setTestOnly();
 
-goog.provide('goog.i18n.currencyTest');
-goog.setTestOnly('goog.i18n.currencyTest');
+const NumberFormat = goog.require('goog.i18n.NumberFormat');
+const PropertyReplacer = goog.require('goog.testing.PropertyReplacer');
+const RawCurrencyInfo = goog.require('goog.i18n.currency.CurrencyInfo');
+const currency = goog.require('goog.i18n.currency');
+const googObject = goog.require('goog.object');
+const testSuite = goog.require('goog.testing.testSuite');
 
-goog.require('goog.i18n.NumberFormat');
-goog.require('goog.i18n.currency');
-goog.require('goog.i18n.currency.CurrencyInfo');
-goog.require('goog.object');
-goog.require('goog.testing.PropertyReplacer');
-goog.require('goog.testing.jsunit');
+let CurrencyInfo = RawCurrencyInfo;
 
-var stubs = new goog.testing.PropertyReplacer();
+const stubs = new PropertyReplacer();
 
-function setUp() {
-  stubs.replace(
-      goog.i18n.currency, 'CurrencyInfo',
-      goog.object.clone(goog.i18n.currency.CurrencyInfo));
-}
+testSuite({
+  setUp() {
+    stubs.replace(
+        currency, 'CurrencyInfo', googObject.clone(currency.CurrencyInfo));
+    CurrencyInfo = currency.CurrencyInfo;
+  },
 
-function tearDown() {
-  stubs.reset();
-}
+  tearDown() {
+    stubs.reset();
+  },
 
-function testAddTier2Support() {
-  assertFalse('LRD' in goog.i18n.currency.CurrencyInfo);
-  assertThrows(function() {
-    goog.i18n.currency.getLocalCurrencyPattern('LRD');
-  });
+  testIsAvailable() {
+    assertTrue(currency.isAvailable('USD'));
+    assertTrue(currency.isAvailable('CLP'));
+    assertFalse(currency.isAvailable('LRD'));
+    assertFalse(currency.isAvailable('XYZ'));
+  },
 
-  goog.i18n.currency.addTier2Support();
-  assertTrue('LRD' in goog.i18n.currency.CurrencyInfo);
-  assertEquals(
-      "'$'#,##0.00", goog.i18n.currency.getLocalCurrencyPattern('LRD'));
-}
+  testAddTier2Support() {
+    assertFalse('LRD' in CurrencyInfo);
+    assertThrows(() => {
+      currency.getLocalCurrencyPattern('LRD');
+    });
 
-function testCurrencyPattern() {
-  assertEquals(
-      "'$'#,##0.00", goog.i18n.currency.getLocalCurrencyPattern('USD'));
-  assertEquals(
-      "'US$'#,##0.00", goog.i18n.currency.getPortableCurrencyPattern('USD'));
-  assertEquals(
-      "USD '$'#,##0.00", goog.i18n.currency.getGlobalCurrencyPattern('USD'));
+    currency.addTier2Support();
+    assertTrue('LRD' in CurrencyInfo);
+    assertEquals('\'$\'#,##0.00', currency.getLocalCurrencyPattern('LRD'));
+  },
 
-  assertEquals("'¥'#,##0", goog.i18n.currency.getLocalCurrencyPattern('JPY'));
-  assertEquals(
-      "'JP¥'#,##0", goog.i18n.currency.getPortableCurrencyPattern('JPY'));
-  assertEquals(
-      "JPY '¥'#,##0", goog.i18n.currency.getGlobalCurrencyPattern('JPY'));
+  testCurrencyPattern() {
+    assertEquals('\'$\'#,##0.00', currency.getLocalCurrencyPattern('USD'));
+    assertEquals('\'US$\'#,##0.00', currency.getPortableCurrencyPattern('USD'));
+    assertEquals('USD \'$\'#,##0.00', currency.getGlobalCurrencyPattern('USD'));
 
-  assertEquals(
-      "'€'#,##0.00", goog.i18n.currency.getLocalCurrencyPattern('EUR'));
-  assertEquals(
-      "'€'#,##0.00", goog.i18n.currency.getPortableCurrencyPattern('EUR'));
-  assertEquals(
-      "EUR '€'#,##0.00", goog.i18n.currency.getGlobalCurrencyPattern('EUR'));
+    assertEquals('\'¥\'#,##0', currency.getLocalCurrencyPattern('JPY'));
+    assertEquals('\'JP¥\'#,##0', currency.getPortableCurrencyPattern('JPY'));
+    assertEquals('JPY \'¥\'#,##0', currency.getGlobalCurrencyPattern('JPY'));
 
-  assertEquals(
-      "'¥'#,##0.00", goog.i18n.currency.getLocalCurrencyPattern('CNY'));
-  assertEquals(
-      "'RMB¥'#,##0.00", goog.i18n.currency.getPortableCurrencyPattern('CNY'));
-  assertEquals(
-      "CNY '¥'#,##0.00", goog.i18n.currency.getGlobalCurrencyPattern('CNY'));
+    assertEquals('\'€\'#,##0.00', currency.getLocalCurrencyPattern('EUR'));
+    assertEquals('\'€\'#,##0.00', currency.getPortableCurrencyPattern('EUR'));
+    assertEquals('EUR \'€\'#,##0.00', currency.getGlobalCurrencyPattern('EUR'));
 
-  assertEquals(
-      "'Rial'#,##0", goog.i18n.currency.getLocalCurrencyPattern('YER'));
-  assertEquals(
-      "'Rial'#,##0", goog.i18n.currency.getPortableCurrencyPattern('YER'));
-  assertEquals(
-      "YER 'Rial'#,##0", goog.i18n.currency.getGlobalCurrencyPattern('YER'));
+    assertEquals('\'¥\'#,##0.00', currency.getLocalCurrencyPattern('CNY'));
+    assertEquals(
+        '\'RMB¥\'#,##0.00', currency.getPortableCurrencyPattern('CNY'));
+    assertEquals('CNY \'¥\'#,##0.00', currency.getGlobalCurrencyPattern('CNY'));
 
-  assertEquals(
-      "'CHF'#,##0.00", goog.i18n.currency.getLocalCurrencyPattern('CHF'));
-  assertEquals(
-      "'CHF'#,##0.00", goog.i18n.currency.getPortableCurrencyPattern('CHF'));
-  assertEquals(
-      "'CHF'#,##0.00", goog.i18n.currency.getGlobalCurrencyPattern('CHF'));
-}
+    assertEquals('\'Rial\'#,##0', currency.getLocalCurrencyPattern('YER'));
+    assertEquals('\'Rial\'#,##0', currency.getPortableCurrencyPattern('YER'));
+    assertEquals('YER \'Rial\'#,##0', currency.getGlobalCurrencyPattern('YER'));
 
-function testCurrencyFormatCHF() {
-  var formatter;
-  var str;
+    assertEquals('\'CHF\'#,##0.00', currency.getLocalCurrencyPattern('CHF'));
+    assertEquals('\'CHF\'#,##0.00', currency.getPortableCurrencyPattern('CHF'));
+    assertEquals('\'CHF\'#,##0.00', currency.getGlobalCurrencyPattern('CHF'));
 
-  formatter = new goog.i18n.NumberFormat(
-      goog.i18n.currency.getLocalCurrencyPattern('CHF'));
-  str = formatter.format(123456.7899);
-  assertEquals('CHF123,456.79', str);
+    assertEquals('\'$\'#,##0.00', currency.getLocalCurrencyPattern('TWD'));
+    assertEquals('\'NT$\'#,##0.00', currency.getPortableCurrencyPattern('TWD'));
+    assertEquals('TWD \'$\'#,##0.00', currency.getGlobalCurrencyPattern('TWD'));
+  },
 
-  formatter = new goog.i18n.NumberFormat(
-      goog.i18n.currency.getPortableCurrencyPattern('CHF'));
-  str = formatter.format(123456.7899);
-  assertEquals('CHF123,456.79', str);
+  testCurrencyFormatTWD() {
+    let formatter;
+    let str;
 
-  formatter = new goog.i18n.NumberFormat(
-      goog.i18n.currency.getGlobalCurrencyPattern('CHF'));
-  str = formatter.format(123456.7899);
-  assertEquals('CHF123,456.79', str);
-}
+    formatter = new NumberFormat(currency.getLocalCurrencyPattern('TWD'));
+    str = formatter.format(123456.7899);
+    assertEquals('$123,456.79', str);
 
-function testCurrencyFormatYER() {
-  var formatter;
-  var str;
+    formatter = new NumberFormat(currency.getPortableCurrencyPattern('TWD'));
+    str = formatter.format(123456.7899);
+    assertEquals('NT$123,456.79', str);
 
-  formatter = new goog.i18n.NumberFormat(
-      goog.i18n.currency.getLocalCurrencyPattern('YER'));
-  str = formatter.format(123456.7899);
-  assertEquals('Rial123,457', str);
+    formatter = new NumberFormat(currency.getGlobalCurrencyPattern('TWD'));
+    str = formatter.format(123456.7899);
+    assertEquals('TWD $123,456.79', str);
+  },
 
-  formatter = new goog.i18n.NumberFormat(
-      goog.i18n.currency.getPortableCurrencyPattern('YER'));
-  str = formatter.format(123456.7899);
-  assertEquals('Rial123,457', str);
+  testCurrencyFormatCHF() {
+    let formatter;
+    let str;
 
-  formatter = new goog.i18n.NumberFormat(
-      goog.i18n.currency.getGlobalCurrencyPattern('YER'));
-  str = formatter.format(123456.7899);
-  assertEquals('YER Rial123,457', str);
-}
+    formatter = new NumberFormat(currency.getLocalCurrencyPattern('CHF'));
+    str = formatter.format(123456.7899);
+    assertEquals('CHF123,456.79', str);
 
-function testCurrencyFormatCNY() {
-  var formatter;
-  var str;
+    formatter = new NumberFormat(currency.getPortableCurrencyPattern('CHF'));
+    str = formatter.format(123456.7899);
+    assertEquals('CHF123,456.79', str);
 
-  formatter = new goog.i18n.NumberFormat(
-      goog.i18n.currency.getLocalCurrencyPattern('CNY'));
-  str = formatter.format(123456.7899);
-  assertEquals('¥123,456.79', str);
+    formatter = new NumberFormat(currency.getGlobalCurrencyPattern('CHF'));
+    str = formatter.format(123456.7899);
+    assertEquals('CHF123,456.79', str);
+  },
 
-  formatter = new goog.i18n.NumberFormat(
-      goog.i18n.currency.getPortableCurrencyPattern('CNY'));
-  str = formatter.format(123456.7899);
-  assertEquals('RMB¥123,456.79', str);
+  testCurrencyFormatYER() {
+    let formatter;
+    let str;
 
-  formatter = new goog.i18n.NumberFormat(
-      goog.i18n.currency.getGlobalCurrencyPattern('CNY'));
-  str = formatter.format(123456.7899);
-  assertEquals('CNY ¥123,456.79', str);
-}
+    formatter = new NumberFormat(currency.getLocalCurrencyPattern('YER'));
+    str = formatter.format(123456.7899);
+    assertEquals('Rial123,457', str);
 
-function testCurrencyFormatCZK() {
-  var formatter;
-  var str;
+    formatter = new NumberFormat(currency.getPortableCurrencyPattern('YER'));
+    str = formatter.format(123456.7899);
+    assertEquals('Rial123,457', str);
 
-  formatter = new goog.i18n.NumberFormat(
-      goog.i18n.currency.getLocalCurrencyPattern('CZK'));
-  str = formatter.format(123456.7899);
-  assertEquals('123,456.79 Kč', str);
+    formatter = new NumberFormat(currency.getGlobalCurrencyPattern('YER'));
+    str = formatter.format(123456.7899);
+    assertEquals('YER Rial123,457', str);
+  },
 
-  formatter = new goog.i18n.NumberFormat(
-      goog.i18n.currency.getPortableCurrencyPattern('CZK'));
-  str = formatter.format(123456.7899);
-  assertEquals('123,456.79 Kč', str);
+  testCurrencyFormatCNY() {
+    let formatter;
+    let str;
 
-  formatter = new goog.i18n.NumberFormat(
-      goog.i18n.currency.getGlobalCurrencyPattern('CZK'));
-  str = formatter.format(123456.7899);
-  assertEquals('CZK 123,456.79 Kč', str);
-}
+    formatter = new NumberFormat(currency.getLocalCurrencyPattern('CNY'));
+    str = formatter.format(123456.7899);
+    assertEquals('¥123,456.79', str);
 
-function testCurrencyFormatEUR() {
-  var formatter;
-  var str;
+    formatter = new NumberFormat(currency.getPortableCurrencyPattern('CNY'));
+    str = formatter.format(123456.7899);
+    assertEquals('RMB¥123,456.79', str);
 
-  formatter = new goog.i18n.NumberFormat(
-      goog.i18n.currency.getLocalCurrencyPattern('EUR'));
-  str = formatter.format(123456.7899);
-  assertEquals('€123,456.79', str);
+    formatter = new NumberFormat(currency.getGlobalCurrencyPattern('CNY'));
+    str = formatter.format(123456.7899);
+    assertEquals('CNY ¥123,456.79', str);
+  },
 
-  formatter = new goog.i18n.NumberFormat(
-      goog.i18n.currency.getPortableCurrencyPattern('EUR'));
-  str = formatter.format(123456.7899);
-  assertEquals('€123,456.79', str);
+  testCurrencyFormatCZK() {
+    let formatter;
+    let str;
 
-  formatter = new goog.i18n.NumberFormat(
-      goog.i18n.currency.getGlobalCurrencyPattern('EUR'));
-  str = formatter.format(123456.7899);
-  assertEquals('EUR €123,456.79', str);
-}
+    formatter = new NumberFormat(currency.getLocalCurrencyPattern('CZK'));
+    str = formatter.format(123456.7899);
+    assertEquals('123,456.79 Kč', str);
 
-function testCurrencyFormatJPY() {
-  var formatter;
-  var str;
+    formatter = new NumberFormat(currency.getPortableCurrencyPattern('CZK'));
+    str = formatter.format(123456.7899);
+    assertEquals('123,456.79 Kč', str);
 
-  formatter = new goog.i18n.NumberFormat(
-      goog.i18n.currency.getLocalCurrencyPattern('JPY'));
-  str = formatter.format(123456.7899);
-  assertEquals('¥123,457', str);
+    formatter = new NumberFormat(currency.getGlobalCurrencyPattern('CZK'));
+    str = formatter.format(123456.7899);
+    assertEquals('CZK 123,456.79 Kč', str);
+  },
 
-  formatter = new goog.i18n.NumberFormat(
-      goog.i18n.currency.getPortableCurrencyPattern('JPY'));
-  str = formatter.format(123456.7899);
-  assertEquals('JP¥123,457', str);
+  testCurrencyFormatEUR() {
+    let formatter;
+    let str;
 
-  formatter = new goog.i18n.NumberFormat(
-      goog.i18n.currency.getGlobalCurrencyPattern('JPY'));
-  str = formatter.format(123456.7899);
-  assertEquals('JPY ¥123,457', str);
-}
+    formatter = new NumberFormat(currency.getLocalCurrencyPattern('EUR'));
+    str = formatter.format(123456.7899);
+    assertEquals('€123,456.79', str);
 
-function testCurrencyFormatPLN() {
-  var formatter;
-  var str;
+    formatter = new NumberFormat(currency.getPortableCurrencyPattern('EUR'));
+    str = formatter.format(123456.7899);
+    assertEquals('€123,456.79', str);
 
-  formatter = new goog.i18n.NumberFormat(
-      goog.i18n.currency.getLocalCurrencyPattern('PLN'));
-  str = formatter.format(123456.7899);
-  assertEquals('123,456.79 zł', str);
+    formatter = new NumberFormat(currency.getGlobalCurrencyPattern('EUR'));
+    str = formatter.format(123456.7899);
+    assertEquals('EUR €123,456.79', str);
+  },
 
-  formatter = new goog.i18n.NumberFormat(
-      goog.i18n.currency.getPortableCurrencyPattern('PLN'));
-  str = formatter.format(123456.7899);
-  assertEquals('123,456.79 zł', str);
+  testCurrencyFormatJPY() {
+    let formatter;
+    let str;
 
-  formatter = new goog.i18n.NumberFormat(
-      goog.i18n.currency.getGlobalCurrencyPattern('PLN'));
-  str = formatter.format(123456.7899);
-  assertEquals('PLN 123,456.79 zł', str);
-}
+    formatter = new NumberFormat(currency.getLocalCurrencyPattern('JPY'));
+    str = formatter.format(123456.7899);
+    assertEquals('¥123,457', str);
 
-function testCurrencyFormatUSD() {
-  var formatter;
-  var str;
+    formatter = new NumberFormat(currency.getPortableCurrencyPattern('JPY'));
+    str = formatter.format(123456.7899);
+    assertEquals('JP¥123,457', str);
 
-  formatter = new goog.i18n.NumberFormat(
-      goog.i18n.currency.getLocalCurrencyPattern('USD'));
-  str = formatter.format(123456.7899);
-  assertEquals('$123,456.79', str);
+    formatter = new NumberFormat(currency.getGlobalCurrencyPattern('JPY'));
+    str = formatter.format(123456.7899);
+    assertEquals('JPY ¥123,457', str);
+  },
 
-  formatter = new goog.i18n.NumberFormat(
-      goog.i18n.currency.getPortableCurrencyPattern('USD'));
-  str = formatter.format(123456.7899);
-  assertEquals('US$123,456.79', str);
+  testCurrencyFormatPLN() {
+    let formatter;
+    let str;
 
-  formatter = new goog.i18n.NumberFormat(
-      goog.i18n.currency.getGlobalCurrencyPattern('USD'));
-  str = formatter.format(123456.7899);
-  assertEquals('USD $123,456.79', str);
-}
+    formatter = new NumberFormat(currency.getLocalCurrencyPattern('PLN'));
+    str = formatter.format(123456.7899);
+    assertEquals('123,456.79 zł', str);
 
+    formatter = new NumberFormat(currency.getPortableCurrencyPattern('PLN'));
+    str = formatter.format(123456.7899);
+    assertEquals('123,456.79 zł', str);
 
-function testIsPrefixSignPosition() {
-  assertTrue(goog.i18n.currency.isPrefixSignPosition('USD'));
-  assertTrue(goog.i18n.currency.isPrefixSignPosition('EUR'));
-}
+    formatter = new NumberFormat(currency.getGlobalCurrencyPattern('PLN'));
+    str = formatter.format(123456.7899);
+    assertEquals('PLN 123,456.79 zł', str);
+  },
 
-function testGetCurrencySign() {
-  assertEquals('USD $', goog.i18n.currency.getGlobalCurrencySign('USD'));
-  assertEquals('$', goog.i18n.currency.getLocalCurrencySign('USD'));
-  assertEquals('US$', goog.i18n.currency.getPortableCurrencySign('USD'));
+  testCurrencyFormatUSD() {
+    let formatter;
+    let str;
 
-  assertEquals('YER Rial', goog.i18n.currency.getGlobalCurrencySign('YER'));
-  assertEquals('Rial', goog.i18n.currency.getLocalCurrencySign('YER'));
-  assertEquals('Rial', goog.i18n.currency.getPortableCurrencySign('YER'));
-}
+    formatter = new NumberFormat(currency.getLocalCurrencyPattern('USD'));
+    str = formatter.format(123456.7899);
+    assertEquals('$123,456.79', str);
+
+    formatter = new NumberFormat(currency.getPortableCurrencyPattern('USD'));
+    str = formatter.format(123456.7899);
+    assertEquals('US$123,456.79', str);
+
+    formatter = new NumberFormat(currency.getGlobalCurrencyPattern('USD'));
+    str = formatter.format(123456.7899);
+    assertEquals('USD $123,456.79', str);
+  },
+
+  testIsPrefixSignPosition() {
+    assertTrue(currency.isPrefixSignPosition('USD'));
+    assertTrue(currency.isPrefixSignPosition('EUR'));
+  },
+
+  testGetCurrencySign() {
+    assertEquals('USD $', currency.getGlobalCurrencySign('USD'));
+    assertEquals('$', currency.getLocalCurrencySign('USD'));
+    assertEquals('US$', currency.getPortableCurrencySign('USD'));
+
+    assertEquals('YER Rial', currency.getGlobalCurrencySign('YER'));
+    assertEquals('Rial', currency.getLocalCurrencySign('YER'));
+    assertEquals('Rial', currency.getPortableCurrencySign('YER'));
+
+    assertThrows(() => {
+      currency.getGlobalCurrencySign('XXY');
+    });
+
+    assertThrows(() => {
+      currency.getLocalCurrencySign('XXY');
+    });
+
+    assertThrows(() => {
+      currency.getPortableCurrencySign('XXY');
+    });
+  },
+
+  testGetCurrencySignWithFallback() {
+    assertEquals('USD $', currency.getGlobalCurrencySignWithFallback('USD'));
+    assertEquals('$', currency.getLocalCurrencySignWithFallback('USD'));
+    assertEquals('US$', currency.getPortableCurrencySignWithFallback('USD'));
+
+    assertEquals('XXY', currency.getGlobalCurrencySignWithFallback('XXY'));
+    assertEquals('XXY', currency.getLocalCurrencySignWithFallback('XXY'));
+    assertEquals('XXY', currency.getPortableCurrencySignWithFallback('XXY'));
+  },
+
+  testAdjustPrecision() {
+    // Known currency code, change to pattern
+    assertEquals('0', currency.adjustPrecision('0.00', 'JPY'));
+
+    // Known currency code, no change to pattern
+    assertEquals('0.00', currency.adjustPrecision('0.00', 'USD'));
+
+    // Unknown currency code
+    assertEquals('0.00', currency.adjustPrecision('0.00', 'XXY'));
+  },
+
+  testIsValidCurrencyCode() {
+    assertTrue(currency.isValid('USD'));
+    assertTrue(currency.isValid('RUR'));
+    assertTrue(currency.isValid('XXY'));
+    assertTrue(currency.isValid('usd'));
+    assertFalse(currency.isValid('invalid!'));
+  },
+});

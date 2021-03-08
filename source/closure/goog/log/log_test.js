@@ -1,186 +1,184 @@
-// Copyright 2013 The Closure Library Authors. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS-IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 /**
- * @fileoverview Unit tests for goog.log.
+ * @license
+ * Copyright The Closure Library Authors.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
-/** @suppress {extraProvide} */
-goog.provide('goog.logTest');
+/**
+ * @fileoverview Unit tests for log.
+ */
 
-goog.require('goog.debug.LogManager');
-goog.require('goog.log');
-goog.require('goog.log.Level');
-goog.require('goog.testing.jsunit');
+goog.module('goog.logTest');
+goog.setTestOnly();
 
-
-
-goog.setTestOnly('goog.logTest');
-
-
+const Level = goog.require('goog.log.Level');
+const log = goog.require('goog.log');
+const testSuite = goog.require('goog.testing.testSuite');
 
 /**
  * A simple log handler that remembers the last record published.
- * @constructor
- * @private
  */
-function TestHandler_() {
-  this.logRecord = null;
+class TestHandler {
+  constructor() {
+    this.logRecord = null;
+    this.onPublish = (logRecord) => {
+      this.logRecord = logRecord;
+    };
+  }
+
+  reset() {
+    this.logRecord = null;
+  }
 }
 
-TestHandler_.prototype.onPublish = function(logRecord) {
-  this.logRecord = logRecord;
-};
+testSuite({
+  testLogging() {
+    // Test that when a message is logged with a given logger, a handler for the
+    // logger is called with that message.
+    const handler = new TestHandler();
+    const logger = log.getLogger('goog.logTest.bar.baaz');
+    try {
+      log.addHandler(logger, handler.onPublish);
+      log.log(logger, Level.WARNING, 'foo');
+      assertNotNull(handler.logRecord);
+      assertEquals(Level.WARNING, handler.logRecord.getLevel());
+      assertEquals('foo', handler.logRecord.getMessage());
+      handler.reset();
+    } finally {
+      log.removeHandler(logger, handler.onPublish);
+    }
+    log.log(logger, Level.WARNING, 'foo');
+    assertNull(handler.logRecord);
+  },
 
+  testParentLogHandling() {
+    // Test that when a message is logged with a given logger, a handler for the
+    // logger's ancestry chain is called with that message.
+    const handler = new TestHandler();
+    const logger = log.getLogger('goog.logTest.bar.baaz');
+    const parentLogger = log.getLogger('goog.logTest.bar');
+    try {
+      log.addHandler(parentLogger, handler.onPublish);
+      log.log(logger, Level.WARNING, 'ancestral foo');
+      assertNotNull(handler.logRecord);
+      assertEquals(Level.WARNING, handler.logRecord.getLevel());
+      assertEquals('ancestral foo', handler.logRecord.getMessage());
+      handler.reset();
+    } finally {
+      log.removeHandler(parentLogger, handler.onPublish);
+    }
+    log.log(logger, Level.WARNING, 'foo');
+    assertNull(handler.logRecord);
+  },
 
-TestHandler_.prototype.reset = function() {
-  this.logRecord = null;
-};
+  testRootLogHandler() {
+    // Test that when a message is logged with any logger, a handler for the
+    // root logger is called with that message.
+    const root = log.getRootLogger();
+    const handler = new TestHandler();
+    const logger = log.getLogger('goog.logTest.bar.baaz');
+    try {
+      log.addHandler(root, handler.onPublish);
+      log.log(logger, Level.WARNING, 'prehistoric foo');
+      assertNotNull(handler.logRecord);
+      assertEquals(Level.WARNING, handler.logRecord.getLevel());
+      assertEquals('prehistoric foo', handler.logRecord.getMessage());
+      handler.reset();
+    } finally {
+      log.removeHandler(root, handler.onPublish);
+    }
+    log.log(logger, Level.WARNING, 'foo');
+    assertNull(handler.logRecord);
+  },
 
+  testLogFilteringByLevel() {
+    // Test that when a message is logged with any logger at a given level,
+    // a log handler for that logger is only called with that message if the
+    // logger's own level not higher.
+    const handler = new TestHandler();
+    const logger = log.getLogger('goog.logTest.bar.baaz.warn', Level.WARNING);
+    try {
+      log.addHandler(logger, handler.onPublish);
+      log.log(logger, Level.SEVERE, 'foo');
+      assertNotNull(handler.logRecord);
+      assertEquals(Level.SEVERE, handler.logRecord.getLevel());
+      assertEquals('foo', handler.logRecord.getMessage());
+      handler.reset();
 
-function testParents() {
-  var logger2sibling1 = goog.log.getLogger('goog.test');
-  var logger2sibling2 = goog.log.getLogger('goog.bar');
-  var logger3sibling1 = goog.log.getLogger('goog.bar.foo');
-  var logger3siblint2 = goog.log.getLogger('goog.bar.baaz');
-  var rootLogger = goog.debug.LogManager.getRoot();
-  var googLogger = goog.log.getLogger('goog');
-  assertEquals(rootLogger, googLogger.getParent());
-  assertEquals(googLogger, logger2sibling1.getParent());
-  assertEquals(googLogger, logger2sibling2.getParent());
-  assertEquals(logger2sibling2, logger3sibling1.getParent());
-  assertEquals(logger2sibling2, logger3siblint2.getParent());
-}
+      log.log(logger, Level.INFO, 'unimportant foo');
+      assertNull(handler.logRecord);
+    } finally {
+      log.removeHandler(logger, handler.onPublish);
+    }
+  },
 
-function testLogging1() {
-  var root = goog.debug.LogManager.getRoot();
-  var handler = new TestHandler_();
-  var f = goog.bind(handler.onPublish, handler);
-  goog.log.addHandler(root, f);
-  var logger = goog.log.getLogger('goog.bar.baaz');
-  goog.log.log(logger, goog.log.Level.WARNING, 'foo');
-  assertNotNull(handler.logRecord);
-  assertEquals(goog.log.Level.WARNING, handler.logRecord.getLevel());
-  assertEquals('foo', handler.logRecord.getMessage());
-  handler.logRecord = null;
+  testLoggingCallback() {
+    // Test that when a callback (representing a lazily-initialized message) is
+    // logged with a logger, the return value of the callback is treated as the
+    // message.
+    // In addition, test that the callback is not invoked if the message doesn't
+    // need to be logged (here, because its level is too low).
+    const handler = new TestHandler();
+    const logger = log.getLogger('goog.logTest.bar.baaz.warn', Level.WARNING);
+    try {
+      log.addHandler(logger, handler.onPublish);
+      log.log(logger, Level.SEVERE, () => 'foo');
+      assertNotNull(handler.logRecord);
+      assertEquals(Level.SEVERE, handler.logRecord.getLevel());
+      assertEquals('foo', handler.logRecord.getMessage());
+      handler.reset();
 
-  goog.log.removeHandler(root, f);
-  goog.log.log(logger, goog.log.Level.WARNING, 'foo');
-  assertNull(handler.logRecord);
-}
+      let callbackTriggered = false;
+      log.log(logger, Level.INFO, () => {
+        callbackTriggered = true;
+        return 'side-effectful foo';
+      });
+      assert(!callbackTriggered);
+      assertNull(handler.logRecord);
+    } finally {
+      log.removeHandler(logger, handler.onPublish);
+    }
+  },
 
-function testLogging2() {
-  var root = goog.debug.LogManager.getRoot();
-  var handler = new TestHandler_();
-  var f = goog.bind(handler.onPublish, handler);
-  goog.log.addHandler(root, f);
-  var logger = goog.log.getLogger('goog.bar.baaz');
-  goog.log.warning(logger, 'foo');
-  assertNotNull(handler.logRecord);
-  assertEquals(goog.log.Level.WARNING, handler.logRecord.getLevel());
-  assertEquals('foo', handler.logRecord.getMessage());
-  handler.logRecord = null;
+  testLoggingWithException() {
+    // Test that when a message and an exception are logged with a given logger,
+    // a handler for the logger is called with both.
+    const handler = new TestHandler();
+    const logger = log.getLogger('goog.logTest.bar.baaz');
+    const exception = new Error();
+    try {
+      log.addHandler(logger, handler.onPublish);
+      log.log(logger, Level.WARNING, 'exceptional foo', exception);
+      assertNotNull(handler.logRecord);
+      assertEquals(Level.WARNING, handler.logRecord.getLevel());
+      assertEquals('exceptional foo', handler.logRecord.getMessage());
+      assertEquals(exception, handler.logRecord.getException());
+    } finally {
+      log.removeHandler(logger, handler.onPublish);
+    }
+  },
 
-  goog.log.removeHandler(root, f);
-  goog.log.log(logger, goog.log.Level.WARNING, 'foo');
-  assertNull(handler.logRecord);
-}
+  testPublishingLogRecord() {
+    // Test getting and publishing a log record.
+    const handler = new TestHandler();
+    const logger = log.getLogger('goog.logTest.bar.baaz');
+    const exception = new Error();
+    try {
+      log.addHandler(logger, handler.onPublish);
+      const logRecord =
+          log.getLogRecord(logger, Level.WARNING, 'foo', exception);
+      assertEquals(logRecord.getLoggerName(), 'goog.logTest.bar.baaz');
+      assertEquals(logRecord.getLevel(), Level.WARNING);
+      assertEquals(logRecord.getMessage(), 'foo');
+      assertEquals(logRecord.getException(), exception);
+      // Should not have published anything.
+      assertNull(handler.logRecord);
 
-
-function testFiltering() {
-  var root = goog.debug.LogManager.getRoot();
-  var handler = new TestHandler_();
-  var f = goog.bind(handler.onPublish, handler);
-  root.addHandler(f);
-  var logger1 = goog.log.getLogger('goog.bar.foo', goog.log.Level.WARNING);
-  var logger2 = goog.log.getLogger('goog.bar.baaz', goog.log.Level.INFO);
-  goog.log.warning(logger2, 'foo');
-  assertNotNull(handler.logRecord);
-  assertEquals(goog.log.Level.WARNING, handler.logRecord.getLevel());
-  assertEquals('foo', handler.logRecord.getMessage());
-  handler.reset();
-  goog.log.info(logger1, 'bar');
-  assertNull(handler.logRecord);
-  goog.log.warning(logger1, 'baaz');
-  assertNotNull(handler.logRecord);
-  handler.reset();
-  goog.log.error(logger1, 'baaz');
-  assertNotNull(handler.logRecord);
-}
-
-
-function testException() {
-  var root = goog.debug.LogManager.getRoot();
-  var handler = new TestHandler_();
-  var f = goog.bind(handler.onPublish, handler);
-  root.addHandler(f);
-  var logger = goog.log.getLogger('goog.debug.logger_test');
-  var ex = Error('boo!');
-  goog.log.error(logger, 'hello', ex);
-  assertNotNull(handler.logRecord);
-  assertEquals(goog.log.Level.SEVERE, handler.logRecord.getLevel());
-  assertEquals('hello', handler.logRecord.getMessage());
-  assertEquals(ex, handler.logRecord.getException());
-}
-
-
-function testMessageCallbacks() {
-  var root = goog.debug.LogManager.getRoot();
-  var handler = new TestHandler_();
-  var f = goog.bind(handler.onPublish, handler);
-  root.addHandler(f);
-  var logger = goog.log.getLogger('goog.bar.foo');
-  logger.setLevel(goog.log.Level.WARNING);
-
-  logger.log(goog.log.Level.INFO, function() {
-    throw "Message callback shouldn't be called when below logger's level!";
-  });
-  assertNull(handler.logRecord);
-
-  logger.log(goog.log.Level.WARNING, function() { return 'heya' });
-  assertNotNull(handler.logRecord);
-  assertEquals(goog.log.Level.WARNING, handler.logRecord.getLevel());
-  assertEquals('heya', handler.logRecord.getMessage());
-}
-
-
-function testGetLogRecord() {
-  var name = 'test.get.log.record';
-  var level = goog.log.Level.FINE;
-  var msg = 'msg';
-
-  var logger = goog.log.getLogger(name);
-  var logRecord = logger.getLogRecord(level, msg);
-
-  assertEquals(name, logRecord.getLoggerName());
-  assertEquals(level, logRecord.getLevel());
-  assertEquals(msg, logRecord.getMessage());
-
-  assertNull(logRecord.getException());
-}
-
-function testGetLogRecordWithException() {
-  var name = 'test.get.log.record';
-  var level = goog.log.Level.FINE;
-  var msg = 'msg';
-  var ex = Error('Hi');
-
-  var logger = goog.log.getLogger(name);
-  var logRecord = logger.getLogRecord(level, msg, ex);
-
-  assertEquals(name, logRecord.getLoggerName());
-  assertEquals(level, logRecord.getLevel());
-  assertEquals(msg, logRecord.getMessage());
-  assertEquals(ex, logRecord.getException());
-}
+      log.publishLogRecord(logger, logRecord);
+      assertEquals(handler.logRecord, logRecord);
+      handler.reset();
+    } finally {
+      log.removeHandler(logger, handler.onPublish);
+    }
+  }
+});

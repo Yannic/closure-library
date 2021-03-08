@@ -1,16 +1,8 @@
-// Copyright 2013 The Closure Library Authors. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS-IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+/**
+ * @license
+ * Copyright The Closure Library Authors.
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
 /**
  * @fileoverview Provides a convenient API for data persistence with data
@@ -31,6 +23,7 @@ goog.require('goog.iter');
 goog.require('goog.storage.CollectableStorage');
 goog.require('goog.storage.ErrorCode');
 goog.require('goog.storage.ExpiringStorage');
+goog.requireType('goog.storage.mechanism.IterableMechanism');
 
 
 
@@ -47,6 +40,7 @@ goog.require('goog.storage.ExpiringStorage');
  * @final
  */
 goog.labs.storage.BoundedCollectableStorage = function(mechanism, maxItems) {
+  'use strict';
   goog.labs.storage.BoundedCollectableStorage.base(
       this, 'constructor', mechanism);
 
@@ -78,17 +72,19 @@ goog.labs.storage.BoundedCollectableStorage.KEY_LIST_KEY_ =
  */
 goog.labs.storage.BoundedCollectableStorage.prototype.rebuildIndex_ =
     function() {
+  'use strict';
   var keys = [];
   goog.iter.forEach(
       /** @type {goog.storage.mechanism.IterableMechanism} */ (this.mechanism)
           .__iterator__(true),
       function(key) {
+        'use strict';
         if (goog.labs.storage.BoundedCollectableStorage.KEY_LIST_KEY_ == key) {
           return;
         }
 
         var wrapper;
-        /** @preserveTry */
+
         try {
           wrapper = this.getWrapper(key, true);
         } catch (ex) {
@@ -107,9 +103,15 @@ goog.labs.storage.BoundedCollectableStorage.prototype.rebuildIndex_ =
       },
       this);
 
-  goog.array.sort(keys, function(a, b) { return a.created - b.created; });
+  goog.array.sort(keys, function(a, b) {
+    'use strict';
+    return a.created - b.created;
+  });
 
-  return goog.array.map(keys, function(v) { return v.key; });
+  return goog.array.map(keys, function(v) {
+    'use strict';
+    return v.key;
+  });
 };
 
 
@@ -123,11 +125,12 @@ goog.labs.storage.BoundedCollectableStorage.prototype.rebuildIndex_ =
  */
 goog.labs.storage.BoundedCollectableStorage.prototype.getKeys_ = function(
     rebuild) {
+  'use strict';
   var keys =
       goog.labs.storage.BoundedCollectableStorage.superClass_.get.call(
           this, goog.labs.storage.BoundedCollectableStorage.KEY_LIST_KEY_) ||
       null;
-  if (!keys || !goog.isArray(keys)) {
+  if (!keys || !Array.isArray(keys)) {
     if (rebuild) {
       keys = this.rebuildIndex_();
     } else {
@@ -146,6 +149,7 @@ goog.labs.storage.BoundedCollectableStorage.prototype.getKeys_ = function(
  */
 goog.labs.storage.BoundedCollectableStorage.prototype.setKeys_ = function(
     keys) {
+  'use strict';
   goog.labs.storage.BoundedCollectableStorage.superClass_.set.call(
       this, goog.labs.storage.BoundedCollectableStorage.KEY_LIST_KEY_, keys);
 };
@@ -162,6 +166,7 @@ goog.labs.storage.BoundedCollectableStorage.prototype.setKeys_ = function(
  */
 goog.labs.storage.BoundedCollectableStorage.removeSubsequence_ = function(
     keys, keysToRemove) {
+  'use strict';
   if (keysToRemove.length == 0) {
     return goog.array.clone(keys);
   }
@@ -195,11 +200,13 @@ goog.labs.storage.BoundedCollectableStorage.removeSubsequence_ = function(
  */
 goog.labs.storage.BoundedCollectableStorage.prototype.collectOversize_ =
     function(keys, maxSize) {
+  'use strict';
   if (keys.length <= maxSize) {
     return goog.array.clone(keys);
   }
   var keysToRemove = goog.array.slice(keys, 0, keys.length - maxSize);
   goog.array.forEach(keysToRemove, function(key) {
+    'use strict';
     goog.labs.storage.BoundedCollectableStorage.superClass_.remove.call(
         this, key);
   }, this);
@@ -216,6 +223,7 @@ goog.labs.storage.BoundedCollectableStorage.prototype.collectOversize_ =
  */
 goog.labs.storage.BoundedCollectableStorage.prototype.collect = function(
     opt_strict) {
+  'use strict';
   var keys = this.getKeys_(true);
   var keysToRemove = this.collectInternal(keys, opt_strict);
   keys = goog.labs.storage.BoundedCollectableStorage.removeSubsequence_(
@@ -231,6 +239,7 @@ goog.labs.storage.BoundedCollectableStorage.prototype.collect = function(
  */
 goog.labs.storage.BoundedCollectableStorage.prototype.collectOversize =
     function(opt_skipExpired, opt_strict) {
+  'use strict';
   var keys = this.getKeys_(true);
   if (!opt_skipExpired) {
     var keysToRemove = this.collectInternal(keys, opt_strict);
@@ -254,12 +263,13 @@ goog.labs.storage.BoundedCollectableStorage.prototype.collectOversize =
  */
 goog.labs.storage.BoundedCollectableStorage.prototype.set = function(
     key, value, opt_expiration) {
+  'use strict';
   goog.labs.storage.BoundedCollectableStorage.base(
       this, 'set', key, value, opt_expiration);
   var keys = this.getKeys_(true);
   goog.array.remove(keys, key);
 
-  if (goog.isDef(value)) {
+  if (value !== undefined) {
     keys.push(key);
     if (keys.length >= this.maxItems_) {
       var keysToRemove = this.collectInternal(keys);
@@ -279,10 +289,11 @@ goog.labs.storage.BoundedCollectableStorage.prototype.set = function(
  * @override
  */
 goog.labs.storage.BoundedCollectableStorage.prototype.remove = function(key) {
+  'use strict';
   goog.labs.storage.BoundedCollectableStorage.base(this, 'remove', key);
 
   var keys = this.getKeys_(false);
-  if (goog.isDef(keys)) {
+  if (keys !== undefined) {
     goog.array.remove(keys, key);
     this.setKeys_(keys);
   }

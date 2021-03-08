@@ -1,21 +1,12 @@
-// Copyright 2007 The Closure Library Authors. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS-IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+/**
+ * @license
+ * Copyright The Closure Library Authors.
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
 
 /**
  * @fileoverview Represents a gradient to be used with a Graphics implementor.
- * @author arv@google.com (Erik Arvidsson)
  */
 
 
@@ -48,6 +39,7 @@ goog.require('goog.graphics.Fill');
  */
 goog.graphics.LinearGradient = function(
     x1, y1, x2, y2, color1, color2, opt_opacity1, opt_opacity2) {
+  'use strict';
   /**
    * Start X position of the gradient.
    * @type {number}
@@ -91,7 +83,7 @@ goog.graphics.LinearGradient = function(
   this.color2_ = color2;
 
   goog.asserts.assert(
-      goog.isNumber(opt_opacity1) == goog.isNumber(opt_opacity2),
+      (typeof opt_opacity1 === 'number') == (typeof opt_opacity2 === 'number'),
       'Both or neither of opt_opacity1 and opt_opacity2 have to be set.');
 
   /**
@@ -99,14 +91,14 @@ goog.graphics.LinearGradient = function(
    * @type {?number}
    * @private
    */
-  this.opacity1_ = goog.isDef(opt_opacity1) ? opt_opacity1 : null;
+  this.opacity1_ = (opt_opacity1 !== undefined) ? opt_opacity1 : null;
 
   /**
    * End opacity of the gradient.
    * @type {?number}
    * @private
    */
-  this.opacity2_ = goog.isDef(opt_opacity2) ? opt_opacity2 : null;
+  this.opacity2_ = (opt_opacity2 !== undefined) ? opt_opacity2 : null;
 };
 goog.inherits(goog.graphics.LinearGradient, goog.graphics.Fill);
 
@@ -115,6 +107,7 @@ goog.inherits(goog.graphics.LinearGradient, goog.graphics.Fill);
  * @return {number} The start X position of the gradient.
  */
 goog.graphics.LinearGradient.prototype.getX1 = function() {
+  'use strict';
   return this.x1_;
 };
 
@@ -123,6 +116,7 @@ goog.graphics.LinearGradient.prototype.getX1 = function() {
  * @return {number} The start Y position of the gradient.
  */
 goog.graphics.LinearGradient.prototype.getY1 = function() {
+  'use strict';
   return this.y1_;
 };
 
@@ -131,6 +125,7 @@ goog.graphics.LinearGradient.prototype.getY1 = function() {
  * @return {number} The end X position of the gradient.
  */
 goog.graphics.LinearGradient.prototype.getX2 = function() {
+  'use strict';
   return this.x2_;
 };
 
@@ -139,6 +134,7 @@ goog.graphics.LinearGradient.prototype.getX2 = function() {
  * @return {number} The end Y position of the gradient.
  */
 goog.graphics.LinearGradient.prototype.getY2 = function() {
+  'use strict';
   return this.y2_;
 };
 
@@ -147,6 +143,7 @@ goog.graphics.LinearGradient.prototype.getY2 = function() {
  * @override
  */
 goog.graphics.LinearGradient.prototype.getColor1 = function() {
+  'use strict';
   return this.color1_;
 };
 
@@ -155,6 +152,7 @@ goog.graphics.LinearGradient.prototype.getColor1 = function() {
  * @override
  */
 goog.graphics.LinearGradient.prototype.getColor2 = function() {
+  'use strict';
   return this.color2_;
 };
 
@@ -163,6 +161,7 @@ goog.graphics.LinearGradient.prototype.getColor2 = function() {
  * @return {?number} The start opacity of the gradient.
  */
 goog.graphics.LinearGradient.prototype.getOpacity1 = function() {
+  'use strict';
   return this.opacity1_;
 };
 
@@ -171,5 +170,6 @@ goog.graphics.LinearGradient.prototype.getOpacity1 = function() {
  * @return {?number} The end opacity of the gradient.
  */
 goog.graphics.LinearGradient.prototype.getOpacity2 = function() {
+  'use strict';
   return this.opacity2_;
 };

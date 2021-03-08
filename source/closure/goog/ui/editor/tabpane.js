@@ -1,22 +1,12 @@
-// Copyright 2010 The Closure Library Authors. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS-IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+/**
+ * @license
+ * Copyright The Closure Library Authors.
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
 /**
  * @fileoverview Tabbed pane with style and functionality specific to
  * Editor dialogs.
- *
- * @author robbyw@google.com (Robby Walker)
  */
 
 goog.provide('goog.ui.editor.TabPane');
@@ -33,6 +23,7 @@ goog.require('goog.ui.Component');
 goog.require('goog.ui.Control');
 goog.require('goog.ui.Tab');
 goog.require('goog.ui.TabBar');
+goog.requireType('goog.events.Event');
 
 
 
@@ -46,6 +37,7 @@ goog.require('goog.ui.TabBar');
  * @final
  */
 goog.ui.editor.TabPane = function(dom, opt_caption) {
+  'use strict';
   goog.ui.editor.TabPane.base(this, 'constructor', dom);
 
   /**
@@ -74,14 +66,14 @@ goog.ui.editor.TabPane = function(dom, opt_caption) {
 
   /**
    * The currently selected radio button.
-   * @type {Element}
+   * @type {?Element}
    * @private
    */
   this.selectedRadio_ = null;
 
   /**
    * The currently visible tab content.
-   * @type {Element}
+   * @type {?Element}
    * @private
    */
   this.visibleContent_ = null;
@@ -102,6 +94,7 @@ goog.inherits(goog.ui.editor.TabPane, goog.ui.Component);
  * @return {string} The ID of the content element for the current tab.
  */
 goog.ui.editor.TabPane.prototype.getCurrentTabId = function() {
+  'use strict';
   return this.tabBar_.getSelectedTab().getId();
 };
 
@@ -111,6 +104,7 @@ goog.ui.editor.TabPane.prototype.getCurrentTabId = function() {
  * @param {string} id Id of the tab to select.
  */
 goog.ui.editor.TabPane.prototype.setSelectedTabId = function(id) {
+  'use strict';
   this.tabBar_.setSelectedTab(this.tabBar_.getChild(id));
 };
 
@@ -126,6 +120,7 @@ goog.ui.editor.TabPane.prototype.setSelectedTabId = function(id) {
  */
 goog.ui.editor.TabPane.prototype.addTab = function(
     id, caption, tooltip, groupName, content) {
+  'use strict';
   var radio = this.dom_.createDom(
       goog.dom.TagName.INPUT,
       {name: groupName, type: goog.dom.InputType.RADIO});
@@ -153,6 +148,7 @@ goog.ui.editor.TabPane.prototype.addTab = function(
 
 /** @override */
 goog.ui.editor.TabPane.prototype.enterDocument = function() {
+  'use strict';
   goog.ui.editor.TabPane.base(this, 'enterDocument');
 
   // Get the root element and add a class name to it.
@@ -179,8 +175,10 @@ goog.ui.editor.TabPane.prototype.enterDocument = function() {
  * Handles a tab change.
  * @param {goog.events.Event} e The browser change event.
  * @private
+ * @suppress {strictMissingProperties} Part of the go/strict_warnings_migration
  */
 goog.ui.editor.TabPane.prototype.handleTabSelect_ = function(e) {
+  'use strict';
   var tab = /** @type {goog.ui.Tab} */ (e.target);
 
   // Show the tab content.

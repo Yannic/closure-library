@@ -1,32 +1,24 @@
-// Copyright 2008 The Closure Library Authors. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS-IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+/**
+ * @license
+ * Copyright The Closure Library Authors.
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
 /**
  * @fileoverview Default renderer for {@link goog.ui.Button}s.
- *
- * @author attila@google.com (Attila Bodis)
+ * @suppress {missingRequire} TODO(user): this shouldn't be needed
  */
 
 goog.provide('goog.ui.ButtonRenderer');
 
+goog.forwardDeclare('goog.ui.Button');
 goog.require('goog.a11y.aria');
 goog.require('goog.a11y.aria.Role');
 goog.require('goog.a11y.aria.State');
 goog.require('goog.asserts');
 goog.require('goog.ui.ButtonSide');
 goog.require('goog.ui.Component');
-goog.require('goog.ui.ControlRenderer');
+goog.require('goog.ui.ControlRenderer');  // circular
 
 
 
@@ -34,11 +26,11 @@ goog.require('goog.ui.ControlRenderer');
  * Default renderer for {@link goog.ui.Button}s.  Extends the superclass with
  * the following button-specific API methods:
  * <ul>
- *   <li>{@code getValue} - returns the button element's value
- *   <li>{@code setValue} - updates the button element to reflect its new value
- *   <li>{@code getTooltip} - returns the button element's tooltip text
- *   <li>{@code setTooltip} - updates the button element's tooltip text
- *   <li>{@code setCollapsed} - removes one or both of the button element's
+ *   <li>`getValue` - returns the button element's value
+ *   <li>`setValue` - updates the button element to reflect its new value
+ *   <li>`getTooltip` - returns the button element's tooltip text
+ *   <li>`setTooltip` - updates the button element's tooltip text
+ *   <li>`setCollapsed` - removes one or both of the button element's
  *       borders
  * </ul>
  * For alternate renderers, see {@link goog.ui.NativeButtonRenderer},
@@ -47,6 +39,7 @@ goog.require('goog.ui.ControlRenderer');
  * @extends {goog.ui.ControlRenderer}
  */
 goog.ui.ButtonRenderer = function() {
+  'use strict';
   goog.ui.ControlRenderer.call(this);
 };
 goog.inherits(goog.ui.ButtonRenderer, goog.ui.ControlRenderer);
@@ -67,6 +60,7 @@ goog.ui.ButtonRenderer.CSS_CLASS = goog.getCssName('goog-button');
  * @override
  */
 goog.ui.ButtonRenderer.prototype.getAriaRole = function() {
+  'use strict';
   return goog.a11y.aria.Role.BUTTON;
 };
 
@@ -84,6 +78,7 @@ goog.ui.ButtonRenderer.prototype.getAriaRole = function() {
  */
 goog.ui.ButtonRenderer.prototype.updateAriaState = function(
     element, state, enable) {
+  'use strict';
   switch (state) {
     // If button has CHECKED or SELECTED state, assign aria-pressed
     case goog.ui.Component.State.SELECTED:
@@ -103,6 +98,7 @@ goog.ui.ButtonRenderer.prototype.updateAriaState = function(
 
 /** @override */
 goog.ui.ButtonRenderer.prototype.createDom = function(button) {
+  'use strict';
   var element = goog.ui.ButtonRenderer.base(this, 'createDom', button);
   this.setTooltip(element, button.getTooltip());
 
@@ -123,6 +119,7 @@ goog.ui.ButtonRenderer.prototype.createDom = function(button) {
 
 /** @override */
 goog.ui.ButtonRenderer.prototype.decorate = function(button, element) {
+  'use strict';
   // The superclass implementation takes care of common attributes; we only
   // need to set the value and the tooltip.
   element =
@@ -165,6 +162,7 @@ goog.ui.ButtonRenderer.prototype.setValue = goog.nullFunction;
  * @return {string|undefined} The tooltip text.
  */
 goog.ui.ButtonRenderer.prototype.getTooltip = function(element) {
+  'use strict';
   return element.title;
 };
 
@@ -177,6 +175,7 @@ goog.ui.ButtonRenderer.prototype.getTooltip = function(element) {
  * @protected
  */
 goog.ui.ButtonRenderer.prototype.setTooltip = function(element, tooltip) {
+  'use strict';
   if (element) {
     // Don't set a title attribute if there isn't a tooltip. Blank title
     // attributes can be interpreted incorrectly by screen readers.
@@ -199,6 +198,7 @@ goog.ui.ButtonRenderer.prototype.setTooltip = function(element, tooltip) {
  * @protected
  */
 goog.ui.ButtonRenderer.prototype.setCollapsed = function(button, sides) {
+  'use strict';
   var isRtl = button.isRightToLeft();
   var collapseLeftClassName =
       goog.getCssName(this.getStructuralCssClass(), 'collapse-left');
@@ -216,5 +216,6 @@ goog.ui.ButtonRenderer.prototype.setCollapsed = function(button, sides) {
 
 /** @override */
 goog.ui.ButtonRenderer.prototype.getCssClass = function() {
+  'use strict';
   return goog.ui.ButtonRenderer.CSS_CLASS;
 };

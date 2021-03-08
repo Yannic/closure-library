@@ -1,16 +1,8 @@
-// Copyright 2007 The Closure Library Authors. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS-IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+/**
+ * @license
+ * Copyright The Closure Library Authors.
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
 /**
  * @fileoverview Definition of the IE browser specific range wrapper.
@@ -18,8 +10,6 @@
  *     creates a circular dependency.
  *
  * DO NOT USE THIS FILE DIRECTLY.  Use goog.dom.Range instead.
- *
- * @author robbyw@google.com (Robby Walker)
  */
 
 
@@ -31,6 +21,8 @@ goog.require('goog.dom.NodeType');
 goog.require('goog.dom.RangeEndpoint');
 goog.require('goog.dom.TagName');
 goog.require('goog.dom.browserrange.AbstractRange');
+goog.require('goog.dom.safe');
+goog.require('goog.html.uncheckedconversions');
 goog.require('goog.log');
 goog.require('goog.string');
 
@@ -45,21 +37,22 @@ goog.require('goog.string');
  * @final
  */
 goog.dom.browserrange.IeRange = function(range, doc) {
+  'use strict';
   /**
    * Lazy cache of the node containing the entire selection.
-   * @private {Node}
+   * @private {?Node}
    */
   this.parentNode_ = null;
 
   /**
    * Lazy cache of the node containing the start of the selection.
-   * @private {Node}
+   * @private {?Node}
    */
   this.startNode_ = null;
 
   /**
    * Lazy cache of the node containing the end of the selection.
-   * @private {Node}
+   * @private {?Node}
    */
   this.endNode_ = null;
 
@@ -107,6 +100,7 @@ goog.dom.browserrange.IeRange.logger_ =
  * @private
  */
 goog.dom.browserrange.IeRange.getBrowserRangeForNode_ = function(node) {
+  'use strict';
   var nodeRange = goog.dom.getOwnerDocument(node).body.createTextRange();
   if (node.nodeType == goog.dom.NodeType.ELEMENT) {
     // Elements are easy.
@@ -164,6 +158,7 @@ goog.dom.browserrange.IeRange.getBrowserRangeForNode_ = function(node) {
  */
 goog.dom.browserrange.IeRange.getBrowserRangeForNodes_ = function(
     startNode, startOffset, endNode, endOffset) {
+  'use strict';
   // Create a range starting at the correct start position.
   var child, collapse = false;
   if (startNode.nodeType == goog.dom.NodeType.ELEMENT) {
@@ -233,6 +228,7 @@ goog.dom.browserrange.IeRange.getBrowserRangeForNodes_ = function(
  * @return {!goog.dom.browserrange.IeRange} An IE range wrapper object.
  */
 goog.dom.browserrange.IeRange.createFromNodeContents = function(node) {
+  'use strict';
   var range = new goog.dom.browserrange.IeRange(
       goog.dom.browserrange.IeRange.getBrowserRangeForNode_(node),
       goog.dom.getOwnerDocument(node));
@@ -279,6 +275,7 @@ goog.dom.browserrange.IeRange.createFromNodeContents = function(node) {
  */
 goog.dom.browserrange.IeRange.createFromNodes = function(
     startNode, startOffset, endNode, endOffset) {
+  'use strict';
   var range = new goog.dom.browserrange.IeRange(
       goog.dom.browserrange.IeRange.getBrowserRangeForNodes_(
           startNode, startOffset, endNode, endOffset),
@@ -296,6 +293,7 @@ goog.dom.browserrange.IeRange.createFromNodes = function(
  * @override
  */
 goog.dom.browserrange.IeRange.prototype.clone = function() {
+  'use strict';
   var range =
       new goog.dom.browserrange.IeRange(this.range_.duplicate(), this.doc_);
   range.parentNode_ = this.parentNode_;
@@ -307,6 +305,7 @@ goog.dom.browserrange.IeRange.prototype.clone = function() {
 
 /** @override */
 goog.dom.browserrange.IeRange.prototype.getBrowserRange = function() {
+  'use strict';
   return this.range_;
 };
 
@@ -316,6 +315,7 @@ goog.dom.browserrange.IeRange.prototype.getBrowserRange = function() {
  * @private
  */
 goog.dom.browserrange.IeRange.prototype.clearCachedValues_ = function() {
+  'use strict';
   this.parentNode_ = this.startNode_ = this.endNode_ = null;
   this.startOffset_ = this.endOffset_ = -1;
 };
@@ -323,6 +323,7 @@ goog.dom.browserrange.IeRange.prototype.clearCachedValues_ = function() {
 
 /** @override */
 goog.dom.browserrange.IeRange.prototype.getContainer = function() {
+  'use strict';
   if (!this.parentNode_) {
     var selectText = this.range_.text;
 
@@ -387,12 +388,13 @@ goog.dom.browserrange.IeRange.prototype.getContainer = function() {
 
 /**
  * Helper method to find the deepest parent for this range, starting
- * the search from {@code node}, which must contain the range.
+ * the search from `node`, which must contain the range.
  * @param {Node} node The node to start the search from.
  * @return {Node} The deepest parent for this range.
  * @private
  */
 goog.dom.browserrange.IeRange.prototype.findDeepestContainer_ = function(node) {
+  'use strict';
   var childNodes = node.childNodes;
   for (var i = 0, len = childNodes.length; i < len; i++) {
     var child = childNodes[i];
@@ -434,6 +436,7 @@ goog.dom.browserrange.IeRange.prototype.findDeepestContainer_ = function(node) {
 
 /** @override */
 goog.dom.browserrange.IeRange.prototype.getStartNode = function() {
+  'use strict';
   if (!this.startNode_) {
     this.startNode_ = this.getEndpointNode_(goog.dom.RangeEndpoint.START);
     if (this.isCollapsed()) {
@@ -446,6 +449,7 @@ goog.dom.browserrange.IeRange.prototype.getStartNode = function() {
 
 /** @override */
 goog.dom.browserrange.IeRange.prototype.getStartOffset = function() {
+  'use strict';
   if (this.startOffset_ < 0) {
     this.startOffset_ = this.getOffset_(goog.dom.RangeEndpoint.START);
     if (this.isCollapsed()) {
@@ -458,6 +462,7 @@ goog.dom.browserrange.IeRange.prototype.getStartOffset = function() {
 
 /** @override */
 goog.dom.browserrange.IeRange.prototype.getEndNode = function() {
+  'use strict';
   if (this.isCollapsed()) {
     return this.getStartNode();
   }
@@ -470,6 +475,7 @@ goog.dom.browserrange.IeRange.prototype.getEndNode = function() {
 
 /** @override */
 goog.dom.browserrange.IeRange.prototype.getEndOffset = function() {
+  'use strict';
   if (this.isCollapsed()) {
     return this.getStartOffset();
   }
@@ -486,6 +492,7 @@ goog.dom.browserrange.IeRange.prototype.getEndOffset = function() {
 /** @override */
 goog.dom.browserrange.IeRange.prototype.compareBrowserRangeEndpoints = function(
     range, thisEndpoint, otherEndpoint) {
+  'use strict';
   return this.range_.compareEndPoints(
       (thisEndpoint == goog.dom.RangeEndpoint.START ? 'Start' : 'End') + 'To' +
           (otherEndpoint == goog.dom.RangeEndpoint.START ? 'Start' : 'End'),
@@ -502,7 +509,7 @@ goog.dom.browserrange.IeRange.prototype.compareBrowserRangeEndpoints = function(
  */
 goog.dom.browserrange.IeRange.prototype.getEndpointNode_ = function(
     endpoint, opt_node) {
-
+  'use strict';
   /** @type {Node} */
   var node = opt_node || this.getContainer();
 
@@ -605,6 +612,7 @@ goog.dom.browserrange.IeRange.prototype.getEndpointNode_ = function(
  */
 goog.dom.browserrange.IeRange.prototype.compareNodeEndpoints_ = function(
     node, thisEndpoint, otherEndpoint) {
+  'use strict';
   /** @suppress {missingRequire} Circular dep with browserrange */
   return this.range_.compareEndPoints(
       (thisEndpoint == goog.dom.RangeEndpoint.START ? 'Start' : 'End') + 'To' +
@@ -624,6 +632,7 @@ goog.dom.browserrange.IeRange.prototype.compareNodeEndpoints_ = function(
  */
 goog.dom.browserrange.IeRange.prototype.getOffset_ = function(
     endpoint, opt_container) {
+  'use strict';
   var isStartEndpoint = endpoint == goog.dom.RangeEndpoint.START;
   var container = opt_container ||
       (isStartEndpoint ? this.getStartNode() : this.getEndNode());
@@ -679,6 +688,7 @@ goog.dom.browserrange.IeRange.prototype.getOffset_ = function(
  * @private
  */
 goog.dom.browserrange.IeRange.getNodeText_ = function(node) {
+  'use strict';
   return node.nodeType == goog.dom.NodeType.TEXT ? node.nodeValue :
                                                    node.innerText;
 };
@@ -692,6 +702,7 @@ goog.dom.browserrange.IeRange.getNodeText_ = function(node) {
  * @return {boolean} Whether the range is valid.
  */
 goog.dom.browserrange.IeRange.prototype.isRangeInDocument = function() {
+  'use strict';
   var range = this.doc_.body.createTextRange();
   range.moveToElementText(this.doc_.body);
 
@@ -702,6 +713,7 @@ goog.dom.browserrange.IeRange.prototype.isRangeInDocument = function() {
 
 /** @override */
 goog.dom.browserrange.IeRange.prototype.isCollapsed = function() {
+  'use strict';
   // Note(user) : The earlier implementation used (range.text == ''), but this
   // fails when (range.htmlText == '<br>')
   // Alternative: this.range_.htmlText == '';
@@ -711,12 +723,14 @@ goog.dom.browserrange.IeRange.prototype.isCollapsed = function() {
 
 /** @override */
 goog.dom.browserrange.IeRange.prototype.getText = function() {
+  'use strict';
   return this.range_.text;
 };
 
 
 /** @override */
 goog.dom.browserrange.IeRange.prototype.getValidHtml = function() {
+  'use strict';
   return this.range_.htmlText;
 };
 
@@ -726,6 +740,7 @@ goog.dom.browserrange.IeRange.prototype.getValidHtml = function() {
 
 /** @override */
 goog.dom.browserrange.IeRange.prototype.select = function(opt_reverse) {
+  'use strict';
   // IE doesn't support programmatic reversed selections.
   this.range_.select();
 };
@@ -733,6 +748,7 @@ goog.dom.browserrange.IeRange.prototype.select = function(opt_reverse) {
 
 /** @override */
 goog.dom.browserrange.IeRange.prototype.removeContents = function() {
+  'use strict';
   // NOTE: Sometimes htmlText is non-empty, but the range is actually empty.
   // TODO(gboyer): The htmlText check is probably unnecessary, but I left it in
   // for paranoia.
@@ -769,7 +785,7 @@ goog.dom.browserrange.IeRange.prototype.removeContents = function() {
     // the other browsers.
     var newStartNode = this.getStartNode();
     var newStartOffset = this.getStartOffset();
-    /** @preserveTry */
+
     try {
       var sibling = startNode.nextSibling;
       if (startNode == endNode && startNode.parentNode &&
@@ -798,6 +814,7 @@ goog.dom.browserrange.IeRange.prototype.removeContents = function() {
  * @private
  */
 goog.dom.browserrange.IeRange.getDomHelper_ = function(range) {
+  'use strict';
   return goog.dom.getDomHelper(range.parentElement());
 };
 
@@ -814,6 +831,7 @@ goog.dom.browserrange.IeRange.getDomHelper_ = function(range) {
  */
 goog.dom.browserrange.IeRange.pasteElement_ = function(
     range, element, opt_domHelper) {
+  'use strict';
   opt_domHelper =
       opt_domHelper || goog.dom.browserrange.IeRange.getDomHelper_(range);
 
@@ -846,11 +864,18 @@ goog.dom.browserrange.IeRange.pasteElement_ = function(
 
 /** @override */
 goog.dom.browserrange.IeRange.prototype.surroundContents = function(element) {
+  'use strict';
   // Make sure the element is detached from the document.
   goog.dom.removeNode(element);
 
-  // IE more or less guarantees that range.htmlText is well-formed & valid.
-  element.innerHTML = this.range_.htmlText;
+  goog.dom.safe.setInnerHtml(
+      goog.asserts.assert(element),
+      goog.html.uncheckedconversions
+          .safeHtmlFromStringKnownToSatisfyTypeContract(
+              goog.string.Const.from(
+                  'IE more or less guarantees that range.htmlText is ' +
+                  'well-formed & valid.'),
+              this.range_.htmlText));
   element = goog.dom.browserrange.IeRange.pasteElement_(this.range_, element);
 
   // If element is null here, we failed.
@@ -875,6 +900,7 @@ goog.dom.browserrange.IeRange.prototype.surroundContents = function(element) {
  */
 goog.dom.browserrange.IeRange.insertNode_ = function(
     clone, node, before, opt_domHelper) {
+  'use strict';
   // Get a DOM helper.
   opt_domHelper =
       opt_domHelper || goog.dom.browserrange.IeRange.getDomHelper_(clone);
@@ -907,6 +933,7 @@ goog.dom.browserrange.IeRange.insertNode_ = function(
 
 /** @override */
 goog.dom.browserrange.IeRange.prototype.insertNode = function(node, before) {
+  'use strict';
   var output = goog.dom.browserrange.IeRange.insertNode_(
       this.range_.duplicate(), node, before);
   this.clearCachedValues_();
@@ -917,6 +944,7 @@ goog.dom.browserrange.IeRange.prototype.insertNode = function(node, before) {
 /** @override */
 goog.dom.browserrange.IeRange.prototype.surroundWithNodes = function(
     startNode, endNode) {
+  'use strict';
   var clone1 = this.range_.duplicate();
   var clone2 = this.range_.duplicate();
   goog.dom.browserrange.IeRange.insertNode_(clone1, startNode, true);
@@ -928,6 +956,7 @@ goog.dom.browserrange.IeRange.prototype.surroundWithNodes = function(
 
 /** @override */
 goog.dom.browserrange.IeRange.prototype.collapse = function(toStart) {
+  'use strict';
   this.range_.collapse(toStart);
 
   if (toStart) {

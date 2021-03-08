@@ -1,16 +1,8 @@
-// Copyright 2011 The Closure Library Authors. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS-IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+/**
+ * @license
+ * Copyright The Closure Library Authors.
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
 /**
  * @fileoverview Implements 4x4 matrices and their related functions which are
@@ -21,7 +13,6 @@
  * vectors as follows: resultVec = matrix * vec.
  *
  * The matrices are stored in column-major order.
- *
  */
 goog.provide('goog.vec.Mat4');
 
@@ -30,14 +21,14 @@ goog.require('goog.vec.Vec3');
 goog.require('goog.vec.Vec4');
 
 
-/** @typedef {goog.vec.Float32} */ goog.vec.Mat4.Float32;
-/** @typedef {goog.vec.Float64} */ goog.vec.Mat4.Float64;
-/** @typedef {goog.vec.Number} */ goog.vec.Mat4.Number;
-/** @typedef {goog.vec.AnyType} */ goog.vec.Mat4.AnyType;
+/** @typedef {!goog.vec.Float32} */ goog.vec.Mat4.Float32;
+/** @typedef {!goog.vec.Float64} */ goog.vec.Mat4.Float64;
+/** @typedef {!goog.vec.Number} */ goog.vec.Mat4.Number;
+/** @typedef {!goog.vec.AnyType} */ goog.vec.Mat4.AnyType;
 
 // The following two types are deprecated - use the above types instead.
 /** @typedef {!Float32Array} */ goog.vec.Mat4.Type;
-/** @typedef {goog.vec.ArrayType} */ goog.vec.Mat4.Mat4Like;
+/** @typedef {!goog.vec.ArrayType} */ goog.vec.Mat4.Mat4Like;
 
 
 /**
@@ -48,6 +39,7 @@ goog.require('goog.vec.Vec4');
  * @return {!goog.vec.Mat4.Float32} The new matrix.
  */
 goog.vec.Mat4.createFloat32 = function() {
+  'use strict';
   return new Float32Array(16);
 };
 
@@ -59,6 +51,7 @@ goog.vec.Mat4.createFloat32 = function() {
  * @return {!goog.vec.Mat4.Float64} The new matrix.
  */
 goog.vec.Mat4.createFloat64 = function() {
+  'use strict';
   return new Float64Array(16);
 };
 
@@ -70,6 +63,7 @@ goog.vec.Mat4.createFloat64 = function() {
  * @return {!goog.vec.Mat4.Number} The new matrix.
  */
 goog.vec.Mat4.createNumber = function() {
+  'use strict';
   var a = new Array(16);
   goog.vec.Mat4.setFromValues(
       a, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
@@ -85,6 +79,7 @@ goog.vec.Mat4.createNumber = function() {
  * @return {!goog.vec.Mat4.Type} The new matrix.
  */
 goog.vec.Mat4.create = function() {
+  'use strict';
   return goog.vec.Mat4.createFloat32();
 };
 
@@ -95,6 +90,7 @@ goog.vec.Mat4.create = function() {
  * @return {!goog.vec.Mat4.Float32} The new 16 element array.
  */
 goog.vec.Mat4.createFloat32Identity = function() {
+  'use strict';
   var mat = goog.vec.Mat4.createFloat32();
   mat[0] = mat[5] = mat[10] = mat[15] = 1;
   return mat;
@@ -107,6 +103,7 @@ goog.vec.Mat4.createFloat32Identity = function() {
  * @return {!goog.vec.Mat4.Float64} The new 16 element array.
  */
 goog.vec.Mat4.createFloat64Identity = function() {
+  'use strict';
   var mat = goog.vec.Mat4.createFloat64();
   mat[0] = mat[5] = mat[10] = mat[15] = 1;
   return mat;
@@ -120,6 +117,7 @@ goog.vec.Mat4.createFloat64Identity = function() {
  * @return {!goog.vec.Mat4.Number} The new 16 element array.
  */
 goog.vec.Mat4.createNumberIdentity = function() {
+  'use strict';
   var a = new Array(16);
   goog.vec.Mat4.setFromValues(
       a, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
@@ -135,6 +133,7 @@ goog.vec.Mat4.createNumberIdentity = function() {
  * @return {!goog.vec.Mat4.Type} The new 16 element array.
  */
 goog.vec.Mat4.createIdentity = function() {
+  'use strict';
   return goog.vec.Mat4.createFloat32Identity();
 };
 
@@ -147,6 +146,7 @@ goog.vec.Mat4.createIdentity = function() {
  * @return {!goog.vec.Mat4.Float32} The new, 16 element array.
  */
 goog.vec.Mat4.createFloat32FromArray = function(matrix) {
+  'use strict';
   var newMatrix = goog.vec.Mat4.createFloat32();
   goog.vec.Mat4.setFromArray(newMatrix, matrix);
   return newMatrix;
@@ -177,6 +177,7 @@ goog.vec.Mat4.createFloat32FromArray = function(matrix) {
 goog.vec.Mat4.createFloat32FromValues = function(
     v00, v10, v20, v30, v01, v11, v21, v31, v02, v12, v22, v32, v03, v13, v23,
     v33) {
+  'use strict';
   var newMatrix = goog.vec.Mat4.createFloat32();
   goog.vec.Mat4.setFromValues(
       newMatrix, v00, v10, v20, v30, v01, v11, v21, v31, v02, v12, v22, v32,
@@ -202,6 +203,7 @@ goog.vec.Mat4.cloneFloat32 = goog.vec.Mat4.createFloat32FromArray;
  * @return {!goog.vec.Mat4.Float64} The new, nine element array.
  */
 goog.vec.Mat4.createFloat64FromArray = function(matrix) {
+  'use strict';
   var newMatrix = goog.vec.Mat4.createFloat64();
   goog.vec.Mat4.setFromArray(newMatrix, matrix);
   return newMatrix;
@@ -232,6 +234,7 @@ goog.vec.Mat4.createFloat64FromArray = function(matrix) {
 goog.vec.Mat4.createFloat64FromValues = function(
     v00, v10, v20, v30, v01, v11, v21, v31, v02, v12, v22, v32, v03, v13, v23,
     v33) {
+  'use strict';
   var newMatrix = goog.vec.Mat4.createFloat64();
   goog.vec.Mat4.setFromValues(
       newMatrix, v00, v10, v20, v30, v01, v11, v21, v31, v02, v12, v22, v32,
@@ -258,6 +261,7 @@ goog.vec.Mat4.cloneFloat64 = goog.vec.Mat4.createFloat64FromArray;
  * @return {!goog.vec.Mat4.Type} The new, nine element array.
  */
 goog.vec.Mat4.createFromArray = function(matrix) {
+  'use strict';
   var newMatrix = goog.vec.Mat4.createFloat32();
   goog.vec.Mat4.setFromArray(newMatrix, matrix);
   return newMatrix;
@@ -289,6 +293,7 @@ goog.vec.Mat4.createFromArray = function(matrix) {
 goog.vec.Mat4.createFromValues = function(
     v00, v10, v20, v30, v01, v11, v21, v31, v02, v12, v22, v32, v03, v13, v23,
     v33) {
+  'use strict';
   return goog.vec.Mat4.createFloat32FromValues(
       v00, v10, v20, v30, v01, v11, v21, v31, v02, v12, v22, v32, v03, v13, v23,
       v33);
@@ -315,6 +320,7 @@ goog.vec.Mat4.clone = goog.vec.Mat4.createFromArray;
  * @return {number} The element value at the requested row, column indices.
  */
 goog.vec.Mat4.getElement = function(mat, row, column) {
+  'use strict';
   return mat[row + column * 4];
 };
 
@@ -330,6 +336,7 @@ goog.vec.Mat4.getElement = function(mat, row, column) {
  *     chained together.
  */
 goog.vec.Mat4.setElement = function(mat, row, column, value) {
+  'use strict';
   mat[row + column * 4] = value;
   return mat;
 };
@@ -363,6 +370,7 @@ goog.vec.Mat4.setElement = function(mat, row, column, value) {
 goog.vec.Mat4.setFromValues = function(
     mat, v00, v10, v20, v30, v01, v11, v21, v31, v02, v12, v22, v32, v03, v13,
     v23, v33) {
+  'use strict';
   mat[0] = v00;
   mat[1] = v10;
   mat[2] = v20;
@@ -393,6 +401,7 @@ goog.vec.Mat4.setFromValues = function(
  *     chained together.
  */
 goog.vec.Mat4.setFromArray = function(mat, values) {
+  'use strict';
   mat[0] = values[0];
   mat[1] = values[1];
   mat[2] = values[2];
@@ -423,6 +432,7 @@ goog.vec.Mat4.setFromArray = function(mat, values) {
  *     chained together.
  */
 goog.vec.Mat4.setFromRowMajorArray = function(mat, values) {
+  'use strict';
   mat[0] = values[0];
   mat[1] = values[4];
   mat[2] = values[8];
@@ -459,6 +469,7 @@ goog.vec.Mat4.setFromRowMajorArray = function(mat, values) {
  *     chained together.
  */
 goog.vec.Mat4.setDiagonalValues = function(mat, v00, v11, v22, v33) {
+  'use strict';
   mat[0] = v00;
   mat[5] = v11;
   mat[10] = v22;
@@ -476,6 +487,7 @@ goog.vec.Mat4.setDiagonalValues = function(mat, v00, v11, v22, v33) {
  *     chained together.
  */
 goog.vec.Mat4.setDiagonal = function(mat, vec) {
+  'use strict';
   mat[0] = vec[0];
   mat[5] = vec[1];
   mat[10] = vec[2];
@@ -496,6 +508,7 @@ goog.vec.Mat4.setDiagonal = function(mat, vec) {
  *     chained together.
  */
 goog.vec.Mat4.getDiagonal = function(mat, vec, opt_diagonal) {
+  'use strict';
   if (!opt_diagonal) {
     // This is the most common case, so we avoid the for loop.
     vec[0] = mat[0];
@@ -525,6 +538,7 @@ goog.vec.Mat4.getDiagonal = function(mat, vec, opt_diagonal) {
  *     chained together.
  */
 goog.vec.Mat4.setColumnValues = function(mat, column, v0, v1, v2, v3) {
+  'use strict';
   var i = column * 4;
   mat[i] = v0;
   mat[i + 1] = v1;
@@ -544,6 +558,7 @@ goog.vec.Mat4.setColumnValues = function(mat, column, v0, v1, v2, v3) {
  *     chained together.
  */
 goog.vec.Mat4.setColumn = function(mat, column, vec) {
+  'use strict';
   var i = column * 4;
   mat[i] = vec[0];
   mat[i + 1] = vec[1];
@@ -564,6 +579,7 @@ goog.vec.Mat4.setColumn = function(mat, column, vec) {
  *     chained together.
  */
 goog.vec.Mat4.getColumn = function(mat, column, vec) {
+  'use strict';
   var i = column * 4;
   vec[0] = mat[i];
   vec[1] = mat[i + 1];
@@ -585,6 +601,7 @@ goog.vec.Mat4.getColumn = function(mat, column, vec) {
  *     chained together.
  */
 goog.vec.Mat4.setColumns = function(mat, vec0, vec1, vec2, vec3) {
+  'use strict';
   goog.vec.Mat4.setColumn(mat, 0, vec0);
   goog.vec.Mat4.setColumn(mat, 1, vec1);
   goog.vec.Mat4.setColumn(mat, 2, vec2);
@@ -603,6 +620,7 @@ goog.vec.Mat4.setColumns = function(mat, vec0, vec1, vec2, vec3) {
  * @param {goog.vec.Vec4.AnyType} vec3 The vector to receive column 3.
  */
 goog.vec.Mat4.getColumns = function(mat, vec0, vec1, vec2, vec3) {
+  'use strict';
   goog.vec.Mat4.getColumn(mat, 0, vec0);
   goog.vec.Mat4.getColumn(mat, 1, vec1);
   goog.vec.Mat4.getColumn(mat, 2, vec2);
@@ -623,6 +641,7 @@ goog.vec.Mat4.getColumns = function(mat, vec0, vec1, vec2, vec3) {
  *     chained together.
  */
 goog.vec.Mat4.setRowValues = function(mat, row, v0, v1, v2, v3) {
+  'use strict';
   mat[row] = v0;
   mat[row + 4] = v1;
   mat[row + 8] = v2;
@@ -641,6 +660,7 @@ goog.vec.Mat4.setRowValues = function(mat, row, v0, v1, v2, v3) {
  *     chained together.
  */
 goog.vec.Mat4.setRow = function(mat, row, vec) {
+  'use strict';
   mat[row] = vec[0];
   mat[row + 4] = vec[1];
   mat[row + 8] = vec[2];
@@ -659,6 +679,7 @@ goog.vec.Mat4.setRow = function(mat, row, vec) {
  *     chained together.
  */
 goog.vec.Mat4.getRow = function(mat, row, vec) {
+  'use strict';
   vec[0] = mat[row];
   vec[1] = mat[row + 4];
   vec[2] = mat[row + 8];
@@ -679,6 +700,7 @@ goog.vec.Mat4.getRow = function(mat, row, vec) {
  *     chained together.
  */
 goog.vec.Mat4.setRows = function(mat, vec0, vec1, vec2, vec3) {
+  'use strict';
   goog.vec.Mat4.setRow(mat, 0, vec0);
   goog.vec.Mat4.setRow(mat, 1, vec1);
   goog.vec.Mat4.setRow(mat, 2, vec2);
@@ -697,6 +719,7 @@ goog.vec.Mat4.setRows = function(mat, vec0, vec1, vec2, vec3) {
  * @param {goog.vec.Vec4.AnyType} vec3 The vector to receive row 3.
  */
 goog.vec.Mat4.getRows = function(mat, vec0, vec1, vec2, vec3) {
+  'use strict';
   goog.vec.Mat4.getRow(mat, 0, vec0);
   goog.vec.Mat4.getRow(mat, 1, vec1);
   goog.vec.Mat4.getRow(mat, 2, vec2);
@@ -711,6 +734,7 @@ goog.vec.Mat4.getRows = function(mat, vec0, vec1, vec2, vec3) {
  * @return {!goog.vec.Mat4.AnyType} return mat so operations can be chained.
  */
 goog.vec.Mat4.makeZero = function(mat) {
+  'use strict';
   mat[0] = 0;
   mat[1] = 0;
   mat[2] = 0;
@@ -738,6 +762,7 @@ goog.vec.Mat4.makeZero = function(mat) {
  * @return {goog.vec.Mat4.AnyType} return mat so operations can be chained.
  */
 goog.vec.Mat4.makeIdentity = function(mat) {
+  'use strict';
   mat[0] = 1;
   mat[1] = 0;
   mat[2] = 0;
@@ -770,6 +795,7 @@ goog.vec.Mat4.makeIdentity = function(mat) {
  *     chained together.
  */
 goog.vec.Mat4.addMat = function(mat0, mat1, resultMat) {
+  'use strict';
   resultMat[0] = mat0[0] + mat1[0];
   resultMat[1] = mat0[1] + mat1[1];
   resultMat[2] = mat0[2] + mat1[2];
@@ -802,6 +828,7 @@ goog.vec.Mat4.addMat = function(mat0, mat1, resultMat) {
  *     chained together.
  */
 goog.vec.Mat4.subMat = function(mat0, mat1, resultMat) {
+  'use strict';
   resultMat[0] = mat0[0] - mat1[0];
   resultMat[1] = mat0[1] - mat1[1];
   resultMat[2] = mat0[2] - mat1[2];
@@ -834,6 +861,7 @@ goog.vec.Mat4.subMat = function(mat0, mat1, resultMat) {
  *     chained together.
  */
 goog.vec.Mat4.multScalar = function(mat, scalar, resultMat) {
+  'use strict';
   resultMat[0] = mat[0] * scalar;
   resultMat[1] = mat[1] * scalar;
   resultMat[2] = mat[2] * scalar;
@@ -866,6 +894,7 @@ goog.vec.Mat4.multScalar = function(mat, scalar, resultMat) {
  *     chained together.
  */
 goog.vec.Mat4.multMat = function(mat0, mat1, resultMat) {
+  'use strict';
   var a00 = mat0[0], a10 = mat0[1], a20 = mat0[2], a30 = mat0[3];
   var a01 = mat0[4], a11 = mat0[5], a21 = mat0[6], a31 = mat0[7];
   var a02 = mat0[8], a12 = mat0[9], a22 = mat0[10], a32 = mat0[11];
@@ -909,6 +938,7 @@ goog.vec.Mat4.multMat = function(mat0, mat1, resultMat) {
  *     chained together.
  */
 goog.vec.Mat4.transpose = function(mat, resultMat) {
+  'use strict';
   if (resultMat == mat) {
     var a10 = mat[1], a20 = mat[2], a30 = mat[3];
     var a21 = mat[6], a31 = mat[7];
@@ -957,6 +987,7 @@ goog.vec.Mat4.transpose = function(mat, resultMat) {
  * @return {number} The determinant of the matrix.
  */
 goog.vec.Mat4.determinant = function(mat) {
+  'use strict';
   var m00 = mat[0], m10 = mat[1], m20 = mat[2], m30 = mat[3];
   var m01 = mat[4], m11 = mat[5], m21 = mat[6], m31 = mat[7];
   var m02 = mat[8], m12 = mat[9], m22 = mat[10], m32 = mat[11];
@@ -990,6 +1021,7 @@ goog.vec.Mat4.determinant = function(mat) {
  *     resultMat is not modified.
  */
 goog.vec.Mat4.invert = function(mat, resultMat) {
+  'use strict';
   var m00 = mat[0], m10 = mat[1], m20 = mat[2], m30 = mat[3];
   var m01 = mat[4], m11 = mat[5], m21 = mat[6], m31 = mat[7];
   var m02 = mat[8], m12 = mat[9], m22 = mat[10], m32 = mat[11];
@@ -1039,9 +1071,10 @@ goog.vec.Mat4.invert = function(mat, resultMat) {
  *
  * @param {goog.vec.Mat4.AnyType} mat0 The first matrix.
  * @param {goog.vec.Mat4.AnyType} mat1 The second matrix.
- * @return {boolean} True if the the two matrices are equivalent.
+ * @return {boolean} True if the two matrices are equivalent.
  */
 goog.vec.Mat4.equals = function(mat0, mat1) {
+  'use strict';
   return mat0.length == mat1.length && mat0[0] == mat1[0] &&
       mat0[1] == mat1[1] && mat0[2] == mat1[2] && mat0[3] == mat1[3] &&
       mat0[4] == mat1[4] && mat0[5] == mat1[5] && mat0[6] == mat1[6] &&
@@ -1064,6 +1097,7 @@ goog.vec.Mat4.equals = function(mat0, mat1) {
  *     chained together.
  */
 goog.vec.Mat4.multVec3 = function(mat, vec, resultVec) {
+  'use strict';
   var x = vec[0], y = vec[1], z = vec[2];
   resultVec[0] = x * mat[0] + y * mat[4] + z * mat[8] + mat[12];
   resultVec[1] = x * mat[1] + y * mat[5] + z * mat[9] + mat[13];
@@ -1086,6 +1120,7 @@ goog.vec.Mat4.multVec3 = function(mat, vec, resultVec) {
  *     chained together.
  */
 goog.vec.Mat4.multVec3NoTranslate = function(mat, vec, resultVec) {
+  'use strict';
   var x = vec[0], y = vec[1], z = vec[2];
   resultVec[0] = x * mat[0] + y * mat[4] + z * mat[8];
   resultVec[1] = x * mat[1] + y * mat[5] + z * mat[9];
@@ -1108,6 +1143,7 @@ goog.vec.Mat4.multVec3NoTranslate = function(mat, vec, resultVec) {
  *     chained together.
  */
 goog.vec.Mat4.multVec3Projective = function(mat, vec, resultVec) {
+  'use strict';
   var x = vec[0], y = vec[1], z = vec[2];
   var invw = 1 / (x * mat[3] + y * mat[7] + z * mat[11] + mat[15]);
   resultVec[0] = (x * mat[0] + y * mat[4] + z * mat[8] + mat[12]) * invw;
@@ -1129,6 +1165,7 @@ goog.vec.Mat4.multVec3Projective = function(mat, vec, resultVec) {
  *     chained together.
  */
 goog.vec.Mat4.multVec4 = function(mat, vec, resultVec) {
+  'use strict';
   var x = vec[0], y = vec[1], z = vec[2], w = vec[3];
   resultVec[0] = x * mat[0] + y * mat[4] + z * mat[8] + w * mat[12];
   resultVec[1] = x * mat[1] + y * mat[5] + z * mat[9] + w * mat[13];
@@ -1150,6 +1187,7 @@ goog.vec.Mat4.multVec4 = function(mat, vec, resultVec) {
  *     chained.
  */
 goog.vec.Mat4.makeTranslate = function(mat, x, y, z) {
+  'use strict';
   goog.vec.Mat4.makeIdentity(mat);
   return goog.vec.Mat4.setColumnValues(mat, 3, x, y, z, 1);
 };
@@ -1166,6 +1204,7 @@ goog.vec.Mat4.makeTranslate = function(mat, x, y, z) {
  *     chained.
  */
 goog.vec.Mat4.makeScale = function(mat, x, y, z) {
+  'use strict';
   goog.vec.Mat4.makeIdentity(mat);
   return goog.vec.Mat4.setDiagonalValues(mat, x, y, z, 1);
 };
@@ -1184,6 +1223,7 @@ goog.vec.Mat4.makeScale = function(mat, x, y, z) {
  *     chained.
  */
 goog.vec.Mat4.makeRotate = function(mat, angle, ax, ay, az) {
+  'use strict';
   var c = Math.cos(angle);
   var d = 1 - c;
   var s = Math.sin(angle);
@@ -1209,6 +1249,7 @@ goog.vec.Mat4.makeRotate = function(mat, angle, ax, ay, az) {
  *     chained.
  */
 goog.vec.Mat4.makeRotateX = function(mat, angle) {
+  'use strict';
   var c = Math.cos(angle);
   var s = Math.sin(angle);
   return goog.vec.Mat4.setFromValues(
@@ -1226,6 +1267,7 @@ goog.vec.Mat4.makeRotateX = function(mat, angle) {
  *     chained.
  */
 goog.vec.Mat4.makeRotateY = function(mat, angle) {
+  'use strict';
   var c = Math.cos(angle);
   var s = Math.sin(angle);
   return goog.vec.Mat4.setFromValues(
@@ -1243,6 +1285,7 @@ goog.vec.Mat4.makeRotateY = function(mat, angle) {
  *     chained.
  */
 goog.vec.Mat4.makeRotateZ = function(mat, angle) {
+  'use strict';
   var c = Math.cos(angle);
   var s = Math.sin(angle);
   return goog.vec.Mat4.setFromValues(
@@ -1264,6 +1307,7 @@ goog.vec.Mat4.makeRotateZ = function(mat, angle) {
  *     chained.
  */
 goog.vec.Mat4.makeFrustum = function(mat, left, right, bottom, top, near, far) {
+  'use strict';
   var x = (2 * near) / (right - left);
   var y = (2 * near) / (top - bottom);
   var a = (right + left) / (right - left);
@@ -1290,6 +1334,7 @@ goog.vec.Mat4.makeFrustum = function(mat, left, right, bottom, top, near, far) {
  *     chained.
  */
 goog.vec.Mat4.makePerspective = function(mat, fovy, aspect, near, far) {
+  'use strict';
   var angle = fovy / 2;
   var dz = far - near;
   var sinAngle = Math.sin(angle);
@@ -1318,6 +1363,7 @@ goog.vec.Mat4.makePerspective = function(mat, fovy, aspect, near, far) {
  *     chained.
  */
 goog.vec.Mat4.makeOrtho = function(mat, left, right, bottom, top, near, far) {
+  'use strict';
   var x = 2 / (right - left);
   var y = 2 / (top - bottom);
   var z = -2 / (far - near);
@@ -1344,6 +1390,7 @@ goog.vec.Mat4.makeOrtho = function(mat, left, right, bottom, top, near, far) {
  *     chained.
  */
 goog.vec.Mat4.makeLookAt = function(mat, eyePt, centerPt, worldUpVec) {
+  'use strict';
   // Compute the direction vector from the eye point to the center point and
   // normalize.
   var fwdVec = goog.vec.Mat4.tmpVec4_[0];
@@ -1393,6 +1440,7 @@ goog.vec.Mat4.makeLookAt = function(mat, eyePt, centerPt, worldUpVec) {
  *     The method can only fail if the inverse of viewMatrix is not defined.
  */
 goog.vec.Mat4.toLookAt = function(mat, eyePt, fwdVec, worldUpVec) {
+  'use strict';
   // Get eye of the camera.
   var matInverse = goog.vec.Mat4.tmpMat4_[0];
   if (!goog.vec.Mat4.invert(mat, matInverse)) {
@@ -1449,6 +1497,7 @@ goog.vec.Mat4.toLookAt = function(mat, eyePt, fwdVec, worldUpVec) {
  *     chained.
  */
 goog.vec.Mat4.makeEulerZXZ = function(mat, theta1, theta2, theta3) {
+  'use strict';
   var c1 = Math.cos(theta1);
   var s1 = Math.sin(theta1);
 
@@ -1497,6 +1546,7 @@ goog.vec.Mat4.makeEulerZXZ = function(mat, theta1, theta2, theta3) {
  *     chained together.
  */
 goog.vec.Mat4.toEulerZXZ = function(mat, euler, opt_theta2IsNegative) {
+  'use strict';
   // There is an ambiguity in the sign of sinTheta2 because of the sqrt.
   var sinTheta2 = Math.sqrt(mat[2] * mat[2] + mat[6] * mat[6]);
 
@@ -1545,6 +1595,7 @@ goog.vec.Mat4.toEulerZXZ = function(mat, euler, opt_theta2IsNegative) {
  *     chained.
  */
 goog.vec.Mat4.translate = function(mat, x, y, z) {
+  'use strict';
   return goog.vec.Mat4.setColumnValues(
       mat, 3, mat[0] * x + mat[4] * y + mat[8] * z + mat[12],
       mat[1] * x + mat[5] * y + mat[9] * z + mat[13],
@@ -1568,6 +1619,7 @@ goog.vec.Mat4.translate = function(mat, x, y, z) {
  *     chained.
  */
 goog.vec.Mat4.scale = function(mat, x, y, z) {
+  'use strict';
   return goog.vec.Mat4.setFromValues(
       mat, mat[0] * x, mat[1] * x, mat[2] * x, mat[3] * x, mat[4] * y,
       mat[5] * y, mat[6] * y, mat[7] * y, mat[8] * z, mat[9] * z, mat[10] * z,
@@ -1591,6 +1643,7 @@ goog.vec.Mat4.scale = function(mat, x, y, z) {
  *     chained.
  */
 goog.vec.Mat4.rotate = function(mat, angle, x, y, z) {
+  'use strict';
   var m00 = mat[0], m10 = mat[1], m20 = mat[2], m30 = mat[3];
   var m01 = mat[4], m11 = mat[5], m21 = mat[6], m31 = mat[7];
   var m02 = mat[8], m12 = mat[9], m22 = mat[10], m32 = mat[11];
@@ -1638,6 +1691,7 @@ goog.vec.Mat4.rotate = function(mat, angle, x, y, z) {
  *     chained.
  */
 goog.vec.Mat4.rotateX = function(mat, angle) {
+  'use strict';
   var m01 = mat[4], m11 = mat[5], m21 = mat[6], m31 = mat[7];
   var m02 = mat[8], m12 = mat[9], m22 = mat[10], m32 = mat[11];
 
@@ -1670,6 +1724,7 @@ goog.vec.Mat4.rotateX = function(mat, angle) {
  *     chained.
  */
 goog.vec.Mat4.rotateY = function(mat, angle) {
+  'use strict';
   var m00 = mat[0], m10 = mat[1], m20 = mat[2], m30 = mat[3];
   var m02 = mat[8], m12 = mat[9], m22 = mat[10], m32 = mat[11];
 
@@ -1702,6 +1757,7 @@ goog.vec.Mat4.rotateY = function(mat, angle) {
  *     chained.
  */
 goog.vec.Mat4.rotateZ = function(mat, angle) {
+  'use strict';
   var m00 = mat[0], m10 = mat[1], m20 = mat[2], m30 = mat[3];
   var m01 = mat[4], m11 = mat[5], m21 = mat[6], m31 = mat[7];
 
@@ -1731,6 +1787,7 @@ goog.vec.Mat4.rotateZ = function(mat, angle) {
  *     chained.
  */
 goog.vec.Mat4.getTranslation = function(mat, translation) {
+  'use strict';
   translation[0] = mat[12];
   translation[1] = mat[13];
   translation[2] = mat[14];
@@ -1739,7 +1796,7 @@ goog.vec.Mat4.getTranslation = function(mat, translation) {
 
 
 /**
- * @type {!Array<!goog.vec.Vec3.Type>}
+ * @type {!Array<!goog.vec.Mat4.Float64>}
  * @private
  */
 goog.vec.Mat4.tmpVec3_ =
@@ -1747,7 +1804,7 @@ goog.vec.Mat4.tmpVec3_ =
 
 
 /**
- * @type {!Array<!goog.vec.Vec4.Type>}
+ * @type {!Array<!goog.vec.Mat4.Float64>}
  * @private
  */
 goog.vec.Mat4.tmpVec4_ = [
@@ -1757,7 +1814,7 @@ goog.vec.Mat4.tmpVec4_ = [
 
 
 /**
- * @type {!Array<!goog.vec.Mat4.Type>}
+ * @type {!Array<!goog.vec.Mat4.Float64>}
  * @private
  */
 goog.vec.Mat4.tmpMat4_ = [goog.vec.Mat4.createFloat64()];

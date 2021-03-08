@@ -1,16 +1,8 @@
-// Copyright 2012 The Closure Library Authors. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS-IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+/**
+ * @license
+ * Copyright The Closure Library Authors.
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
 /**
  * @fileoverview Implementation of PBKDF2 in JavaScript.
@@ -23,7 +15,6 @@
  * Usage:
  *   var key = pbkdf2.deriveKeySha1(
  *       stringToByteArray('password'), stringToByteArray('salt'), 1000, 128);
- *
  */
 
 goog.provide('goog.crypt.pbkdf2');
@@ -47,6 +38,7 @@ goog.require('goog.crypt.Sha1');
  */
 goog.crypt.pbkdf2.deriveKeySha1 = function(
     password, initialSalt, iterations, keyLength) {
+  'use strict';
   // Length of the HMAC-SHA1 output in bits.
   var HASH_LENGTH = 160;
 
@@ -57,6 +49,7 @@ goog.crypt.pbkdf2.deriveKeySha1 = function(
    * @return {!Array<number>} Byte array representation of the output block.
    */
   var computeBlock = function(index) {
+    'use strict';
     // Initialize the result to be array of 0 such that its xor with the first
     // block would be the first block.
     var result = goog.array.repeat(0, HASH_LENGTH / 8);
@@ -90,6 +83,7 @@ goog.crypt.pbkdf2.deriveKeySha1 = function(
  */
 goog.crypt.pbkdf2.deriveKeyFromPassword_ = function(
     computeBlock, hashLength, keyLength) {
+  'use strict';
   goog.asserts.assert(keyLength % 8 == 0, 'invalid output key length');
 
   // Compute and concactate each block of the output key.
@@ -119,6 +113,7 @@ goog.crypt.pbkdf2.deriveKeyFromPassword_ = function(
  * @private
  */
 goog.crypt.pbkdf2.integerToByteArray_ = function(n) {
+  'use strict';
   var result = new Array(4);
   result[0] = n >> 24 & 0xFF;
   result[1] = n >> 16 & 0xFF;

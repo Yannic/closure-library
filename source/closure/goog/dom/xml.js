@@ -1,27 +1,20 @@
-// Copyright 2006 The Closure Library Authors. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS-IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+/**
+ * @license
+ * Copyright The Closure Library Authors.
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
 /**
  * @fileoverview
  * XML utilities.
- *
  */
 
 goog.provide('goog.dom.xml');
 
 goog.require('goog.dom');
 goog.require('goog.dom.NodeType');
+goog.require('goog.dom.safe');
+goog.require('goog.html.legacyconversions');
 goog.require('goog.userAgent');
 
 
@@ -45,6 +38,7 @@ goog.dom.xml.MAX_ELEMENT_DEPTH = 256;  // Same default as MSXML6.
  * @private
  */
 goog.dom.xml.hasActiveXObjectSupport_ = function() {
+  'use strict';
   if (!goog.userAgent.IE) {
     // Avoid raising useless exception in case code is not compiled
     // and browser is not MSIE.
@@ -86,8 +80,9 @@ goog.dom.xml.ACTIVEX_SUPPORT =
  */
 goog.dom.xml.createDocument = function(
     opt_rootTagName, opt_namespaceUri, opt_preferActiveX) {
+  'use strict';
   if (opt_namespaceUri && !opt_rootTagName) {
-    throw Error("Can't create document with namespace and no root tag");
+    throw new Error('Can\'t create document with namespace and no root tag');
   }
   // If document.implementation.createDocument is available and they haven't
   // explicitly opted to use ActiveXObject when possible.
@@ -100,14 +95,14 @@ goog.dom.xml.createDocument = function(
     if (doc) {
       if (opt_rootTagName) {
         doc.appendChild(
-            doc.createNode(
+            /** @type {!Node} */ (doc.createNode(
                 goog.dom.NodeType.ELEMENT, opt_rootTagName,
-                opt_namespaceUri || ''));
+                opt_namespaceUri || '')));
       }
       return doc;
     }
   }
-  throw Error('Your browser does not support creating new documents');
+  throw new Error('Your browser does not support creating new documents');
 };
 
 
@@ -122,15 +117,18 @@ goog.dom.xml.createDocument = function(
  * @throws {Error} if browser does not support loading XML documents.
  */
 goog.dom.xml.loadXml = function(xml, opt_preferActiveX) {
+  'use strict';
   if (typeof DOMParser != 'undefined' &&
       !(goog.dom.xml.ACTIVEX_SUPPORT && opt_preferActiveX)) {
-    return new DOMParser().parseFromString(xml, 'application/xml');
+    return goog.dom.safe.parseFromString(
+        new DOMParser(), goog.html.legacyconversions.safeHtmlFromString(xml),
+        'application/xml');
   } else if (goog.dom.xml.ACTIVEX_SUPPORT) {
     var doc = goog.dom.xml.createMsXmlDocument_();
     doc.loadXML(xml);
     return doc;
   }
-  throw Error('Your browser does not support loading xml documents');
+  throw new Error('Your browser does not support loading xml documents');
 };
 
 
@@ -141,6 +139,7 @@ goog.dom.xml.loadXml = function(xml, opt_preferActiveX) {
  * @throws {Error} if browser does not support XML serialization.
  */
 goog.dom.xml.serialize = function(xml) {
+  'use strict';
   // Compatible with IE/ActiveXObject.
   var text = xml.xml;
   if (text) {
@@ -150,7 +149,7 @@ goog.dom.xml.serialize = function(xml) {
   if (typeof XMLSerializer != 'undefined') {
     return new XMLSerializer().serializeToString(xml);
   }
-  throw Error('Your browser does not support serializing XML documents');
+  throw new Error('Your browser does not support serializing XML documents');
 };
 
 
@@ -161,6 +160,7 @@ goog.dom.xml.serialize = function(xml) {
  * @return {Node} The selected node, or null if no matching node.
  */
 goog.dom.xml.selectSingleNode = function(node, path) {
+  'use strict';
   if (typeof node.selectSingleNode != 'undefined') {
     var doc = goog.dom.getOwnerDocument(node);
     if (typeof doc.setProperty != 'undefined') {
@@ -189,6 +189,7 @@ goog.dom.xml.selectSingleNode = function(node, path) {
  *     if no matching nodes.
  */
 goog.dom.xml.selectNodes = function(node, path) {
+  'use strict';
   if (typeof node.selectNodes != 'undefined') {
     var doc = goog.dom.getOwnerDocument(node);
     if (typeof doc.setProperty != 'undefined') {
@@ -224,6 +225,7 @@ goog.dom.xml.selectNodes = function(node, path) {
  * @param {!Object<string, string>} attributes Map of property:value pairs.
  */
 goog.dom.xml.setAttributes = function(element, attributes) {
+  'use strict';
   for (var key in attributes) {
     if (attributes.hasOwnProperty(key)) {
       element.setAttribute(key, attributes[key]);
@@ -234,14 +236,15 @@ goog.dom.xml.setAttributes = function(element, attributes) {
 
 /**
  * Creates an instance of the MSXML2.DOMDocument.
- * @return {Document} The new document.
+ * @return {!XMLDOMDocument} The new document.
  * @private
  */
 goog.dom.xml.createMsXmlDocument_ = function() {
+  'use strict';
   var doc = new ActiveXObject('MSXML2.DOMDocument');
   if (doc) {
     // Prevent potential vulnerabilities exposed by MSXML2, see
-    // http://b/1707300 and http://wiki/Main/ISETeamXMLAttacks for details.
+    // http://b/1707300 and http://go/xxe-attacks for details.
     doc.resolveExternals = false;
     doc.validateOnParse = false;
     // Add a try catch block because accessing these properties will throw an

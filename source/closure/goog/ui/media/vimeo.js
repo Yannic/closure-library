@@ -1,16 +1,8 @@
-// Copyright 2009 The Closure Library Authors. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS-IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+/**
+ * @license
+ * Copyright The Closure Library Authors.
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
 
 /**
@@ -19,21 +11,21 @@
  *
  * goog.ui.media.Vimeo is actually a {@link goog.ui.ControlRenderer}, a
  * stateless class - that could/should be used as a Singleton with the static
- * method {@code goog.ui.media.Vimeo.getInstance} -, that knows how to render
+ * method `goog.ui.media.Vimeo.getInstance` -, that knows how to render
  * video videos. It is designed to be used with a {@link goog.ui.Control},
  * which will actually control the media renderer and provide the
  * {@link goog.ui.Component} base. This design guarantees that all different
  * types of medias will behave alike but will look different.
  *
  * goog.ui.media.Vimeo expects vimeo video IDs on
- * {@code goog.ui.Control.getModel} as data models, and renders a flash object
+ * `goog.ui.Control.getModel` as data models, and renders a flash object
  * that will show the contents of that video.
  *
  * Example of usage:
  *
  * <pre>
- *   var video = goog.ui.media.VimeoModel.newInstance('http://vimeo.com/30012');
- *   goog.ui.media.Vimeo.newControl(video).render();
+ * var video = goog.ui.media.VimeoModel.newInstance('https://vimeo.com/30012');
+ * goog.ui.media.Vimeo.newControl(video).render();
  * </pre>
  *
  * Vimeo medias currently support the following states:
@@ -57,12 +49,15 @@
 goog.provide('goog.ui.media.Vimeo');
 goog.provide('goog.ui.media.VimeoModel');
 
-goog.require('goog.html.uncheckedconversions');
+goog.require('goog.html.TrustedResourceUrl');
 goog.require('goog.string');
+goog.require('goog.string.Const');
 goog.require('goog.ui.media.FlashObject');
 goog.require('goog.ui.media.Media');
 goog.require('goog.ui.media.MediaModel');
 goog.require('goog.ui.media.MediaRenderer');
+goog.requireType('goog.dom.DomHelper');
+goog.requireType('goog.ui.Control');
 
 
 
@@ -72,8 +67,8 @@ goog.require('goog.ui.media.MediaRenderer');
  *
  * This class knows how to parse Vimeo URLs, and render the DOM structure
  * of vimeo video players. This class is meant to be used as a singleton static
- * stateless class, that takes {@code goog.ui.media.Media} instances and renders
- * it. It expects {@code goog.ui.media.Media.getModel} to return a well formed,
+ * stateless class, that takes `goog.ui.media.Media` instances and renders
+ * it. It expects `goog.ui.media.Media.getModel` to return a well formed,
  * previously constructed, vimeoId {@see goog.ui.media.Vimeo.parseUrl}, which is
  * the data model this renderer will use to construct the DOM structure.
  * {@see goog.ui.media.Vimeo.newControl} for a example of constructing a control
@@ -88,6 +83,7 @@ goog.require('goog.ui.media.MediaRenderer');
  * @final
  */
 goog.ui.media.Vimeo = function() {
+  'use strict';
   goog.ui.media.MediaRenderer.call(this);
 };
 goog.inherits(goog.ui.media.Vimeo, goog.ui.media.MediaRenderer);
@@ -117,6 +113,7 @@ goog.ui.media.Vimeo.CSS_CLASS = goog.getCssName('goog-ui-media-vimeo');
  * @return {!goog.ui.media.Media} A Control binded to the Vimeo renderer.
  */
 goog.ui.media.Vimeo.newControl = function(dataModel, opt_domHelper) {
+  'use strict';
   var control = new goog.ui.media.Media(
       dataModel, goog.ui.media.Vimeo.getInstance(), opt_domHelper);
   // vimeo videos don't have any thumbnail for now, so we show the
@@ -136,6 +133,7 @@ goog.ui.media.Vimeo.newControl = function(dataModel, opt_domHelper) {
  * @override
  */
 goog.ui.media.Vimeo.prototype.createDom = function(c) {
+  'use strict';
   var control = /** @type {goog.ui.media.Media} */ (c);
   var div = goog.ui.media.Vimeo.superClass_.createDom.call(this, control);
 
@@ -157,14 +155,15 @@ goog.ui.media.Vimeo.prototype.createDom = function(c) {
  * @override
  */
 goog.ui.media.Vimeo.prototype.getCssClass = function() {
+  'use strict';
   return goog.ui.media.Vimeo.CSS_CLASS;
 };
 
 
 
 /**
- * The {@code goog.ui.media.Vimeo} media data model. It stores a required
- * {@code videoId} field, sets the vimeo URL, and allows a few optional
+ * The `goog.ui.media.Vimeo` media data model. It stores a required
+ * `videoId` field, sets the vimeo URL, and allows a few optional
  * parameters.
  *
  * @param {string} videoId The vimeo video id.
@@ -177,6 +176,7 @@ goog.ui.media.Vimeo.prototype.getCssClass = function() {
  */
 goog.ui.media.VimeoModel = function(
     videoId, opt_caption, opt_description, opt_autoplay) {
+  'use strict';
   goog.ui.media.MediaModel.call(
       this, goog.ui.media.VimeoModel.buildUrl(videoId), opt_caption,
       opt_description, goog.ui.media.MediaModel.MimeType.FLASH);
@@ -200,7 +200,7 @@ goog.inherits(goog.ui.media.VimeoModel, goog.ui.media.MediaModel);
  *
  * Copied from http://go/markdownlite.js
  *
- * TODO(user): add support to https.
+ * TODO(goto): add support to https.
  *
  * @type {RegExp}
  * @private
@@ -211,7 +211,7 @@ goog.ui.media.VimeoModel.MATCHER_ =
 
 
 /**
- * Takes a {@code vimeoUrl} and extracts the video id.
+ * Takes a `vimeoUrl` and extracts the video id.
  *
  * @param {string} vimeoUrl A vimeo video URL.
  * @param {string=} opt_caption An optional caption of the vimeo video.
@@ -223,29 +223,31 @@ goog.ui.media.VimeoModel.MATCHER_ =
  */
 goog.ui.media.VimeoModel.newInstance = function(
     vimeoUrl, opt_caption, opt_description, opt_autoplay) {
+  'use strict';
   if (goog.ui.media.VimeoModel.MATCHER_.test(vimeoUrl)) {
     var data = goog.ui.media.VimeoModel.MATCHER_.exec(vimeoUrl);
     return new goog.ui.media.VimeoModel(
         data[1], opt_caption, opt_description, opt_autoplay);
   }
-  throw Error('failed to parse vimeo url: ' + vimeoUrl);
+  throw new Error('failed to parse vimeo url: ' + vimeoUrl);
 };
 
 
 /**
- * The opposite of {@code goog.ui.media.Vimeo.parseUrl}: it takes a videoId
+ * The opposite of `goog.ui.media.Vimeo.parseUrl`: it takes a videoId
  * and returns a vimeo URL.
  *
  * @param {string} videoId The vimeo video ID.
  * @return {string} The vimeo URL.
  */
 goog.ui.media.VimeoModel.buildUrl = function(videoId) {
-  return 'http://vimeo.com/' + goog.string.urlEncode(videoId);
+  'use strict';
+  return 'https://vimeo.com/' + goog.string.urlEncode(videoId);
 };
 
 
 /**
- * Builds a flash url from the vimeo {@code videoId}.
+ * Builds a flash url from the vimeo `videoId`.
  *
  * @param {string} videoId The vimeo video ID.
  * @param {boolean=} opt_autoplay Whether the flash movie should start playing
@@ -253,14 +255,16 @@ goog.ui.media.VimeoModel.buildUrl = function(videoId) {
  * @return {!goog.html.TrustedResourceUrl} The vimeo flash URL.
  */
 goog.ui.media.VimeoModel.buildFlashUrl = function(videoId, opt_autoplay) {
-  var autoplay = opt_autoplay ? '&autoplay=1' : '';
-  return goog.html.uncheckedconversions.
-      trustedResourceUrlFromStringKnownToSatisfyTypeContract(
-          goog.string.Const.from('Fixed domain, encoded parameters.'),
-          'http://vimeo.com/moogaloop.swf?clip_id=' +
-              goog.string.urlEncode(videoId) +
-              '&server=vimeo.com&show_title=1&show_byline=1&' +
-              'show_portrait=0color=&fullscreen=1' + autoplay);
+  'use strict';
+  return goog.html.TrustedResourceUrl.format(
+      goog.string.Const.from(
+          'https://vimeo.com/moogaloop.swf?clip_id=%{clip_id}' +
+          '&server=vimeo.com&show_title=1&show_byline=1&' +
+          'show_portrait=0color=&fullscreen=1%{autoplay}'),
+      {
+        'clip_id': videoId,
+        'autoplay': opt_autoplay ? goog.string.Const.from('&autoplay=1') : ''
+      });
 };
 
 
@@ -269,5 +273,6 @@ goog.ui.media.VimeoModel.buildFlashUrl = function(videoId, opt_autoplay) {
  * @return {string} The Vimeo video id.
  */
 goog.ui.media.VimeoModel.prototype.getVideoId = function() {
+  'use strict';
   return this.videoId_;
 };

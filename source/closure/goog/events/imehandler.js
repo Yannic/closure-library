@@ -1,16 +1,8 @@
-// Copyright 2010 The Closure Library Authors. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS-IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+/**
+ * @license
+ * Copyright The Closure Library Authors.
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
 /**
  * @fileoverview Input Method Editors (IMEs) are OS-level widgets that make
@@ -36,8 +28,6 @@
  *
  * We currently do a bad job detecting when the IME closes on IE, and
  * make a "best effort" guess on when we know it's closed.
- *
- * @author nicksantos@google.com (Nick Santos) (Ported to Closure)
  */
 
 goog.provide('goog.events.ImeHandler');
@@ -50,6 +40,7 @@ goog.require('goog.events.EventTarget');
 goog.require('goog.events.EventType');
 goog.require('goog.events.KeyCodes');
 goog.require('goog.userAgent');
+goog.requireType('goog.events.BrowserEvent');
 
 
 
@@ -61,6 +52,7 @@ goog.require('goog.userAgent');
  * @final
  */
 goog.events.ImeHandler = function(el) {
+  'use strict';
   goog.events.ImeHandler.base(this, 'constructor');
 
   /**
@@ -134,6 +126,7 @@ goog.events.ImeHandler.EventType = {
  * @final
  */
 goog.events.ImeHandler.Event = function(type, reason) {
+  'use strict';
   goog.events.ImeHandler.Event.base(this, 'constructor', type);
 
   /**
@@ -174,6 +167,7 @@ goog.events.ImeHandler.prototype.lastKeyCode_ = 0;
  * @return {boolean} Whether an IME is active.
  */
 goog.events.ImeHandler.prototype.isImeMode = function() {
+  'use strict';
   return this.imeMode_;
 };
 
@@ -184,6 +178,7 @@ goog.events.ImeHandler.prototype.isImeMode = function() {
  * @private
  */
 goog.events.ImeHandler.prototype.handleCompositionStart_ = function(e) {
+  'use strict';
   this.handleImeActivate_(e);
 };
 
@@ -194,6 +189,7 @@ goog.events.ImeHandler.prototype.handleCompositionStart_ = function(e) {
  * @private
  */
 goog.events.ImeHandler.prototype.handleCompositionEnd_ = function(e) {
+  'use strict';
   this.handleImeDeactivate_(e);
 };
 
@@ -204,6 +200,7 @@ goog.events.ImeHandler.prototype.handleCompositionEnd_ = function(e) {
  * @private
  */
 goog.events.ImeHandler.prototype.handleTextModifyingInput_ = function(e) {
+  'use strict';
   if (this.isImeMode()) {
     this.processImeComposition_(e);
   }
@@ -216,6 +213,7 @@ goog.events.ImeHandler.prototype.handleTextModifyingInput_ = function(e) {
  * @private
  */
 goog.events.ImeHandler.prototype.handleImeActivate_ = function(e) {
+  'use strict';
   if (this.imeMode_) {
     return;
   }
@@ -248,9 +246,9 @@ goog.events.ImeHandler.prototype.handleImeActivate_ = function(e) {
  * @private
  */
 goog.events.ImeHandler.prototype.processImeComposition_ = function(e) {
-  this.dispatchEvent(
-      new goog.events.ImeHandler.Event(
-          goog.events.ImeHandler.EventType.UPDATE, e));
+  'use strict';
+  this.dispatchEvent(new goog.events.ImeHandler.Event(
+      goog.events.ImeHandler.EventType.UPDATE, e));
 };
 
 
@@ -260,6 +258,7 @@ goog.events.ImeHandler.prototype.processImeComposition_ = function(e) {
  * @private
  */
 goog.events.ImeHandler.prototype.handleImeDeactivate_ = function(e) {
+  'use strict';
   this.imeMode_ = false;
   this.keyUpHandler_.removeAll();
   this.dispatchEvent(
@@ -274,6 +273,7 @@ goog.events.ImeHandler.prototype.handleImeDeactivate_ = function(e) {
  * @private
  */
 goog.events.ImeHandler.prototype.handleKeyDown_ = function(e) {
+  'use strict';
   // Firefox and Chrome have a separate event for IME composition ('text'
   // and 'compositionupdate', respectively), other browsers do not.
   if (!goog.events.ImeHandler.USES_COMPOSITION_EVENTS) {
@@ -305,6 +305,7 @@ goog.events.ImeHandler.prototype.handleKeyDown_ = function(e) {
  * @private
  */
 goog.events.ImeHandler.prototype.handleTextInput_ = function(e) {
+  'use strict';
   // Some WebKit-based browsers including Safari 4 don't send composition
   // events. So, we turn down IME mode when it's still there.
   if (!goog.events.ImeHandler.USES_COMPOSITION_EVENTS &&
@@ -322,6 +323,7 @@ goog.events.ImeHandler.prototype.handleTextInput_ = function(e) {
  * @private
  */
 goog.events.ImeHandler.prototype.handleKeyUpSafari4_ = function(e) {
+  'use strict';
   if (this.isImeMode()) {
     switch (e.keyCode) {
       // These keyup events indicates that IME text has been committed or
@@ -345,6 +347,7 @@ goog.events.ImeHandler.prototype.handleKeyUpSafari4_ = function(e) {
  * @private
  */
 goog.events.ImeHandler.isImeDeactivateKeyEvent_ = function(e) {
+  'use strict';
   // Which key events involve IME deactivation depends on the user's
   // environment (i.e. browsers, platforms, and IMEs). Usually Shift key
   // and Ctrl key does not involve IME deactivation, so we currently assume
@@ -361,6 +364,7 @@ goog.events.ImeHandler.isImeDeactivateKeyEvent_ = function(e) {
 
 /** @override */
 goog.events.ImeHandler.prototype.disposeInternal = function() {
+  'use strict';
   this.handler_.dispose();
   this.keyUpHandler_.dispose();
   this.el_ = null;

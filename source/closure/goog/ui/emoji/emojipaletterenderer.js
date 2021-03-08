@@ -1,20 +1,12 @@
-// Copyright 2008 The Closure Library Authors. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS-IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+/**
+ * @license
+ * Copyright The Closure Library Authors.
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
 /**
  * @fileoverview Emoji Palette renderer implementation.
- *
+ * @suppress {checkPrototypalTypes}
  */
 
 goog.provide('goog.ui.emoji.EmojiPaletteRenderer');
@@ -27,6 +19,9 @@ goog.require('goog.dom.classlist');
 goog.require('goog.style');
 goog.require('goog.ui.PaletteRenderer');
 goog.require('goog.ui.emoji.Emoji');
+goog.requireType('goog.dom.DomHelper');
+goog.requireType('goog.ui.Palette');
+goog.requireType('goog.ui.emoji.SpriteInfo');
 
 
 
@@ -40,6 +35,7 @@ goog.require('goog.ui.emoji.Emoji');
  * @extends {goog.ui.PaletteRenderer}
  */
 goog.ui.emoji.EmojiPaletteRenderer = function(defaultImgUrl) {
+  'use strict';
   goog.ui.PaletteRenderer.call(this);
 
   this.defaultImgUrl_ = defaultImgUrl;
@@ -68,6 +64,7 @@ goog.ui.emoji.EmojiPaletteRenderer.prototype.defaultImgUrl_ = null;
 
 /** @override */
 goog.ui.emoji.EmojiPaletteRenderer.getCssClass = function() {
+  'use strict';
   return goog.getCssName('goog-ui-emojipalette');
 };
 
@@ -84,6 +81,7 @@ goog.ui.emoji.EmojiPaletteRenderer.getCssClass = function() {
  */
 goog.ui.emoji.EmojiPaletteRenderer.prototype.createPaletteItem = function(
     dom, id, spriteInfo, displayUrl) {
+  'use strict';
   var el;
 
   if (spriteInfo) {
@@ -114,6 +112,7 @@ goog.ui.emoji.EmojiPaletteRenderer.prototype.createPaletteItem = function(
  */
 goog.ui.emoji.EmojiPaletteRenderer.prototype.updateAnimatedPaletteItem =
     function(item, animatedImg) {
+  'use strict';
   // An animated emoji is one that had sprite info for a static version and is
   // now being updated. See createPaletteItem for the structure of the palette
   // items we're modifying.
@@ -143,10 +142,11 @@ goog.ui.emoji.EmojiPaletteRenderer.prototype.updateAnimatedPaletteItem =
  * @param {goog.ui.emoji.SpriteInfo} spriteInfo The metadata to create the css
  *     for the sprite.
  * @param {string} displayUrl The URL of the image for this cell.
- * @return {HTMLDivElement} The inner element for a palette item.
+ * @return {!HTMLDivElement} The inner element for a palette item.
  */
 goog.ui.emoji.EmojiPaletteRenderer.prototype.buildElementFromSpriteMetadata =
     function(dom, spriteInfo, displayUrl) {
+  'use strict';
   var width = spriteInfo.getWidthCssValue();
   var height = spriteInfo.getHeightCssValue();
   var x = spriteInfo.getXOffsetCssValue();
@@ -167,6 +167,7 @@ goog.ui.emoji.EmojiPaletteRenderer.prototype.buildElementFromSpriteMetadata =
 
 /** @override */
 goog.ui.emoji.EmojiPaletteRenderer.prototype.createCell = function(node, dom) {
+  'use strict';
   // Create a cell with  the default img if we're out of items, in order to
   // prevent jitter in the table. If there's no default img url, just create an
   // empty div, to prevent trying to fetch a null url.
@@ -202,6 +203,7 @@ goog.ui.emoji.EmojiPaletteRenderer.prototype.createCell = function(node, dom) {
  */
 goog.ui.emoji.EmojiPaletteRenderer.prototype.getContainingItem = function(
     palette, node) {
+  'use strict';
   var root = palette.getElement();
   while (node && node.nodeType == goog.dom.NodeType.ELEMENT && node != root) {
     if (node.tagName == goog.dom.TagName.TD) {

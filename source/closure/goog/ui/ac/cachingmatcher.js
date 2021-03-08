@@ -1,21 +1,12 @@
-// Copyright 2013 The Closure Library Authors. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS-IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+/**
+ * @license
+ * Copyright The Closure Library Authors.
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
 /**
  * @fileoverview Matcher which maintains a client-side cache on top of some
  * other matcher.
- * @author reinerp@google.com (Reiner Pope)
  */
 
 
@@ -46,6 +37,7 @@ goog.require('goog.ui.ac.RenderOptions');
  * @final
  */
 goog.ui.ac.CachingMatcher = function(baseMatcher) {
+  'use strict';
   /** @private {!Array<!Object>}} The cache. */
   this.rows_ = [];
 
@@ -83,7 +75,7 @@ goog.ui.ac.CachingMatcher = function(baseMatcher) {
   /** @private {string} */
   this.mostRecentToken_ = '';
 
-  /** @private {Function} */
+  /** @private {?Function} */
   this.mostRecentMatchHandler_ = null;
 
   /** @private {number} */
@@ -115,6 +107,7 @@ goog.ui.ac.CachingMatcher = function(baseMatcher) {
  * @param {number} throttleTime .
  */
 goog.ui.ac.CachingMatcher.prototype.setThrottleTime = function(throttleTime) {
+  'use strict';
   this.throttledTriggerBaseMatch_ =
       new goog.async.Throttle(this.triggerBaseMatch_, throttleTime, this);
 };
@@ -131,6 +124,7 @@ goog.ui.ac.CachingMatcher.prototype.setThrottleTime = function(throttleTime) {
  */
 goog.ui.ac.CachingMatcher.prototype.setBaseMatcherMaxMatches = function(
     maxMatches) {
+  'use strict';
   this.baseMatcherMaxMatches_ = maxMatches;
 };
 
@@ -144,6 +138,7 @@ goog.ui.ac.CachingMatcher.prototype.setBaseMatcherMaxMatches = function(
  * @param {number} maxCacheSize .
  */
 goog.ui.ac.CachingMatcher.prototype.setMaxCacheSize = function(maxCacheSize) {
+  'use strict';
   this.maxCacheSize_ = maxCacheSize;
 };
 
@@ -162,6 +157,7 @@ goog.ui.ac.CachingMatcher.prototype.setMaxCacheSize = function(maxCacheSize) {
  *     localMatcher
  */
 goog.ui.ac.CachingMatcher.prototype.setLocalMatcher = function(localMatcher) {
+  'use strict';
   this.getMatchesForRows_ = localMatcher;
 };
 
@@ -174,6 +170,7 @@ goog.ui.ac.CachingMatcher.prototype.setLocalMatcher = function(localMatcher) {
  */
 goog.ui.ac.CachingMatcher.prototype.requestMatchingRows = function(
     token, maxMatches, matchHandler) {
+  'use strict';
   this.mostRecentMaxMatches_ = maxMatches;
   this.mostRecentToken_ = token;
   this.mostRecentMatchHandler_ = matchHandler;
@@ -185,13 +182,23 @@ goog.ui.ac.CachingMatcher.prototype.requestMatchingRows = function(
 };
 
 
+/** Clears the cache. */
+goog.ui.ac.CachingMatcher.prototype.clearCache = function() {
+  'use strict';
+  this.rows_ = [];
+  this.rowStrings_ = {};
+};
+
+
 /**
  * Adds the specified rows to the cache.
  * @param {!Array<!Object>} rows .
  * @private
  */
 goog.ui.ac.CachingMatcher.prototype.addRows_ = function(rows) {
+  'use strict';
   goog.array.forEach(rows, function(row) {
+    'use strict';
     // The ' ' prefix is to avoid colliding with builtins like toString.
     if (!this.rowStrings_[' ' + row]) {
       this.rows_.push(row);
@@ -206,9 +213,9 @@ goog.ui.ac.CachingMatcher.prototype.addRows_ = function(rows) {
  * @private
  */
 goog.ui.ac.CachingMatcher.prototype.clearCacheIfTooLarge_ = function() {
+  'use strict';
   if (this.rows_.length > this.maxCacheSize_) {
-    this.rows_ = [];
-    this.rowStrings_ = {};
+    this.clearCache();
   }
 };
 
@@ -218,8 +225,10 @@ goog.ui.ac.CachingMatcher.prototype.clearCacheIfTooLarge_ = function() {
  * unthrottled, so don't call it directly; instead use
  * this.throttledTriggerBaseMatch_.
  * @private
+ * @suppress {strictMissingProperties} Part of the go/strict_warnings_migration
  */
 goog.ui.ac.CachingMatcher.prototype.triggerBaseMatch_ = function() {
+  'use strict';
   this.baseMatcher_.requestMatchingRows(
       this.mostRecentToken_, this.baseMatcherMaxMatches_,
       goog.bind(this.onBaseMatch_, this));
@@ -233,6 +242,7 @@ goog.ui.ac.CachingMatcher.prototype.triggerBaseMatch_ = function() {
  * @private
  */
 goog.ui.ac.CachingMatcher.prototype.onBaseMatch_ = function(token, matches) {
+  'use strict';
   // NOTE(reinerp): The user might have typed some more characters since the
   // base matcher request was sent out, which manifests in that token might be
   // older than this.mostRecentToken_. We make sure to do our local matches
@@ -249,13 +259,16 @@ goog.ui.ac.CachingMatcher.prototype.onBaseMatch_ = function(token, matches) {
 
   var oldMatchesSet = {};
   goog.array.forEach(this.mostRecentMatches_, function(match) {
+    'use strict';
     // The ' ' prefix is to avoid colliding with builtins like toString.
     oldMatchesSet[' ' + match] = true;
   });
   var newMatches = this.getMatchesForRows_(
       this.mostRecentToken_, this.mostRecentMaxMatches_, this.rows_);
-  newMatches = goog.array.filter(
-      newMatches, function(match) { return !(oldMatchesSet[' ' + match]); });
+  newMatches = goog.array.filter(newMatches, function(match) {
+    'use strict';
+    return !(oldMatchesSet[' ' + match]);
+  });
   newMatches = this.mostRecentMatches_.concat(newMatches)
                    .slice(0, this.mostRecentMaxMatches_);
 

@@ -1,28 +1,29 @@
-// Copyright 2007 The Closure Library Authors. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS-IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+/**
+ * @license
+ * Copyright The Closure Library Authors.
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
 /**
  * @fileoverview DOM pattern to match any children of a tag, and
  * specifically collect those that match a child pattern.
- *
- * @author robbyw@google.com (Robby Walker)
  */
+
+
+// TODO(user): We're trying to migrate all ES5 subclasses of Closure
+// Library to ES6. In ES6 this cannot be referenced before super is called. This
+// file has at least one this before a super call (in ES5) and cannot be
+// automatically upgraded to ES6 as a result. Please fix this if you have a
+// chance. Note: This can sometimes be caused by not calling the super
+// constructor at all. You can run the conversion tool yourself to see what it
+// does on this file: blaze run //javascript/refactoring/es6_classes:convert.
 
 goog.provide('goog.dom.pattern.ChildMatches');
 
 goog.require('goog.dom.pattern.AllChildren');
 goog.require('goog.dom.pattern.MatchType');
+goog.requireType('goog.dom.TagWalkType');
+goog.requireType('goog.dom.pattern.AbstractPattern');
 
 
 
@@ -38,6 +39,7 @@ goog.require('goog.dom.pattern.MatchType');
  * @final
  */
 goog.dom.pattern.ChildMatches = function(childPattern, opt_minimumMatches) {
+  'use strict';
   /**
    * The child pattern to collect matches from.
    *
@@ -77,11 +79,12 @@ goog.inherits(goog.dom.pattern.ChildMatches, goog.dom.pattern.AllChildren);
  *
  * @param {Node} token Token to match against.
  * @param {goog.dom.TagWalkType} type The type of token.
- * @return {goog.dom.pattern.MatchType} {@code MATCHING} if the token is on the
- *     same level or deeper and {@code BACKTRACK_MATCH} if not.
+ * @return {goog.dom.pattern.MatchType} `MATCHING` if the token is on the
+ *     same level or deeper and `BACKTRACK_MATCH` if not.
  * @override
  */
 goog.dom.pattern.ChildMatches.prototype.matchToken = function(token, type) {
+  'use strict';
   // Defer resets so we maintain our matches array until the last possible time.
   if (this.needsReset_) {
     this.reset();
@@ -138,6 +141,7 @@ goog.dom.pattern.ChildMatches.prototype.matchToken = function(token, type) {
  * @override
  */
 goog.dom.pattern.ChildMatches.prototype.reset = function() {
+  'use strict';
   this.needsReset_ = false;
   this.matches.length = 0;
   this.childPattern_.reset();

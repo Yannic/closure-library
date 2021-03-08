@@ -1,20 +1,11 @@
-// Copyright 2006 The Closure Library Authors. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS-IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+/**
+ * @license
+ * Copyright The Closure Library Authors.
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
 /**
  * @fileoverview Provides utility functions for formatting strings, numbers etc.
- *
  */
 
 goog.provide('goog.format');
@@ -32,6 +23,7 @@ goog.require('goog.userAgent');
  * @return {string} The human readable form of the byte size.
  */
 goog.format.fileSize = function(bytes, opt_decimals) {
+  'use strict';
   return goog.format.numBytesToString(bytes, opt_decimals, false);
 };
 
@@ -52,6 +44,7 @@ goog.format.fileSize = function(bytes, opt_decimals) {
  * @return {boolean} True if string could be converted to a numeric value.
  */
 goog.format.isConvertableScaledNumber = function(val) {
+  'use strict';
   return goog.format.SCALED_NUMERIC_RE_.test(val);
 };
 
@@ -63,6 +56,7 @@ goog.format.isConvertableScaledNumber = function(val) {
  * @return {number} Numeric value for string.
  */
 goog.format.stringToNumericValue = function(stringValue) {
+  'use strict';
   if (goog.string.endsWith(stringValue, 'B')) {
     return goog.format.stringToNumericValue_(
         stringValue, goog.format.NUMERIC_SCALES_BINARY_);
@@ -79,6 +73,7 @@ goog.format.stringToNumericValue = function(stringValue) {
  * @return {number} Numeric value for string.
  */
 goog.format.stringToNumBytes = function(stringValue) {
+  'use strict';
   return goog.format.stringToNumericValue_(
       stringValue, goog.format.NUMERIC_SCALES_BINARY_);
 };
@@ -91,6 +86,7 @@ goog.format.stringToNumBytes = function(stringValue) {
  * @return {string} String representation of number.
  */
 goog.format.numericValueToString = function(val, opt_decimals) {
+  'use strict';
   return goog.format.numericValueToString_(
       val, goog.format.NUMERIC_SCALES_SI_, opt_decimals);
 };
@@ -111,8 +107,9 @@ goog.format.numericValueToString = function(val, opt_decimals) {
  */
 goog.format.numBytesToString = function(
     val, opt_decimals, opt_suffix, opt_useSeparator) {
+  'use strict';
   var suffix = '';
-  if (!goog.isDef(opt_suffix) || opt_suffix) {
+  if (opt_suffix === undefined || opt_suffix) {
     suffix = 'B';
   }
   return goog.format.numericValueToString_(
@@ -130,9 +127,11 @@ goog.format.numBytesToString = function(
  * @private
  */
 goog.format.stringToNumericValue_ = function(stringValue, conversion) {
+  'use strict';
   var match = stringValue.match(goog.format.SCALED_NUMERIC_RE_);
   if (!match) {
-    return NaN;
+    // Parse signed `Infinity`, `NaN`, or scientific notation.
+    return Number(stringValue);
   }
   var val = Number(match[1]) * conversion[match[2]];
   return val;
@@ -153,14 +152,16 @@ goog.format.stringToNumericValue_ = function(stringValue, conversion) {
  */
 goog.format.numericValueToString_ = function(
     val, conversion, opt_decimals, opt_suffix, opt_useSeparator) {
+  'use strict';
   var prefixes = goog.format.NUMERIC_SCALE_PREFIXES_;
-  var orig_val = val;
+  var origVal = val;
   var symbol = '';
   var separator = '';
   var scale = 1;
   if (val < 0) {
     val = -val;
   }
+  if (val === Infinity) return (Infinity * Math.sign(origVal)).toString();
   for (var i = 0; i < prefixes.length; i++) {
     var unit = prefixes[i];
     scale = conversion[unit];
@@ -181,8 +182,8 @@ goog.format.numericValueToString_ = function(
       separator = ' ';
     }
   }
-  var ex = Math.pow(10, goog.isDef(opt_decimals) ? opt_decimals : 2);
-  return Math.round(orig_val / scale * ex) / ex + separator + symbol;
+  var ex = Math.pow(10, opt_decimals !== undefined ? opt_decimals : 2);
+  return Math.round(origVal / scale * ex) / ex + separator + symbol;
 };
 
 
@@ -199,7 +200,7 @@ goog.format.numericValueToString_ = function(
  * @type {RegExp}
  * @private
  */
-goog.format.SCALED_NUMERIC_RE_ = /^([-]?\d+\.?\d*)([K,M,G,T,P,k,m,u,n]?)[B]?$/;
+goog.format.SCALED_NUMERIC_RE_ = /^(-?\d+\.?\d*)([KMGTPEZYkmun]?)B?$/;
 
 
 /**
@@ -207,7 +208,7 @@ goog.format.SCALED_NUMERIC_RE_ = /^([-]?\d+\.?\d*)([K,M,G,T,P,k,m,u,n]?)[B]?$/;
  * @private {Array<string>}
  */
 goog.format.NUMERIC_SCALE_PREFIXES_ =
-    ['P', 'T', 'G', 'M', 'K', '', 'm', 'u', 'n'];
+    ['Y', 'Z', 'E', 'P', 'T', 'G', 'M', 'K', '', 'm', 'u', 'n'];
 
 
 /**
@@ -225,7 +226,10 @@ goog.format.NUMERIC_SCALES_SI_ = {
   'M': 1e6,
   'G': 1e9,
   'T': 1e12,
-  'P': 1e15
+  'P': 1e15,
+  'E': 1e18,
+  'Z': 1e21,
+  'Y': 1e24
 };
 
 
@@ -245,7 +249,10 @@ goog.format.NUMERIC_SCALES_BINARY_ = {
   'M': Math.pow(1024, 2),
   'G': Math.pow(1024, 3),
   'T': Math.pow(1024, 4),
-  'P': Math.pow(1024, 5)
+  'P': Math.pow(1024, 5),
+  'E': Math.pow(1024, 6),
+  'Z': Math.pow(1024, 7),
+  'Y': Math.pow(1024, 8)
 };
 
 
@@ -267,6 +274,7 @@ goog.format.FIRST_GRAPHEME_EXTEND_ = 0x300;
  * @private
  */
 goog.format.isTreatedAsBreakingSpace_ = function(charCode) {
+  'use strict';
   return (charCode <= goog.format.WbrToken_.SPACE) ||
       (charCode >= 0x1000 &&
        ((charCode >= 0x2000 && charCode <= 0x2006) ||
@@ -284,6 +292,7 @@ goog.format.isTreatedAsBreakingSpace_ = function(charCode) {
  * @private
  */
 goog.format.isInvisibleFormattingCharacter_ = function(charCode) {
+  'use strict';
   // See: http://unicode.org/charts/PDF/U2000.pdf
   return (charCode >= 0x200C && charCode <= 0x200F) ||
       (charCode >= 0x202A && charCode <= 0x202E);
@@ -312,6 +321,7 @@ goog.format.isInvisibleFormattingCharacter_ = function(charCode) {
  */
 goog.format.insertWordBreaksGeneric_ = function(
     str, hasGraphemeBreak, opt_maxlen) {
+  'use strict';
   var maxlen = opt_maxlen || 10;
   if (maxlen > str.length) return str;
 
@@ -403,6 +413,7 @@ goog.format.insertWordBreaksGeneric_ = function(
  * @deprecated Prefer wrapping with CSS word-wrap: break-word.
  */
 goog.format.insertWordBreaks = function(str, opt_maxlen) {
+  'use strict';
   return goog.format.insertWordBreaksGeneric_(
       str, goog.i18n.GraphemeBreak.hasGraphemeBreak, opt_maxlen);
 };
@@ -426,6 +437,7 @@ goog.format.insertWordBreaks = function(str, opt_maxlen) {
  */
 goog.format.conservativelyHasGraphemeBreak_ = function(
     lastCharCode, charCode, opt_extended) {
+  'use strict';
   // Return false for everything except the most common Cyrillic characters.
   // Don't worry about Latin characters, because insertWordBreaksGeneric_
   // itself already handles those.
@@ -454,6 +466,7 @@ goog.format.conservativelyHasGraphemeBreak_ = function(
  * @deprecated Prefer wrapping with CSS word-wrap: break-word.
  */
 goog.format.insertWordBreaksBasic = function(str, opt_maxlen) {
+  'use strict';
   return goog.format.insertWordBreaksGeneric_(
       str, goog.format.conservativelyHasGraphemeBreak_, opt_maxlen);
 };
@@ -470,15 +483,15 @@ goog.format.IS_IE8_OR_ABOVE_ =
 
 /**
  * Constant for the WBR replacement used by insertWordBreaks.  Safari requires
- * <wbr></wbr>, Opera needs the &shy; entity, though this will give a visible
- * hyphen at breaks.  IE8 uses a zero width space.
- * Other browsers just use <wbr>.
+ * &lt;wbr&gt;&lt;/wbr&gt;, Opera needs the &shy; entity, though this will give
+ * a visible hyphen at breaks.  IE8 uses a zero width space. Other browsers just
+ * use &lt;wbr&gt;.
  * @type {string}
  */
-goog.format.WORD_BREAK_HTML =
-    goog.userAgent.WEBKIT ? '<wbr></wbr>' : goog.userAgent.OPERA ?
-                            '&shy;' :
-                            goog.format.IS_IE8_OR_ABOVE_ ? '&#8203;' : '<wbr>';
+goog.format.WORD_BREAK_HTML = goog.userAgent.WEBKIT ? '<wbr></wbr>' :
+    goog.userAgent.OPERA                            ? '&shy;' :
+    goog.format.IS_IE8_OR_ABOVE_                    ? '&#8203;' :
+                                                      '<wbr>';
 
 
 /**

@@ -1,5 +1,6 @@
 <!-- Documentation licensed under CC BY 4.0 -->
 <!-- License available at https://creativecommons.org/licenses/by/4.0/ -->
+
 * [Home]
 * [Develop]
 * [API]
@@ -9,7 +10,9 @@
 
 <!-- URLS -->
 
-[Home]: {{site.github.url}}/index
-[Develop]: {{site.github.url}}/develop
-[API]: {{site.github.url}}/api
-[Demos]: {{site.github.url}}/source/closure/goog/demos
+[Home]: /closure-library/
+[Develop]: /closure-library/develop
+[API]: /closure-library/api
+[Demos]: /closure-library/source/closure/goog/demos
+
+

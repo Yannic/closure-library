@@ -7,7 +7,7 @@ var closure = window.closure || {};
 closure.docs = closure.docs || {};
 
 
-/** @define {string} */
+/** @const {string} */
 closure.docs.LOCATION = String(window.location);
 
 
@@ -20,7 +20,8 @@ closure.docs.LOCATION = String(window.location);
  * @return {*} Result, or undefined.
  */
 closure.docs.get = function(param) {
-  return window['_JEKYLL_DATA'][param];
+  var data = window['_JEKYLL_DATA'];
+  return data && data[param];
 };
 
 

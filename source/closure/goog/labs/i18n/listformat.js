@@ -1,16 +1,8 @@
-// Copyright 2013 The Closure Library Authors. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS-IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+/**
+ * @license
+ * Copyright The Closure Library Authors.
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
 /**
  * @fileoverview List format and gender decision library with locale support.
@@ -24,15 +16,14 @@
  * In English, lists of items don't really have gender, and in fact few things
  * have gender. But the idea is this:
  *  - for a list of "male items" (think "John, Steve") you use "they"
- *  - for "Marry, Ann" (all female) you might have a "feminine" form of "they"
- *  - and yet another form for mixed lists ("John, Marry") or undetermined
- *    (when you don't know the gender of the items, or when they are neuter)
+ *  - for "Mary, Ann" (all female) you might have a "feminine" form of "they"
+ *  - and yet another form for mixed lists ("John, Mary") or undetermined
+ *    (when you don't know the gender of the items, or when they are neutral)
  *
- * For example in Greek "they" will be translated as "αυτοί" for masculin,
- * "αυτές" for feminin, and "αυτά" for neutral/undetermined.
+ * For example in Greek "they" will be translated as "αυτοί" for masculine,
+ * "αυτές" for feminine, and "αυτά" for neutral/undetermined.
  * (it is in fact more complicated than that, as weak/strong forms and case
  * also matter, see http://en.wiktionary.org/wiki/Appendix:Greek_pronouns)
- *
  */
 
 goog.provide('goog.labs.i18n.GenderInfo');
@@ -57,6 +48,7 @@ goog.require('goog.labs.i18n.ListFormatSymbols');
  * @final
  */
 goog.labs.i18n.ListFormat = function() {
+  'use strict';
   /**
    * String for lists of exactly two items, containing {0} for the first,
    * and {1} for the second.
@@ -114,6 +106,7 @@ goog.labs.i18n.ListFormat = function() {
  */
 goog.labs.i18n.ListFormat.prototype.patternBasedJoinTwoStrings_ = function(
     pattern, first, second) {
+  'use strict';
   return pattern.replace('{0}', first).replace('{1}', second);
 };
 
@@ -126,6 +119,7 @@ goog.labs.i18n.ListFormat.prototype.patternBasedJoinTwoStrings_ = function(
  * @return {string} The items formatted into a string, as a list.
  */
 goog.labs.i18n.ListFormat.prototype.format = function(items) {
+  'use strict';
   var count = items.length;
   switch (count) {
     case 0:
@@ -164,11 +158,14 @@ goog.labs.i18n.ListFormat.prototype.format = function(items) {
  * @final
  */
 goog.labs.i18n.GenderInfo = function() {
+  'use strict';
   /**
    * Stores the language-aware mode of determining the gender of a list.
    * @private {goog.labs.i18n.GenderInfo.ListGenderStyle_}
    */
-  this.listGenderStyle_ = goog.labs.i18n.ListFormatSymbols.GENDER_STYLE;
+  this.listGenderStyle_ =
+      /** @type {goog.labs.i18n.GenderInfo.ListGenderStyle_} */ (
+          goog.labs.i18n.ListFormatSymbols.GENDER_STYLE);
 };
 
 
@@ -209,6 +206,7 @@ goog.labs.i18n.GenderInfo.Gender = {
  * @return {goog.labs.i18n.GenderInfo.Gender} Get the gender of the list.
 */
 goog.labs.i18n.GenderInfo.prototype.getListGender = function(genders) {
+  'use strict';
   var Gender = goog.labs.i18n.GenderInfo.Gender;
 
   var count = genders.length;

@@ -1,16 +1,8 @@
-// Copyright 2014 The Closure Library Authors. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS-IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+/**
+ * @license
+ * Copyright The Closure Library Authors.
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
 /**
  * @fileoverview Base class for the 64-bit SHA-2 cryptographic hashes.
@@ -20,8 +12,6 @@
  *
  * This code borrows heavily from the 32-bit SHA2 implementation written by
  * Yue Zhang (zysxqn@).
- *
- * @author fy@google.com (Frank Yellin)
  */
 
 goog.provide('goog.crypt.Sha2_64bit');
@@ -45,6 +35,7 @@ goog.require('goog.math.Long');
  * @struct
  */
 goog.crypt.Sha2_64bit = function(numHashBlocks, initHashBlocks) {
+  'use strict';
   goog.crypt.Sha2_64bit.base(this, 'constructor');
 
   /**
@@ -55,14 +46,14 @@ goog.crypt.Sha2_64bit = function(numHashBlocks, initHashBlocks) {
 
   /**
    * A chunk holding the currently processed message bytes. Once the chunk has
-   * {@code this.blocksize} bytes, we feed it into [@code computeChunk_}.
+   * `this.blocksize` bytes, we feed it into [@code computeChunk_}.
    * @private {!Uint8Array|!Array<number>}
    */
   this.chunk_ = goog.global['Uint8Array'] ? new Uint8Array(this.blockSize) :
                                             new Array(this.blockSize);
 
   /**
-   * Current number of bytes in {@code this.chunk_}.
+   * Current number of bytes in `this.chunk_`.
    * @private {number}
    */
   this.chunkBytes_ = 0;
@@ -75,7 +66,7 @@ goog.crypt.Sha2_64bit = function(numHashBlocks, initHashBlocks) {
 
   /**
    * Holds the previous values of accumulated hash a-h in the
-   * {@code computeChunk_} function.
+   * `computeChunk_` function.
    * @private {!Array<!goog.math.Long>}
    */
   this.hash_ = [];
@@ -98,7 +89,7 @@ goog.crypt.Sha2_64bit = function(numHashBlocks, initHashBlocks) {
   this.w_ = [];
 
   /**
-   * The value to which {@code this.hash_} should be reset when this
+   * The value to which `this.hash_` should be reset when this
    * Hasher is reset.
    * @private @const {!Array<!goog.math.Long>}
    */
@@ -125,7 +116,7 @@ goog.crypt.Sha2_64bit.BLOCK_SIZE_ = 1024 / 8;
 
 
 /**
- * Contains data needed to pad messages less than {@code blocksize} bytes.
+ * Contains data needed to pad messages less than `blocksize` bytes.
  * @private {!Array<number>}
  */
 goog.crypt.Sha2_64bit.PADDING_ = goog.array.concat(
@@ -137,6 +128,7 @@ goog.crypt.Sha2_64bit.PADDING_ = goog.array.concat(
  * @override
  */
 goog.crypt.Sha2_64bit.prototype.reset = function() {
+  'use strict';
   this.chunkBytes_ = 0;
   this.total_ = 0;
   this.hash_ = goog.array.clone(this.initHashBlocks_);
@@ -146,11 +138,12 @@ goog.crypt.Sha2_64bit.prototype.reset = function() {
 
 /** @override */
 goog.crypt.Sha2_64bit.prototype.update = function(message, opt_length) {
-  var length = goog.isDef(opt_length) ? opt_length : message.length;
+  'use strict';
+  var length = (opt_length !== undefined) ? opt_length : message.length;
 
   // Make sure this hasher is usable.
   if (this.needsReset_) {
-    throw Error('this hasher needs to be reset');
+    throw new Error('this hasher needs to be reset');
   }
   // Process the message from left to right up to |length| bytes.
   // When we get a 512-bit chunk, compute the hash of it and reset
@@ -161,11 +154,11 @@ goog.crypt.Sha2_64bit.prototype.update = function(message, opt_length) {
   var chunkBytes = this.chunkBytes_;
 
   // The input message could be either byte array or string.
-  if (goog.isString(message)) {
+  if (typeof message === 'string') {
     for (var i = 0; i < length; i++) {
       var b = message.charCodeAt(i);
       if (b > 255) {
-        throw Error('Characters must be in range [0,255]');
+        throw new Error('Characters must be in range [0,255]');
       }
       this.chunk_[chunkBytes++] = b;
       if (chunkBytes == this.blockSize) {
@@ -178,8 +171,8 @@ goog.crypt.Sha2_64bit.prototype.update = function(message, opt_length) {
       var b = message[i];
       // Hack:  b|0 coerces b to an integer, so the last part confirms that
       // b has no fractional part.
-      if (!goog.isNumber(b) || b < 0 || b > 255 || b != (b | 0)) {
-        throw Error('message must be a byte array');
+      if (typeof b !== 'number' || b < 0 || b > 255 || b != (b | 0)) {
+        throw new Error('message must be a byte array');
       }
       this.chunk_[chunkBytes++] = b;
       if (chunkBytes == this.blockSize) {
@@ -188,7 +181,7 @@ goog.crypt.Sha2_64bit.prototype.update = function(message, opt_length) {
       }
     }
   } else {
-    throw Error('message must be string or array');
+    throw new Error('message must be string or array');
   }
 
   // Record the current bytes in chunk to support partial update.
@@ -201,8 +194,9 @@ goog.crypt.Sha2_64bit.prototype.update = function(message, opt_length) {
 
 /** @override */
 goog.crypt.Sha2_64bit.prototype.digest = function() {
+  'use strict';
   if (this.needsReset_) {
-    throw Error('this hasher needs to be reset');
+    throw new Error('this hasher needs to be reset');
   }
   var totalBits = this.total_ * 8;
 
@@ -249,6 +243,7 @@ goog.crypt.Sha2_64bit.prototype.digest = function() {
  * @private
  */
 goog.crypt.Sha2_64bit.prototype.computeChunk_ = function() {
+  'use strict';
   var chunk = this.chunk_;
   var K_ = goog.crypt.Sha2_64bit.K_;
 
@@ -315,6 +310,7 @@ goog.crypt.Sha2_64bit.prototype.computeChunk_ = function() {
  * @return {!goog.math.Long}
  */
 goog.crypt.Sha2_64bit.prototype.sigma0_ = function(value) {
+  'use strict';
   var valueLow = value.getLowBits();
   var valueHigh = value.getHighBits();
   // Implementation note: We purposely do not use the shift operations defined
@@ -337,6 +333,7 @@ goog.crypt.Sha2_64bit.prototype.sigma0_ = function(value) {
  * @return {!goog.math.Long}
  */
 goog.crypt.Sha2_64bit.prototype.sigma1_ = function(value) {
+  'use strict';
   var valueLow = value.getLowBits();
   var valueHigh = value.getHighBits();
   // Implementation note:  See _sigma0() above
@@ -357,6 +354,7 @@ goog.crypt.Sha2_64bit.prototype.sigma1_ = function(value) {
  * @return {!goog.math.Long}
  */
 goog.crypt.Sha2_64bit.prototype.Sigma0_ = function(value) {
+  'use strict';
   var valueLow = value.getLowBits();
   var valueHigh = value.getHighBits();
   // Implementation note:  See _sigma0() above
@@ -377,6 +375,7 @@ goog.crypt.Sha2_64bit.prototype.Sigma0_ = function(value) {
  * @return {!goog.math.Long}
  */
 goog.crypt.Sha2_64bit.prototype.Sigma1_ = function(value) {
+  'use strict';
   var valueLow = value.getLowBits();
   var valueHigh = value.getHighBits();
   // Implementation note:  See _sigma0() above
@@ -391,8 +390,8 @@ goog.crypt.Sha2_64bit.prototype.Sigma1_ = function(value) {
 /**
  * Calculates the SHA-2 64-bit choose function.
  *
- * This function uses {@code value} as a mask to choose bits from either
- * {@code one} if the bit is set or {@code two} if the bit is not set.
+ * This function uses `value` as a mask to choose bits from either
+ * `one` if the bit is set or `two` if the bit is not set.
  *
  * @private
  * @param {!goog.math.Long} value
@@ -401,6 +400,7 @@ goog.crypt.Sha2_64bit.prototype.Sigma1_ = function(value) {
  * @return {!goog.math.Long}
  */
 goog.crypt.Sha2_64bit.prototype.choose_ = function(value, one, two) {
+  'use strict';
   var valueLow = value.getLowBits();
   var valueHigh = value.getHighBits();
   return new goog.math.Long(
@@ -421,6 +421,7 @@ goog.crypt.Sha2_64bit.prototype.choose_ = function(value, one, two) {
  * @return {!goog.math.Long}
  */
 goog.crypt.Sha2_64bit.prototype.majority_ = function(one, two, three) {
+  'use strict';
   return new goog.math.Long(
       (one.getLowBits() & two.getLowBits()) |
           (two.getLowBits() & three.getLowBits()) |
@@ -441,6 +442,7 @@ goog.crypt.Sha2_64bit.prototype.majority_ = function(one, two, three) {
  * @return {!goog.math.Long} The resulting sum.
  */
 goog.crypt.Sha2_64bit.prototype.sum_ = function(one, two, var_args) {
+  'use strict';
   // The low bits may be signed, but they represent a 32-bit unsigned quantity.
   // We must be careful to normalize them.
   // This doesn't matter for the high bits.
@@ -480,6 +482,7 @@ goog.crypt.Sha2_64bit.prototype.sum_ = function(one, two, var_args) {
  * @return {!Array<!goog.math.Long>}
  */
 goog.crypt.Sha2_64bit.toLongArray_ = function(values) {
+  'use strict';
   goog.asserts.assert(values.length % 2 == 0);
   var result = [];
   for (var i = 0; i < values.length; i += 2) {

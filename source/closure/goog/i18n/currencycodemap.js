@@ -1,16 +1,8 @@
-// Copyright 2008 The Closure Library Authors. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS-IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+/**
+ * @license
+ * Copyright The Closure Library Authors.
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
 /**
  * @fileoverview Currency code map.
@@ -25,7 +17,9 @@ goog.provide('goog.i18n.currencyCodeMapTier2');
 
 
 /**
- * Deprecated.
+ * Deprecated, this data is not being updated. Please use
+ * {@link goog.i18n.currency}.
+ *
  * The mapping of currency symbol through intl currency code.
  * The source of information is mostly from wikipedia and CLDR. Since there is
  * no authoritative source, items are judged by personal perception.
@@ -102,9 +96,14 @@ goog.i18n.currencyCodeMap = {
 
 
 /**
+ * Deprecated, this data is not being updated. Please use
+ * {@link goog.i18n.currency}.
+ *
  * This group of currency data is unlikely to be used. In case they are,
  * program need to merge it into goog.locale.CurrencyCodeMap.
  *
+ * @deprecated Call {@link goog.i18n.currency.addTier2Support} and then use
+ *     {@link goog.i18n.currency.getLocalCurrencyPattern}.
  * @const {!Object<string, string>}
  */
 goog.i18n.currencyCodeMapTier2 = {

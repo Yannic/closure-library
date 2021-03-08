@@ -1,29 +1,21 @@
-// Copyright 2009 The Closure Library Authors. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS-IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+/**
+ * @license
+ * Copyright The Closure Library Authors.
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
 /**
  * @fileoverview provides a reusable mp3 UI component given a mp3 URL.
  *
  * goog.ui.media.Mp3 is actually a {@link goog.ui.ControlRenderer}, a stateless
  * class - that could/should be used as a Singleton with the static method
- * {@code goog.ui.media.Mp3.getInstance} -, that knows how to render Mp3s. It is
+ * `goog.ui.media.Mp3.getInstance` -, that knows how to render Mp3s. It is
  * designed to be used with a {@link goog.ui.Control}, which will actually
  * control the media renderer and provide the {@link goog.ui.Component} base.
  * This design guarantees that all different types of medias will behave alike
  * but will look different.
  *
- * goog.ui.media.Mp3 expects mp3 urls on {@code goog.ui.Control.getModel} as
+ * goog.ui.media.Mp3 expects mp3 urls on `goog.ui.Control.getModel` as
  * data models, and render a flash object that will play that URL.
  *
  * Example of usage:
@@ -49,7 +41,6 @@
  * </pre>
  *
  * Requires flash to actually work.
- *
  */
 
 goog.provide('goog.ui.media.Mp3');
@@ -58,6 +49,9 @@ goog.require('goog.string');
 goog.require('goog.ui.media.FlashObject');
 goog.require('goog.ui.media.Media');
 goog.require('goog.ui.media.MediaRenderer');
+goog.requireType('goog.dom.DomHelper');
+goog.requireType('goog.ui.Control');
+goog.requireType('goog.ui.media.MediaModel');
 
 
 
@@ -67,8 +61,8 @@ goog.require('goog.ui.media.MediaRenderer');
  *
  * This class knows how to parse mp3 URLs, and render the DOM structure
  * of mp3 flash players. This class is meant to be used as a singleton static
- * stateless class, that takes {@code goog.ui.media.Media} instances and renders
- * it. It expects {@code goog.ui.media.Media.getModel} to return a well formed,
+ * stateless class, that takes `goog.ui.media.Media` instances and renders
+ * it. It expects `goog.ui.media.Media.getModel` to return a well formed,
  * previously checked, mp3 URL {@see goog.ui.media.PicasaAlbum.parseUrl},
  * which is the data model this renderer will use to construct the DOM
  * structure. {@see goog.ui.media.PicasaAlbum.newControl} for an example of
@@ -83,6 +77,7 @@ goog.require('goog.ui.media.MediaRenderer');
  * @final
  */
 goog.ui.media.Mp3 = function() {
+  'use strict';
   goog.ui.media.MediaRenderer.call(this);
 };
 goog.inherits(goog.ui.media.Mp3, goog.ui.media.MediaRenderer);
@@ -90,7 +85,7 @@ goog.addSingletonGetter(goog.ui.media.Mp3);
 
 
 /**
- * Flash player arguments. We expect that {@code flashUrl_} will contain a flash
+ * Flash player arguments. We expect that `flashUrl_` will contain a flash
  * movie that takes an audioUrl parameter on its URL, containing the URL of the
  * mp3 to be played.
  *
@@ -125,7 +120,7 @@ goog.ui.media.Mp3.flashUrl_ =
  * Copied from http://go/markdownlite.js.
 
  *
- * NOTE(user): although it would be easier to use goog.string.endsWith('.mp3'),
+ * NOTE(goto): although it would be easier to use goog.string.endsWith('.mp3'),
  * in the future, we want to provide media inlining, which is basically getting
  * a text and replacing all mp3 references with an mp3 player, so it makes sense
  * to share the same regular expression to match everything.
@@ -145,13 +140,14 @@ goog.ui.media.Mp3.MATCHER =
  * control over the configuration.
  *
  * @param {goog.ui.media.MediaModel} dataModel A media model that must contain
- *     an mp3 url on {@code dataModel.getUrl}.
+ *     an mp3 url on `dataModel.getUrl`.
  * @param {goog.dom.DomHelper=} opt_domHelper Optional DOM helper, used for
  *     document interaction.
  * @return {!goog.ui.media.Media} A goog.ui.Control subclass with the mp3
  *     renderer.
  */
 goog.ui.media.Mp3.newControl = function(dataModel, opt_domHelper) {
+  'use strict';
   var control = new goog.ui.media.Media(
       dataModel, goog.ui.media.Mp3.getInstance(), opt_domHelper);
   // mp3 ui doesn't have a non selected view: it shows the mp3 player by
@@ -168,19 +164,21 @@ goog.ui.media.Mp3.newControl = function(dataModel, opt_domHelper) {
  * @param {string} flashUrl The URL of the flash mp3 player.
  */
 goog.ui.media.Mp3.setFlashUrl = function(flashUrl) {
+  'use strict';
   goog.ui.media.Mp3.flashUrl_ = flashUrl;
 };
 
 
 /**
  * A static method that builds a URL that will contain the flash player that
- * will play the {@code mp3Url}.
+ * will play the `mp3Url`.
  *
  * @param {string} mp3Url The URL of the mp3 music.
  * @return {string} An URL of a flash player that will know how to play the
- *     given {@code mp3Url}.
+ *     given `mp3Url`.
  */
 goog.ui.media.Mp3.buildFlashUrl = function(mp3Url) {
+  'use strict';
   var flashUrl = goog.ui.media.Mp3.flashUrl_ + '?' +
       goog.string.subs(
           goog.ui.media.Mp3.PLAYER_ARGUMENTS_, goog.string.urlEncode(mp3Url));
@@ -197,6 +195,7 @@ goog.ui.media.Mp3.buildFlashUrl = function(mp3Url) {
  * @override
  */
 goog.ui.media.Mp3.prototype.createDom = function(c) {
+  'use strict';
   var control = /** @type {goog.ui.media.Media} */ (c);
   var div = goog.ui.media.Mp3.superClass_.createDom.call(this, control);
 
@@ -218,5 +217,6 @@ goog.ui.media.Mp3.prototype.createDom = function(c) {
  * @override
  */
 goog.ui.media.Mp3.prototype.getCssClass = function() {
+  'use strict';
   return goog.ui.media.Mp3.CSS_CLASS;
 };

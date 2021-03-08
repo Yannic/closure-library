@@ -1,16 +1,8 @@
-// Copyright 2009 The Closure Library Authors. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS-IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+/**
+ * @license
+ * Copyright The Closure Library Authors.
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
 
 /**
@@ -28,7 +20,6 @@
  * popular currencies (like USD, EUR) and currencies somewhat relevant in the
  * area (like CNY in HK, though native currency is HKD). There is no guarantee
  * of uniqueness.
- *
  */
 
 
@@ -66,15 +57,32 @@ goog.i18n.currency.tier2Enabled_ = false;
 
 
 /**
+ * Tests if currency is available.
+ *
+ * Note: If the currency is not available it might be in the tier2 currency set:
+ * {@link goog.i18n.currency.CurrencyInfoTier2}. If that is the case call
+ * {@link goog.i18n.currency.addTier2Support} before calling any other function
+ * in this namespace.
+ *
+ * @param {string} currencyCode Currency code to tested.
+ * @return {boolean} If the currency is available.
+ */
+goog.i18n.currency.isAvailable = function(currencyCode) {
+  'use strict';
+  return currencyCode in goog.i18n.currency.CurrencyInfo;
+};
+
+/**
  * This function will add tier2 currency support. Be default, only tier1
  * (most popular currencies) are supported. If an application really needs
  * to support some of the rarely used currencies, it should call this function
  * before any other functions in this namespace.
  */
 goog.i18n.currency.addTier2Support = function() {
+  'use strict';
   // Protection from executing this these again and again.
   if (!goog.i18n.currency.tier2Enabled_) {
-    for (var key in goog.i18n.currency.CurrencyInfoTier2) {
+    for (const key in goog.i18n.currency.CurrencyInfoTier2) {
       goog.i18n.currency.CurrencyInfo[key] =
           goog.i18n.currency.CurrencyInfoTier2[key];
     }
@@ -98,8 +106,9 @@ goog.i18n.currency.addTier2Support = function() {
  *   {@link goog.i18n.NumberFormat.CurrencyStyle.GLOBAL}
  */
 goog.i18n.currency.getGlobalCurrencyPattern = function(currencyCode) {
-  var info = goog.i18n.currency.CurrencyInfo[currencyCode];
-  var patternNum = info[0];
+  'use strict';
+  const info = goog.i18n.currency.CurrencyInfo[currencyCode];
+  const patternNum = info[0];
   if (currencyCode == info[1]) {
     return goog.i18n.currency.getCurrencyPattern_(patternNum, info[1]);
   }
@@ -116,7 +125,29 @@ goog.i18n.currency.getGlobalCurrencyPattern = function(currencyCode) {
  * @return {string} Global currency sign for given currency.
  */
 goog.i18n.currency.getGlobalCurrencySign = function(currencyCode) {
+  'use strict';
+  const info = goog.i18n.currency.CurrencyInfo[currencyCode];
+  return (currencyCode == info[1]) ? currencyCode :
+                                     currencyCode + ' ' + info[1];
+};
+
+
+/**
+ * Return global currency sign string for those applications
+ * that want to handle currency sign themselves.
+ *
+ * This function does not throw an exception if there is no data for the
+ * currency. Instead, it falls back to the ISO code.
+ *
+ * @param {string} currencyCode ISO-4217 3-letter currency code.
+ * @return {string} Global currency sign for given currency.
+ */
+goog.i18n.currency.getGlobalCurrencySignWithFallback = function(currencyCode) {
+  'use strict';
   var info = goog.i18n.currency.CurrencyInfo[currencyCode];
+  if (!info) {
+    return currencyCode;
+  }
   return (currencyCode == info[1]) ? currencyCode :
                                      currencyCode + ' ' + info[1];
 };
@@ -135,7 +166,8 @@ goog.i18n.currency.getGlobalCurrencySign = function(currencyCode) {
  *   {@link goog.i18n.NumberFormat.CurrencyStyle.LOCAL}
  */
 goog.i18n.currency.getLocalCurrencyPattern = function(currencyCode) {
-  var info = goog.i18n.currency.CurrencyInfo[currencyCode];
+  'use strict';
+  const info = goog.i18n.currency.CurrencyInfo[currencyCode];
   return goog.i18n.currency.getCurrencyPattern_(info[0], info[1]);
 };
 
@@ -148,7 +180,28 @@ goog.i18n.currency.getLocalCurrencyPattern = function(currencyCode) {
  * @return {string} Local currency sign for given currency.
  */
 goog.i18n.currency.getLocalCurrencySign = function(currencyCode) {
+  'use strict';
   return goog.i18n.currency.CurrencyInfo[currencyCode][1];
+};
+
+
+/**
+ * Returns local currency sign string for those applications that need to
+ * handle currency sign separately.
+ *
+ * This function does not throw an exception if there is no data for the
+ * currency. Instead, it falls back to the ISO code.
+ *
+ * @param {string} currencyCode ISO-4217 3-letter currency code.
+ * @return {string} Local currency sign for given currency.
+ */
+goog.i18n.currency.getLocalCurrencySignWithFallback = function(currencyCode) {
+  'use strict';
+  if (currencyCode in goog.i18n.currency.CurrencyInfo) {
+    return goog.i18n.currency.CurrencyInfo[currencyCode][1];
+  } else {
+    return currencyCode;
+  }
 };
 
 
@@ -168,7 +221,8 @@ goog.i18n.currency.getLocalCurrencySign = function(currencyCode) {
  *   {@link goog.i18n.NumberFormat.CurrencyStyle.PORTABLE}
  */
 goog.i18n.currency.getPortableCurrencyPattern = function(currencyCode) {
-  var info = goog.i18n.currency.CurrencyInfo[currencyCode];
+  'use strict';
+  const info = goog.i18n.currency.CurrencyInfo[currencyCode];
   return goog.i18n.currency.getCurrencyPattern_(info[0], info[2]);
 };
 
@@ -181,7 +235,50 @@ goog.i18n.currency.getPortableCurrencyPattern = function(currencyCode) {
  * @return {string} Portable currency sign for given currency.
  */
 goog.i18n.currency.getPortableCurrencySign = function(currencyCode) {
+  'use strict';
   return goog.i18n.currency.CurrencyInfo[currencyCode][2];
+};
+
+
+/**
+ * Returns whether the string represents a valid ISO-4217 currency code.
+ *
+ * @param {string} currencyCode String to check.
+ * @return {boolean} Whether currencyCode is a 3-letter currency code.
+ */
+goog.i18n.currency.isValid = function(currencyCode) {
+  'use strict';
+  if (!currencyCode || currencyCode.length !== 3) {
+    return false;
+  }
+  for (let i = 0; i < 3; i++) {
+    const c = currencyCode[i];
+    if (c < 'A' || (c > 'Z' && c < 'a') || c > 'z') {
+      return false;
+    }
+  }
+  return true;
+};
+
+
+/**
+ * Return portable currency sign string for those applications that need to
+ * handle currency sign themselves.
+ *
+ * This function does not throw an exception if there is no data for the
+ * currency. Instead, it falls back to the ISO code.
+ *
+ * @param {string} currencyCode ISO-4217 3-letter currency code.
+ * @return {string} Portable currency sign for given currency.
+ */
+goog.i18n.currency.getPortableCurrencySignWithFallback = function(
+    currencyCode) {
+  'use strict';
+  if (currencyCode in goog.i18n.currency.CurrencyInfo) {
+    return goog.i18n.currency.CurrencyInfo[currencyCode][2];
+  } else {
+    return currencyCode;
+  }
 };
 
 
@@ -202,6 +299,7 @@ goog.i18n.currency.getPortableCurrencySign = function(currencyCode) {
  * @return {boolean} true if currency should be positioned before amount field.
  */
 goog.i18n.currency.isPrefixSignPosition = function(currencyCode) {
+  'use strict';
   return (goog.i18n.currency.CurrencyInfo[currencyCode][0] &
           goog.i18n.currency.POSITION_FLAG_) == 0;
 };
@@ -218,11 +316,12 @@ goog.i18n.currency.isPrefixSignPosition = function(currencyCode) {
  * @private
  */
 goog.i18n.currency.getCurrencyPattern_ = function(patternNum, sign) {
-  var strParts = ['#,##0'];
-  var precision = patternNum & goog.i18n.currency.PRECISION_MASK_;
+  'use strict';
+  const strParts = ['#,##0'];
+  const precision = patternNum & goog.i18n.currency.PRECISION_MASK_;
   if (precision > 0) {
     strParts.push('.');
-    for (var i = 0; i < precision; i++) {
+    for (let i = 0; i < precision; i++) {
       strParts.push('0');
     }
   }
@@ -252,12 +351,17 @@ goog.i18n.currency.getCurrencyPattern_ = function(patternNum, sign) {
  * @return {string} modified currency pattern string.
  */
 goog.i18n.currency.adjustPrecision = function(pattern, currencyCode) {
-  var strParts = ['0'];
-  var info = goog.i18n.currency.CurrencyInfo[currencyCode];
-  var precision = info[0] & goog.i18n.currency.PRECISION_MASK_;
+  'use strict';
+  const strParts = ['0'];
+  const info = goog.i18n.currency.CurrencyInfo[currencyCode];
+  if (!info) {
+    // If the currency code is unknown, do not modify the pattern.
+    return pattern;
+  }
+  const precision = info[0] & goog.i18n.currency.PRECISION_MASK_;
   if (precision > 0) {
     strParts.push('.');
-    for (var i = 0; i < precision; i++) {
+    for (let i = 0; i < precision; i++) {
       strParts.push('0');
     }
   }
@@ -268,21 +372,26 @@ goog.i18n.currency.adjustPrecision = function(pattern, currencyCode) {
 /**
  * Tier 1 currency information.
  *
- * The first number in the array is a combination of the precision mask and
- * other flags. The precision mask indicates how many decimal places to show for
- * the currency. Valid values are [0..7]. The position flag indicates whether
- * the currency sign should be positioned after the number. Valid values are 0
- * (before the number) or 16 (after the number). The space flag indicates
- * whether a space should be inserted between the currency sign and number.
- * Valid values are 0 (no space) and 32 (space).
+ * Format of the info array:
+ *     0. {number} the sum of "decimal precision", the "space" bit, and the
+ *        "currency sign last" bit.
+ *     1. {string} The global currency sign. See `getGlobalCurrencySign`.
+ *     2. {string} The portable currency sign. See `getPortableCurrencySign`.
  *
- * The number in the array is calculated by adding together the mask and flag
- * values. For example:
+ * "Decimal precision" is an integer [0..7]; the count of digits to display past
+ * the decimal point.
  *
- * 0: no precision (0), currency sign first (0), no space (0)
- * 2: two decimals precision (2), currency sign first (0), no space (0)
- * 18: two decimals precision (2), currency sign last (16), no space (0)
- * 50: two decimals precision (2), currency sign last (16), space (32)
+ * "Space" bit mask = 32; whether a space should be inserted between the
+ * currency sign and number.
+ *
+ * "Currency sign last" bit mask = 16; whether the currency sign should be
+ * positioned after the number.
+ *
+ * Examples for info[0]:
+ *     0: no precision (0), currency sign first (0), no space (0)
+ *     2: two decimals precision (2), currency sign first (0), no space (0)
+ *     18: two decimals precision (2), currency sign last (16), no space (0)
+ *     50: two decimals precision (2), currency sign last (16), space (32)
  *
  * It's not recommended to read this data directly. Format numbers using
  * {@link goog.i18n.NumberFormat} with
@@ -291,7 +400,7 @@ goog.i18n.currency.adjustPrecision = function(pattern, currencyCode) {
  * @const {!Object<!Array<?>>}
  */
 goog.i18n.currency.CurrencyInfo = {
-  'AED': [2, 'dh', '\u062f.\u0625.', 'DH'],
+  'AED': [2, 'dh', '\u062f.\u0625.'],
   'ALL': [0, 'Lek', 'Lek'],
   'AUD': [2, '$', 'AU$'],
   'BDT': [2, '\u09F3', 'Tk'],
@@ -341,8 +450,8 @@ goog.i18n.currency.CurrencyInfo = {
   'SEK': [50, 'kr', 'kr'],
   'SGD': [2, '$', 'S$'],
   'THB': [2, '\u0e3f', 'THB'],
-  'TRY': [2, 'TL', 'YTL'],
-  'TWD': [2, 'NT$', 'NT$'],
+  'TRY': [2, '₺', 'TRY'],
+  'TWD': [2, '$', 'NT$'],
   'TZS': [0, 'TSh', 'TSh'],
   'UAH': [2, 'грн.', 'UAH'],
   'USD': [2, '$', 'US$'],
@@ -355,6 +464,11 @@ goog.i18n.currency.CurrencyInfo = {
 
 /**
  * Tier 2 currency information.
+ *
+ * It's not recommended to read this data directly. Format numbers using
+ * {@link goog.i18n.NumberFormat} with
+ * {@link goog.i18n.NumberFormat.Format.CURRENCY} instead.
+ *
  * @const {!Object<!Array<?>>}
  */
 goog.i18n.currency.CurrencyInfoTier2 = {
@@ -375,8 +489,11 @@ goog.i18n.currency.CurrencyInfoTier2 = {
   'BSD': [2, '$', 'BS$'],
   'BTN': [2, 'Nu.', 'Nu.'],
   'BWP': [2, 'P', 'pula'],
-  'BYR': [48, 'p.', 'BYR'],
+  'BYN': [50, '\u0440.', 'BYN'],
+  'BYR': [48, '\u0440.', 'BYR'],
   'BZD': [2, '$', 'BZ$'],
+  'CLF': [4, 'UF', 'CLF'],
+  'CNH': [2, '¥', 'RMB¥'],
   'CUC': [1, '$', 'CUC$'],
   'CUP': [2, '$', 'CU$'],
   'CVE': [2, 'CVE', 'Esc'],
@@ -441,12 +558,14 @@ goog.i18n.currency.CurrencyInfoTier2 = {
   'SYP': [0, '£', 'SY£'],
   'SZL': [2, 'SZL', 'SZL'],
   'TJS': [2, 'Som', 'TJS'],
+  'TMT': [50, 'm', 'TMT'],
   'TND': [3, 'din', 'DT'],
   'TOP': [2, 'T$', 'T$'],
   'TTD': [2, '$', 'TT$'],
   'UGX': [0, 'UGX', 'UGX'],
   'UZS': [0, 'so\u02bcm', 'UZS'],
   'VEF': [2, 'Bs', 'Bs'],
+  'VES': [2, 'Bs', 'Bs'],
   'VUV': [0, 'VUV', 'VUV'],
   'WST': [2, 'WST', 'WST'],
   'XAF': [0, 'FCFA', 'FCFA'],

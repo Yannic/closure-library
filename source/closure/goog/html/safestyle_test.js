@@ -1,196 +1,349 @@
-// Copyright 2014 The Closure Library Authors. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS-IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 /**
- * @fileoverview Unit tests for goog.html.SafeStyle and its builders.
+ * @license
+ * Copyright The Closure Library Authors.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
-goog.provide('goog.html.safeStyleTest');
+/** @fileoverview Unit tests for SafeStyle and its builders. */
 
-goog.require('goog.html.SafeStyle');
-goog.require('goog.object');
-goog.require('goog.string.Const');
-goog.require('goog.testing.jsunit');
+goog.module('goog.html.safeStyleTest');
+goog.setTestOnly();
 
-goog.setTestOnly('goog.html.safeStyleTest');
+const Const = goog.require('goog.string.Const');
+const PropertyReplacer = goog.require('goog.testing.PropertyReplacer');
+const SafeStyle = goog.require('goog.html.SafeStyle');
+const SafeUrl = goog.require('goog.html.SafeUrl');
+const googObject = goog.require('goog.object');
+const testSuite = goog.require('goog.testing.testSuite');
 
-
-function testSafeStyle() {
-  var style = 'width: 1em;height: 1em;';
-  var safeStyle =
-      goog.html.SafeStyle.fromConstant(goog.string.Const.from(style));
-  var extracted = goog.html.SafeStyle.unwrap(safeStyle);
-  assertEquals(style, extracted);
-  assertEquals(style, safeStyle.getTypedStringValue());
-  assertEquals('SafeStyle{' + style + '}', String(safeStyle));
-
-  // Interface marker is present.
-  assertTrue(safeStyle.implementsGoogStringTypedString);
+/**
+ * Asserts that created SafeStyle matches expected value.
+ * @param {string} expected
+ * @param {!SafeStyle.PropertyMap} style
+ */
+function assertCreateEquals(expected, style) {
+  const styleWrapped = SafeStyle.create(style);
+  assertEquals(expected, SafeStyle.unwrap(styleWrapped));
 }
 
+const stubs = new PropertyReplacer();
 
-/** @suppress {checkTypes} */
-function testUnwrap() {
-  var privateFieldName = 'privateDoNotAccessOrElseSafeStyleWrappedValue_';
-  var markerFieldName = 'SAFE_STYLE_TYPE_MARKER_GOOG_HTML_SECURITY_PRIVATE_';
-  var propNames = goog.object.getKeys(
-      goog.html.SafeStyle.fromConstant(goog.string.Const.from('')));
-  assertContains(privateFieldName, propNames);
-  assertContains(markerFieldName, propNames);
-  var evil = {};
-  evil[privateFieldName] = 'width: expression(evil);';
-  evil[markerFieldName] = {};
+testSuite({
+  tearDown() {
+    stubs.reset();
+  },
 
-  var exception =
-      assertThrows(function() { goog.html.SafeStyle.unwrap(evil); });
-  assertContains('expected object of type SafeStyle', exception.message);
-}
+  testSafeStyle() {
+    const style = 'width: 1em;height: 1em;';
+    const safeStyle = SafeStyle.fromConstant(Const.from(style));
+    const extracted = SafeStyle.unwrap(safeStyle);
+    assertEquals(style, extracted);
+    assertEquals(style, safeStyle.getTypedStringValue());
+    assertEquals(`${style}`, String(safeStyle));
 
+    // Interface marker is present.
+    assertTrue(safeStyle.implementsGoogStringTypedString);
+  },
 
-function testFromConstant_allowsEmptyString() {
-  assertEquals(
-      goog.html.SafeStyle.EMPTY,
-      goog.html.SafeStyle.fromConstant(goog.string.Const.from('')));
-}
+  /** @suppress {checkTypes} */
+  testUnwrap() {
+    const privateFieldName = 'privateDoNotAccessOrElseSafeStyleWrappedValue_';
+    const propNames =
+        googObject.getKeys(SafeStyle.fromConstant(Const.from('')));
+    assertContains(privateFieldName, propNames);
+    const evil = {};
+    evil[privateFieldName] = 'width: expression(evil);';
 
-function testFromConstant_throwsOnForbiddenCharacters() {
-  assertThrows(function() {
-    goog.html.SafeStyle.fromConstant(goog.string.Const.from('width: x<;'));
-  });
-  assertThrows(function() {
-    goog.html.SafeStyle.fromConstant(goog.string.Const.from('width: x>;'));
-  });
-}
-
-
-function testFromConstant_throwsIfNoFinalSemicolon() {
-  assertThrows(function() {
-    goog.html.SafeStyle.fromConstant(goog.string.Const.from('width: 1em'));
-  });
-}
-
-
-function testFromConstant_throwsIfNoColon() {
-  assertThrows(function() {
-    goog.html.SafeStyle.fromConstant(goog.string.Const.from('width= 1em;'));
-  });
-}
-
-
-function testEmpty() {
-  assertEquals('', goog.html.SafeStyle.unwrap(goog.html.SafeStyle.EMPTY));
-}
-
-
-function testCreate() {
-  var style = goog.html.SafeStyle.create(
-      {'background': goog.string.Const.from('url(i.png)'), 'margin': '0'});
-  assertEquals(
-      'background:url(i.png);margin:0;', goog.html.SafeStyle.unwrap(style));
-}
-
-
-function testCreate_allowsEmpty() {
-  assertEquals(goog.html.SafeStyle.EMPTY, goog.html.SafeStyle.create({}));
-}
-
-
-function testCreate_skipsNull() {
-  var style = goog.html.SafeStyle.create({'background': null});
-  assertEquals(goog.html.SafeStyle.EMPTY, style);
-}
-
-
-function testCreate_allowsLengths() {
-  var style = goog.html.SafeStyle.create({'padding': '0 1px .2% 3.4em'});
-  assertEquals('padding:0 1px .2% 3.4em;', goog.html.SafeStyle.unwrap(style));
-}
-
-
-function testCreate_allowsRgb() {
-  var style = goog.html.SafeStyle.create({'color': 'rgb(10,20,30)'});
-  assertEquals('color:rgb(10,20,30);', goog.html.SafeStyle.unwrap(style));
-  style = goog.html.SafeStyle.create({'color': 'rgb(10%, 20%, 30%)'});
-  assertEquals('color:rgb(10%, 20%, 30%);', goog.html.SafeStyle.unwrap(style));
-}
-
-
-function testCreate_allowsRgba() {
-  var style = goog.html.SafeStyle.create({'color': 'rgba(10,20,30,0.1)'});
-  assertEquals('color:rgba(10,20,30,0.1);', goog.html.SafeStyle.unwrap(style));
-  style = goog.html.SafeStyle.create({'color': 'rgba(10%, 20%, 30%, .5)'});
-  assertEquals(
-      'color:rgba(10%, 20%, 30%, .5);', goog.html.SafeStyle.unwrap(style));
-}
-
-
-function testCreate_throwsOnForbiddenCharacters() {
-  assertThrows(function() { goog.html.SafeStyle.create({'<': '0'}); });
-  assertThrows(function() {
-    goog.html.SafeStyle.create({'color': goog.string.Const.from('<')});
-  });
-}
-
-
-function testCreate_values() {
-  var valids = [
-    '0', '0 0', '1px', '100%', '2.3px', '.1em', 'red', '#f00', 'red !important',
-    '"Times New Roman"', "'Times New Roman'", '"Bold \'nuff"',
-    '"O\'Connor\'s Revenge"'
-  ];
-  for (var i = 0; i < valids.length; i++) {
-    var value = valids[i];
-    assertEquals(
-        'background:' + value + ';',
-        goog.html.SafeStyle.unwrap(
-            goog.html.SafeStyle.create({'background': value})));
-  }
-
-  var invalids = [
-    '', 'expression(alert(1))', 'url(i.png)', '"', '"\'"\'',
-    goog.string.Const.from('red;')
-  ];
-  for (var i = 0; i < invalids.length; i++) {
-    var value = invalids[i];
-    assertThrows(function() {
-      goog.html.SafeStyle.create({'background': value});
+    const exception = assertThrows(() => {
+      SafeStyle.unwrap(evil);
     });
-  }
-}
+    assertContains('expected object of type SafeStyle', exception.message);
+  },
 
+  testFromConstant_allowsEmptyString() {
+    assertEquals(SafeStyle.EMPTY, SafeStyle.fromConstant(Const.from('')));
+  },
 
-function testConcat() {
-  var width =
-      goog.html.SafeStyle.fromConstant(goog.string.Const.from('width: 1em;'));
-  var margin = goog.html.SafeStyle.create({'margin': '0'});
-  var padding = goog.html.SafeStyle.create({'padding': '0'});
+  testFromConstant_throwsIfNoFinalSemicolon() {
+    assertThrows(() => {
+      SafeStyle.fromConstant(Const.from('width: 1em'));
+    });
+  },
 
-  var style = goog.html.SafeStyle.concat(width, margin);
-  assertEquals('width: 1em;margin:0;', goog.html.SafeStyle.unwrap(style));
+  testFromConstant_throwsIfNoColon() {
+    assertThrows(() => {
+      SafeStyle.fromConstant(Const.from('width= 1em;'));
+    });
+  },
 
-  style = goog.html.SafeStyle.concat([width, margin]);
-  assertEquals('width: 1em;margin:0;', goog.html.SafeStyle.unwrap(style));
+  testEmpty() {
+    assertEquals('', SafeStyle.unwrap(SafeStyle.EMPTY));
+  },
 
-  style = goog.html.SafeStyle.concat([width], [padding, margin]);
-  assertEquals(
-      'width: 1em;padding:0;margin:0;', goog.html.SafeStyle.unwrap(style));
-}
+  testCreate() {
+    assertCreateEquals(
+        'background:url(i.png);margin:0;',
+        {'background': Const.from('url(i.png)'), 'margin': '0'});
+  },
 
+  testCreate_allowsEmpty() {
+    assertEquals(SafeStyle.EMPTY, SafeStyle.create({}));
+  },
 
-function testConcat_allowsEmpty() {
-  var empty = goog.html.SafeStyle.EMPTY;
-  assertEquals(empty, goog.html.SafeStyle.concat());
-  assertEquals(empty, goog.html.SafeStyle.concat([]));
-  assertEquals(empty, goog.html.SafeStyle.concat(empty));
-}
+  testCreate_skipsNull() {
+    const style = SafeStyle.create({'background': null});
+    assertEquals(SafeStyle.EMPTY, style);
+  },
+
+  testCreate_allowsLengths() {
+    assertCreateEquals(
+        'padding:0 1px .2% 3.4em;',  // expected
+        {'padding': '0 1px .2% 3.4em'});
+  },
+
+  testCreate_allowsRgb() {
+    assertCreateEquals(
+        'color:rgb(10,20,30);',  // expected
+        {'color': 'rgb(10,20,30)'});
+    assertCreateEquals(
+        'color:rgb(10%, 20%, 30%);',  // expected
+        {'color': 'rgb(10%, 20%, 30%)'});
+    assertCreateEquals(
+        'background:0 5px rgb(10,20,30);',  // expected
+        {'background': '0 5px rgb(10,20,30)'});
+    assertCreateEquals(
+        'background:rgb(10,0,0), rgb(0,0,30);',
+        {'background': 'rgb(10,0,0), rgb(0,0,30)'});
+  },
+
+  testCreate_allowsRgba() {
+    assertCreateEquals(
+        'color:rgba(10,20,30,0.1);',  // expected
+        {'color': 'rgba(10,20,30,0.1)'});
+    assertCreateEquals(
+        'color:rgba(10%, 20%, 30%, .5);',  // expected
+        {'color': 'rgba(10%, 20%, 30%, .5)'});
+  },
+
+  testCreate_allowsCalc() {
+    assertCreateEquals(
+        'height:calc(100% * 0.8 - 20px + 3vh);',  // expected
+        {'height': 'calc(100% * 0.8 - 20px + 3vh)'});
+  },
+
+  testCreate_allowsRepeat() {
+    assertCreateEquals(
+        'grid-template-columns:repeat(3, [start] 100px [end]);',
+        {'grid-template-columns': 'repeat(3, [start] 100px [end])'});
+  },
+
+  testCreate_allowsCubicBezier() {
+    assertCreateEquals(
+        'transition-timing-function:cubic-bezier(0.26, 0.86, 0.44, 0.95);',
+        {'transition-timing-function': 'cubic-bezier(0.26, 0.86, 0.44, 0.95)'});
+  },
+
+  testCreate_allowsMinmax() {
+    assertCreateEquals(
+        'grid-template-columns:minmax(max-content, 50px) 20px;',
+        {'grid-template-columns': 'minmax(max-content, 50px) 20px'});
+  },
+
+  testCreate_allowsFitContent() {
+    assertCreateEquals(
+        'grid-template-columns:fit-content(50px) 20px;',
+        {'grid-template-columns': 'fit-content(50px) 20px'});
+  },
+
+  testCreate_allowsScale() {
+    assertCreateEquals(
+        'transform:scale(.5, 2);',  // expected
+        {'transform': 'scale(.5, 2)'});
+  },
+
+  testCreate_allowsRotate() {
+    assertCreateEquals(
+        'transform:rotate(45deg);',  // expected
+        {'transform': 'rotate(45deg)'});
+  },
+
+  testCreate_allowsTranslate() {
+    assertCreateEquals(
+        'transform:translate(10px);',  // expected
+        {'transform': 'translate(10px)'});
+    assertCreateEquals(
+        'transform:translateX(5px);',  // expected
+        {'transform': 'translateX(5px)'});
+  },
+
+  testCreate_allowsSafeUrl() {
+    assertCreateEquals('background:url("http://example.com");', {
+      'background': SafeUrl.fromConstant(Const.from('http://example.com')),
+    });
+  },
+
+  testCreate_allowsSafeUrlWithSpecialCharacters() {
+    assertCreateEquals('background:url("http://example.com/\\"");', {
+      'background': SafeUrl.fromConstant(Const.from('http://example.com/"')),
+    });
+    assertCreateEquals('background:url("http://example.com/%3c");', {
+      'background': SafeUrl.fromConstant(Const.from('http://example.com/<')),
+    });
+    assertCreateEquals('background:url("http://example.com/;");', {
+      'background': SafeUrl.fromConstant(Const.from('http://example.com/;')),
+    });
+  },
+
+  testCreate_allowsArray() {
+    const url = SafeUrl.fromConstant(Const.from('http://example.com'));
+    assertCreateEquals(
+        'background:red url("http://example.com") repeat-y;',
+        {'background': ['red', url, 'repeat-y']});
+  },
+
+  testCreate_allowsUrl() {
+    assertCreateEquals(
+        'background:url(http://example.com);',
+        {'background': 'url(http://example.com)'});
+    assertCreateEquals(
+        'background:url("http://example.com");',
+        {'background': 'url("http://example.com")'});
+    assertCreateEquals(
+        'background:url( \'http://example.com\' );',
+        {'background': 'url( \'http://example.com\' )'});
+    assertCreateEquals(
+        'background:url(http://example.com) red;',
+        {'background': 'url(http://example.com) red'});
+    assertCreateEquals(
+        'background:url(' + SafeUrl.INNOCUOUS_STRING + ');',
+        {'background': 'url(javascript:alert)'});
+    assertCreateEquals(
+        'background:url(")");',  // Expected.
+        {'background': 'url(")")'});
+    assertCreateEquals(
+        'background:url(" ");',  // Expected.
+        {'background': 'url(" ")'});
+    assertThrows(() => {
+      SafeStyle.create({'background': 'url(\'http://example.com\'"")'});
+    });
+    assertThrows(() => {
+      SafeStyle.create({'background': 'url("\\\\")'});
+    });
+    assertThrows(() => {
+      SafeStyle.create({'background': 'url(a""b)'});
+    });
+  },
+
+  testCreate_throwsOnForbiddenCharacters() {
+    assertThrows(() => {
+      SafeStyle.create({'<': '0'});
+    });
+  },
+
+  testCreate_allowsNestedFunctions() {
+    assertCreateEquals(
+        'grid-template-columns:repeat(3, minmax(100px, 200px));',
+        {'grid-template-columns': 'repeat(3, minmax(100px, 200px))'});
+    assertThrows(() => {
+      SafeStyle.create({
+        'grid-template-columns':
+            'repeat(3, minmax(100px, minmax(200px, 300px)))',
+      });
+    });
+  },
+
+  testCreate_disallowsComments() {
+    assertThrows(() => {
+      SafeStyle.create({'color': 'rgb(/*)'});
+    });
+  },
+
+  testCreate_allowBalancedSquareBrackets() {
+    assertCreateEquals(
+        'grid-template-columns:[trackName] 20px [other_track-name];',
+        {'grid-template-columns': '[trackName] 20px [other_track-name]'});
+    assertThrows(() => {
+      SafeStyle.create({'grid-template-columns': '20px ["trackName"]'});
+    });
+    assertThrows(() => {
+      SafeStyle.create({'grid-template-columns': '20px [tra[ckName]'});
+    });
+    assertThrows(() => {
+      SafeStyle.create({'grid-template-columns': '20px [tra'});
+    });
+    assertThrows(() => {
+      SafeStyle.create({'grid-template-columns': '20px [tra ckName]'});
+    });
+    assertThrows(() => {
+      SafeStyle.create({'grid-template-columns': '20px [trackName] 20px]'});
+    });
+  },
+
+  testCreate_values() {
+    const valids = [
+      '0',
+      '0 0',
+      '1px',
+      '100%',
+      '2.3px',
+      '.1em',
+      'red',
+      '#f00',
+      'red !important',
+      '"Times New Roman"',
+      '\'Times New Roman\'',
+      '"Bold \'nuff"',
+      '"O\'Connor\'s Revenge"',
+    ];
+    for (let i = 0; i < valids.length; i++) {
+      const value = valids[i];
+      assertCreateEquals(
+          `background:${value};`,  // expected
+          {'background': value});
+    }
+
+    const invalids = [
+      '',
+      'expression(alert(1))',
+      '"',
+      '"\'"\'',
+      Const.from('red;'),
+    ];
+    for (let i = 0; i < invalids.length; i++) {
+      const value = invalids[i];
+      assertThrows(() => {
+        SafeStyle.create({'background': value});
+      });
+    }
+  },
+
+  /** @suppress {checkTypes} suppression added to enable type checking */
+  testCreate_withMonkeypatchedObjectPrototype() {
+    stubs.set(Object.prototype, 'foo', 'bar');
+    assertCreateEquals(
+        'background:url(i.png);margin:0;',
+        {'background': Const.from('url(i.png)'), 'margin': '0'});
+  },
+
+  testConcat() {
+    const width = SafeStyle.fromConstant(Const.from('width: 1em;'));
+    const margin = SafeStyle.create({'margin': '0'});
+    const padding = SafeStyle.create({'padding': '0'});
+
+    let style = SafeStyle.concat(width, margin);
+    assertEquals('width: 1em;margin:0;', SafeStyle.unwrap(style));
+
+    style = SafeStyle.concat([width, margin]);
+    assertEquals('width: 1em;margin:0;', SafeStyle.unwrap(style));
+
+    style = SafeStyle.concat([width], [padding, margin]);
+    assertEquals('width: 1em;padding:0;margin:0;', SafeStyle.unwrap(style));
+  },
+
+  testConcat_allowsEmpty() {
+    const empty = SafeStyle.EMPTY;
+    assertEquals(empty, SafeStyle.concat());
+    assertEquals(empty, SafeStyle.concat([]));
+    assertEquals(empty, SafeStyle.concat(empty));
+  },
+});

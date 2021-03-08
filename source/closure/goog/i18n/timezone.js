@@ -1,16 +1,8 @@
-// Copyright 2008 The Closure Library Authors. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS-IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+/**
+ * @license
+ * Copyright The Closure Library Authors.
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
 /**
  * @fileoverview Functions to provide timezone information for use with
@@ -20,7 +12,8 @@
 goog.provide('goog.i18n.TimeZone');
 
 goog.require('goog.array');
-/** @suppress {extraRequire} goog.date.DateLike represents a Date or a
+/**
+ * @suppress {extraRequire} goog.date.DateLike represents a Date or a
  * goog.Date object. It is a parameter in the following methods:
  * - getDaylightAdjustment
  * - getGMTString
@@ -28,12 +21,14 @@ goog.require('goog.array');
  * - getOffset
  * - getRFCTimeZoneString
  * - getShortName
+ * - getUTCString
  * - isDaylightTime
  * - getLongNameGMT
  * - getGenericLocation
  * Lint warns that this require is unnecessary but the closure compiler needs
  * it in order to accept a Date or a goog.Date object as a goog.date.DateLike
- * parameter in any of these methods. */
+ * parameter in any of these methods.
+ */
 goog.require('goog.date.DateLike');
 goog.require('goog.object');
 goog.require('goog.string');
@@ -50,14 +45,12 @@ goog.require('goog.string');
  * change time zone setting, dynamic retrieval should be the method to use.
  * In case only time zone offset is known, there is a decent fallback
  * that only use the time zone offset to create a TimeZone object.
- * A whole set of time zone information array was available under
- * http://go/js_locale_data. It is generated based on CLDR/ICU and
- * Olson time zone data base, and will be updated timely.
  *
  * @constructor
  * @final
  */
 goog.i18n.TimeZone = function() {
+  'use strict';
   /**
    * The standard time zone id.
    * @type {string}
@@ -95,10 +88,12 @@ goog.i18n.TimeZone = function() {
    * <li>DST_LONG_NAME_GMT: long GMT for daylight saving time</li>
    * <li>DST_GENERIC_LOCATION: generic location for daylight saving time</li>
    * </ul>
-   * @type { { STD_LONG_NAME_GMT:string, STD_GENERIC_LOCATION:string } |
-   *         { STD_LONG_NAME_GMT:string, STD_GENERIC_LOCATION:string,
-   *           DST_LONG_NAME_GMT:string, DST_GENERIC_LOCATION:string }
-   *       }
+   * @type {{
+   *   STD_LONG_NAME_GMT: string,
+   *   STD_GENERIC_LOCATION: string,
+   *   DST_LONG_NAME_GMT: (string|undefined),
+   *   DST_GENERIC_LOCATION: (string|undefined)
+   * }}
    * @private
    */
   this.tzNamesExt_;
@@ -165,6 +160,7 @@ goog.i18n.TimeZone.NameType = {
  *     time zone data.
  */
 goog.i18n.TimeZone.createTimeZone = function(timeZoneData) {
+  'use strict';
   if (typeof timeZoneData == 'number') {
     return goog.i18n.TimeZone.createSimpleTimeZone_(timeZoneData);
   }
@@ -187,6 +183,7 @@ goog.i18n.TimeZone.createTimeZone = function(timeZoneData) {
  * @private
  */
 goog.i18n.TimeZone.createSimpleTimeZone_ = function(timeZoneOffsetInMinutes) {
+  'use strict';
   var tz = new goog.i18n.TimeZone();
   tz.standardOffset_ = timeZoneOffsetInMinutes;
   tz.timeZoneId_ =
@@ -208,6 +205,7 @@ goog.i18n.TimeZone.createSimpleTimeZone_ = function(timeZoneOffsetInMinutes) {
  * @private
  */
 goog.i18n.TimeZone.composeGMTString_ = function(offset) {
+  'use strict';
   var parts = ['GMT'];
   parts.push(offset <= 0 ? '+' : '-');
   offset = Math.abs(offset);
@@ -226,6 +224,7 @@ goog.i18n.TimeZone.composeGMTString_ = function(offset) {
  * @private
  */
 goog.i18n.TimeZone.composePosixTimeZoneID_ = function(offset) {
+  'use strict';
   if (offset == 0) {
     return 'Etc/GMT';
   }
@@ -248,6 +247,7 @@ goog.i18n.TimeZone.composePosixTimeZoneID_ = function(offset) {
  * @private
  */
 goog.i18n.TimeZone.composeUTCString_ = function(offset) {
+  'use strict';
   if (offset == 0) {
     return 'UTC';
   }
@@ -269,6 +269,7 @@ goog.i18n.TimeZone.composeUTCString_ = function(offset) {
  *     goog.i18n.TimeZone.createTimeZone).
  */
 goog.i18n.TimeZone.prototype.getTimeZoneData = function() {
+  'use strict';
   return {
     'id': this.timeZoneId_,
     'std_offset': -this.standardOffset_,  // note createTimeZone flips the sign
@@ -287,6 +288,7 @@ goog.i18n.TimeZone.prototype.getTimeZoneData = function() {
  * @return {number} The DST adjustment in minutes EAST of UTC.
  */
 goog.i18n.TimeZone.prototype.getDaylightAdjustment = function(date) {
+  'use strict';
   var timeInMs = Date.UTC(
       date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(),
       date.getUTCHours(), date.getUTCMinutes());
@@ -307,7 +309,19 @@ goog.i18n.TimeZone.prototype.getDaylightAdjustment = function(date) {
  * @return {string} GMT representation string.
  */
 goog.i18n.TimeZone.prototype.getGMTString = function(date) {
+  'use strict';
   return goog.i18n.TimeZone.composeGMTString_(this.getOffset(date));
+};
+
+/**
+ * Return the UTC representation of this time zone object.
+ * @param {!goog.date.DateLike} date The date for which time to retrieve
+ *     UTC string.
+ * @return {string} UTC representation string.
+ */
+goog.i18n.TimeZone.prototype.getUTCString = function(date) {
+  'use strict';
+  return goog.i18n.TimeZone.composeUTCString_(this.getOffset(date));
 };
 
 
@@ -318,6 +332,7 @@ goog.i18n.TimeZone.prototype.getGMTString = function(date) {
  * @return {string} The long time zone name.
  */
 goog.i18n.TimeZone.prototype.getLongName = function(date) {
+  'use strict';
   return this.tzNames_[this.isDaylightTime(date) ?
                            goog.i18n.TimeZone.NameType.DLT_LONG_NAME :
                            goog.i18n.TimeZone.NameType.STD_LONG_NAME];
@@ -331,6 +346,7 @@ goog.i18n.TimeZone.prototype.getLongName = function(date) {
  * @return {number} The time zone offset in minutes WEST of UTC.
  */
 goog.i18n.TimeZone.prototype.getOffset = function(date) {
+  'use strict';
   return this.standardOffset_ - this.getDaylightAdjustment(date);
 };
 
@@ -342,6 +358,7 @@ goog.i18n.TimeZone.prototype.getOffset = function(date) {
  * @return {string} The RFC time zone string.
  */
 goog.i18n.TimeZone.prototype.getRFCTimeZoneString = function(date) {
+  'use strict';
   var offset = -this.getOffset(date);
   var parts = [offset < 0 ? '-' : '+'];
   offset = Math.abs(offset);
@@ -359,6 +376,7 @@ goog.i18n.TimeZone.prototype.getRFCTimeZoneString = function(date) {
  * @return {string} The short time zone name.
  */
 goog.i18n.TimeZone.prototype.getShortName = function(date) {
+  'use strict';
   return this.tzNames_[this.isDaylightTime(date) ?
                            goog.i18n.TimeZone.NameType.DLT_SHORT_NAME :
                            goog.i18n.TimeZone.NameType.STD_SHORT_NAME];
@@ -370,6 +388,7 @@ goog.i18n.TimeZone.prototype.getShortName = function(date) {
  * @return {string} The time zone ID.
  */
 goog.i18n.TimeZone.prototype.getTimeZoneId = function() {
+  'use strict';
   return this.timeZoneId_;
 };
 
@@ -380,6 +399,7 @@ goog.i18n.TimeZone.prototype.getTimeZoneId = function() {
  * @return {boolean} True if Daylight Saving Time is in effect.
  */
 goog.i18n.TimeZone.prototype.isDaylightTime = function(date) {
+  'use strict';
   return this.getDaylightAdjustment(date) > 0;
 };
 
@@ -391,12 +411,13 @@ goog.i18n.TimeZone.prototype.isDaylightTime = function(date) {
  * @return {string} The long GMT time zone name.
  */
 goog.i18n.TimeZone.prototype.getLongNameGMT = function(date) {
+  'use strict';
   if (this.isDaylightTime(date)) {
-    return (goog.isDef(this.tzNamesExt_.DST_LONG_NAME_GMT)) ?
+    return (this.tzNamesExt_.DST_LONG_NAME_GMT !== undefined) ?
         this.tzNamesExt_.DST_LONG_NAME_GMT :
         this.tzNamesExt_['DST_LONG_NAME_GMT'];
   } else {
-    return (goog.isDef(this.tzNamesExt_.STD_LONG_NAME_GMT)) ?
+    return (this.tzNamesExt_.STD_LONG_NAME_GMT !== undefined) ?
         this.tzNamesExt_.STD_LONG_NAME_GMT :
         this.tzNamesExt_['STD_LONG_NAME_GMT'];
   }
@@ -410,12 +431,13 @@ goog.i18n.TimeZone.prototype.getLongNameGMT = function(date) {
  * @return {string} The generic location time zone name.
  */
 goog.i18n.TimeZone.prototype.getGenericLocation = function(date) {
+  'use strict';
   if (this.isDaylightTime(date)) {
-    return (goog.isDef(this.tzNamesExt_.DST_GENERIC_LOCATION)) ?
+    return (this.tzNamesExt_.DST_GENERIC_LOCATION !== undefined) ?
         this.tzNamesExt_.DST_GENERIC_LOCATION :
         this.tzNamesExt_['DST_GENERIC_LOCATION'];
   } else {
-    return (goog.isDef(this.tzNamesExt_.STD_GENERIC_LOCATION)) ?
+    return (this.tzNamesExt_.STD_GENERIC_LOCATION !== undefined) ?
         this.tzNamesExt_.STD_GENERIC_LOCATION :
         this.tzNamesExt_['STD_GENERIC_LOCATION'];
   }

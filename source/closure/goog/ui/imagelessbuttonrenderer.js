@@ -1,16 +1,8 @@
-// Copyright 2008 The Closure Library Authors. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS-IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+/**
+ * @license
+ * Copyright The Closure Library Authors.
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
 /**
  * @fileoverview An alternative custom button renderer that uses even more CSS
@@ -21,7 +13,6 @@
  * Based on the Custom Buttons 3.1 visual specification, see
  * http://go/custombuttons
  *
- * @author eae@google.com (Emil A Eklund)
  * @see ../demos/imagelessbutton.html
  */
 
@@ -34,6 +25,8 @@ goog.require('goog.ui.Component');
 goog.require('goog.ui.CustomButtonRenderer');
 goog.require('goog.ui.INLINE_BLOCK_CLASSNAME');
 goog.require('goog.ui.registry');
+goog.requireType('goog.dom.DomHelper');
+goog.requireType('goog.ui.ControlContent');
 
 
 
@@ -48,17 +41,10 @@ goog.require('goog.ui.registry');
  * @extends {goog.ui.CustomButtonRenderer}
  */
 goog.ui.ImagelessButtonRenderer = function() {
+  'use strict';
   goog.ui.CustomButtonRenderer.call(this);
 };
 goog.inherits(goog.ui.ImagelessButtonRenderer, goog.ui.CustomButtonRenderer);
-
-
-/**
- * The singleton instance of this renderer class.
- * @type {goog.ui.ImagelessButtonRenderer?}
- * @private
- */
-goog.ui.ImagelessButtonRenderer.instance_ = null;
 goog.addSingletonGetter(goog.ui.ImagelessButtonRenderer);
 
 
@@ -92,6 +78,7 @@ goog.ui.ImagelessButtonRenderer.prototype.createDom;
 /** @override */
 goog.ui.ImagelessButtonRenderer.prototype.getContentElement = function(
     element) {
+  'use strict';
   return /** @type {Element} */ (
       element && element.firstChild && element.firstChild.firstChild &&
       element.firstChild.firstChild.firstChild.lastChild);
@@ -116,11 +103,12 @@ goog.ui.ImagelessButtonRenderer.prototype.getContentElement = function(
  * @param {goog.ui.ControlContent} content Text caption or DOM structure to wrap
  *     in a box.
  * @param {goog.dom.DomHelper} dom DOM helper, used for document interaction.
- * @return {Element} Pseudo-rounded-corner box containing the content.
+ * @return {!Element} Pseudo-rounded-corner box containing the content.
  * @override
  */
 goog.ui.ImagelessButtonRenderer.prototype.createButton = function(
     content, dom) {
+  'use strict';
   var baseClass = this.getCssClass();
   var inlineBlock = goog.ui.INLINE_BLOCK_CLASSNAME + ' ';
   return dom.createDom(
@@ -151,6 +139,7 @@ goog.ui.ImagelessButtonRenderer.prototype.createButton = function(
  */
 goog.ui.ImagelessButtonRenderer.prototype.hasBoxStructure = function(
     button, element) {
+  'use strict';
   var outer = button.getDomHelper().getFirstElementChild(element);
   var outerClassName = goog.getCssName(this.getCssClass(), 'outer-box');
   if (outer && goog.dom.classlist.contains(outer, outerClassName)) {
@@ -185,6 +174,7 @@ goog.ui.ImagelessButtonRenderer.prototype.hasBoxStructure = function(
  * @override
  */
 goog.ui.ImagelessButtonRenderer.prototype.getCssClass = function() {
+  'use strict';
   return goog.ui.ImagelessButtonRenderer.CSS_CLASS;
 };
 
@@ -192,6 +182,7 @@ goog.ui.ImagelessButtonRenderer.prototype.getCssClass = function() {
 // Register a decorator factory function for goog.ui.ImagelessButtonRenderer.
 goog.ui.registry.setDecoratorByClassName(
     goog.ui.ImagelessButtonRenderer.CSS_CLASS, function() {
+      'use strict';
       return new goog.ui.Button(
           null, goog.ui.ImagelessButtonRenderer.getInstance());
     });
@@ -201,6 +192,7 @@ goog.ui.registry.setDecoratorByClassName(
 // goog.ui.ImagelessButtonRenderer.
 goog.ui.registry.setDecoratorByClassName(
     goog.getCssName('goog-imageless-toggle-button'), function() {
+      'use strict';
       var button = new goog.ui.Button(
           null, goog.ui.ImagelessButtonRenderer.getInstance());
       button.setSupportedState(goog.ui.Component.State.CHECKED, true);

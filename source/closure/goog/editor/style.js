@@ -1,16 +1,8 @@
-// Copyright 2009 The Closure Library Authors. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS-IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+/**
+ * @license
+ * Copyright The Closure Library Authors.
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
 /**
  * @fileoverview Utilties for working with the styles of DOM nodes, and
@@ -25,8 +17,6 @@
  * more permissive than the goog.style API should be. For example,
  * goog.style.getComputedStyle will throw an exception if you give it a
  * text node.
- *
- * @author nicksantos@google.com (Nick Santos)
  */
 
 goog.provide('goog.editor.style');
@@ -37,10 +27,12 @@ goog.require('goog.dom');
 goog.require('goog.dom.NodeType');
 goog.require('goog.dom.TagName');
 goog.require('goog.editor.BrowserFeature');
+goog.require('goog.events.EventHandler');
 goog.require('goog.events.EventType');
 goog.require('goog.object');
 goog.require('goog.style');
 goog.require('goog.userAgent');
+goog.requireType('goog.events.Event');
 
 
 /**
@@ -58,6 +50,7 @@ goog.require('goog.userAgent');
  */
 goog.editor.style.getComputedOrCascadedStyle_ = function(
     node, stylePropertyName) {
+  'use strict';
   if (node.nodeType != goog.dom.NodeType.ELEMENT) {
     // Only element nodes have style.
     return null;
@@ -76,6 +69,7 @@ goog.editor.style.getComputedOrCascadedStyle_ = function(
  * @return {boolean} Whether the element inherits CSS display: block.
  */
 goog.editor.style.isDisplayBlock = function(node) {
+  'use strict';
   return goog.editor.style.getComputedOrCascadedStyle_(node, 'display') ==
       'block';
 };
@@ -91,6 +85,7 @@ goog.editor.style.isDisplayBlock = function(node) {
  * @return {boolean} Whether the element is a container.
  */
 goog.editor.style.isContainer = function(element) {
+  'use strict';
   var nodeName = element && element.nodeName;
   return !!(
       element &&
@@ -107,6 +102,7 @@ goog.editor.style.isContainer = function(element) {
  * @return {Element} The element which contains node.
  */
 goog.editor.style.getContainer = function(node) {
+  'use strict';
   // We assume that every node must have a container.
   return /** @type {Element} */ (
       goog.dom.getAncestor(node, goog.editor.style.isContainer, true));
@@ -127,8 +123,10 @@ goog.editor.style.SELECTABLE_INPUT_TYPES_ =
  * Prevent the default action on mousedown events.
  * @param {goog.events.Event} e The mouse down event.
  * @private
+ * @suppress {strictMissingProperties} Part of the go/strict_warnings_migration
  */
 goog.editor.style.cancelMouseDownHelper_ = function(e) {
+  'use strict';
   var targetTagName = e.target.tagName;
   if (targetTagName != goog.dom.TagName.TEXTAREA &&
       targetTagName != goog.dom.TagName.INPUT) {
@@ -146,6 +144,7 @@ goog.editor.style.cancelMouseDownHelper_ = function(e) {
  *     listeners are destroyed as well.
  */
 goog.editor.style.makeUnselectable = function(element, eventHandler) {
+  'use strict';
   if (goog.editor.BrowserFeature.HAS_UNSELECTABLE_STYLE) {
     // The mousing down on a node should not blur the focused node.
     // This is consistent with how IE works.
@@ -178,7 +177,7 @@ goog.editor.style.makeUnselectable = function(element, eventHandler) {
  *
  * For IE this simply turns off the "unselectable" property.
  *
- * Under FF no descendent of an unselectable node can be selectable:
+ * Under FF no descendant of an unselectable node can be selectable:
  *
  * https://bugzilla.mozilla.org/show_bug.cgi?id=203291
  *
@@ -204,6 +203,7 @@ goog.editor.style.makeUnselectable = function(element, eventHandler) {
  * @param {!Element} element The element to make selectable.
  */
 goog.editor.style.makeSelectable = function(element) {
+  'use strict';
   goog.style.setUnselectable(element, false);
   if (goog.editor.BrowserFeature.HAS_UNSELECTABLE_STYLE) {
     // Go up ancestor chain, searching for nodes that are unselectable.

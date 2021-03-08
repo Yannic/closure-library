@@ -1,16 +1,8 @@
-// Copyright 2006 The Closure Library Authors. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS-IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+/**
+ * @license
+ * Copyright The Closure Library Authors.
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
 /**
  * @fileoverview Wrapper class for handling XmlHttpRequests.
@@ -39,7 +31,6 @@
  * goog.net.EventType.PROGRESS event will be the re-dispatched browser
  * progress event. Additionally, a DOWNLOAD_PROGRESS or UPLOAD_PROGRESS event
  * will be fired for download and upload progress respectively.
- *
  */
 
 
@@ -51,22 +42,26 @@ goog.require('goog.array');
 goog.require('goog.asserts');
 goog.require('goog.debug.entryPointRegistry');
 goog.require('goog.events.EventTarget');
-goog.require('goog.json');
+goog.require('goog.json.hybrid');
 goog.require('goog.log');
 goog.require('goog.net.ErrorCode');
 goog.require('goog.net.EventType');
 goog.require('goog.net.HttpStatus');
 goog.require('goog.net.XmlHttp');
+goog.require('goog.object');
 goog.require('goog.string');
 goog.require('goog.structs');
 goog.require('goog.structs.Map');
 goog.require('goog.uri.utils');
 goog.require('goog.userAgent');
+goog.requireType('goog.Uri');
+goog.requireType('goog.debug.ErrorHandler');
+goog.requireType('goog.net.XhrLike');
+goog.requireType('goog.net.XmlHttpFactory');
 
-goog.forwardDeclare('goog.Uri');
+goog.scope(function() {
 
-
-
+'use strict';
 /**
  * Basic class for handling XMLHttpRequests.
  * @param {goog.net.XmlHttpFactory=} opt_xmlHttpFactory Factory to use when
@@ -75,7 +70,8 @@ goog.forwardDeclare('goog.Uri');
  * @extends {goog.events.EventTarget}
  */
 goog.net.XhrIo = function(opt_xmlHttpFactory) {
-  goog.net.XhrIo.base(this, 'constructor');
+  'use strict';
+  XhrIo.base(this, 'constructor');
 
   /**
    * Map of default headers to add to every request, use:
@@ -106,7 +102,7 @@ goog.net.XhrIo = function(opt_xmlHttpFactory) {
 
   /**
    * The options to use with the current XMLHttpRequest object.
-   * @private {Object}
+   * @private {?Object}
    */
   this.xhrOptions_ = null;
 
@@ -137,7 +133,7 @@ goog.net.XhrIo = function(opt_xmlHttpFactory) {
   /**
    * Used to ensure that we don't dispatch an multiple ERROR events. This can
    * happen in IE when it does a synchronous load and one error is handled in
-   * the ready statte change and one is handled due to send() throwing an
+   * the ready state change and one is handled due to send() throwing an
    * exception.
    * @private {boolean}
    */
@@ -182,7 +178,7 @@ goog.net.XhrIo = function(opt_xmlHttpFactory) {
    * XHR behavior.
    * @private {goog.net.XhrIo.ResponseType}
    */
-  this.responseType_ = goog.net.XhrIo.ResponseType.DEFAULT;
+  this.responseType_ = ResponseType.DEFAULT;
 
   /**
    * Whether a "credentialed" request is to be sent (one that is aware of
@@ -222,9 +218,17 @@ goog.net.XhrIo = function(opt_xmlHttpFactory) {
    * @private {boolean}
    */
   this.useXhr2Timeout_ = false;
+
+  /**
+   * Specification for Trust Token operations (issuance, signing, and
+   * redemption).
+   * @private {?TrustTokenAttributeType}
+   */
+  this.trustToken_ = null;
 };
 goog.inherits(goog.net.XhrIo, goog.events.EventTarget);
 
+const XhrIo = goog.net.XhrIo;
 
 /**
  * Response types that may be requested for XMLHttpRequests.
@@ -237,8 +241,10 @@ goog.net.XhrIo.ResponseType = {
   DOCUMENT: 'document',
   // Not supported as of Chrome 10.0.612.1 dev
   BLOB: 'blob',
-  ARRAY_BUFFER: 'arraybuffer'
+  ARRAY_BUFFER: 'arraybuffer',
 };
+
+const ResponseType = goog.net.XhrIo.ResponseType;
 
 
 /**
@@ -273,6 +279,7 @@ goog.net.XhrIo.HTTP_SCHEME_PATTERN = /^https?$/i;
 /**
  * The methods that typically come along with form data.  We set different
  * headers depending on whether the HTTP action is one of these.
+ * @type {!Array<string>}
  */
 goog.net.XhrIo.METHODS_WITH_FORM_DATA = ['POST', 'PUT'];
 
@@ -337,7 +344,8 @@ goog.net.XhrIo.sendInstances_ = [];
 goog.net.XhrIo.send = function(
     url, opt_callback, opt_method, opt_content, opt_headers,
     opt_timeoutInterval, opt_withCredentials) {
-  var x = new goog.net.XhrIo();
+  'use strict';
+  const x = new goog.net.XhrIo();
   goog.net.XhrIo.sendInstances_.push(x);
   if (opt_callback) {
     x.listen(goog.net.EventType.COMPLETE, opt_callback);
@@ -371,7 +379,8 @@ goog.net.XhrIo.send = function(
  * cleanup on window unload.
  */
 goog.net.XhrIo.cleanup = function() {
-  var instances = goog.net.XhrIo.sendInstances_;
+  'use strict';
+  const instances = goog.net.XhrIo.sendInstances_;
   while (instances.length) {
     instances.pop().dispose();
   }
@@ -389,6 +398,7 @@ goog.net.XhrIo.cleanup = function() {
  *     protect the entry point(s).
  */
 goog.net.XhrIo.protectEntryPoints = function(errorHandler) {
+  'use strict';
   goog.net.XhrIo.prototype.onReadyStateChangeEntryPoint_ =
       errorHandler.protectEntryPoint(
           goog.net.XhrIo.prototype.onReadyStateChangeEntryPoint_);
@@ -402,6 +412,7 @@ goog.net.XhrIo.protectEntryPoints = function(errorHandler) {
  * @private
  */
 goog.net.XhrIo.prototype.cleanupSend_ = function() {
+  'use strict';
   this.dispose();
   goog.array.remove(goog.net.XhrIo.sendInstances_, this);
 };
@@ -413,6 +424,7 @@ goog.net.XhrIo.prototype.cleanupSend_ = function() {
  * @return {number} Timeout interval in milliseconds.
  */
 goog.net.XhrIo.prototype.getTimeoutInterval = function() {
+  'use strict';
   return this.timeoutInterval_;
 };
 
@@ -424,6 +436,7 @@ goog.net.XhrIo.prototype.getTimeoutInterval = function() {
  * @param {number} ms Timeout interval in milliseconds; 0 means none.
  */
 goog.net.XhrIo.prototype.setTimeoutInterval = function(ms) {
+  'use strict';
   this.timeoutInterval_ = Math.max(0, ms);
 };
 
@@ -437,6 +450,7 @@ goog.net.XhrIo.prototype.setTimeoutInterval = function(ms) {
  * @param {goog.net.XhrIo.ResponseType} type The desired type for the response.
  */
 goog.net.XhrIo.prototype.setResponseType = function(type) {
+  'use strict';
   this.responseType_ = type;
 };
 
@@ -446,6 +460,7 @@ goog.net.XhrIo.prototype.setResponseType = function(type) {
  * @return {goog.net.XhrIo.ResponseType} The desired type for the response.
  */
 goog.net.XhrIo.prototype.getResponseType = function() {
+  'use strict';
   return this.responseType_;
 };
 
@@ -460,6 +475,7 @@ goog.net.XhrIo.prototype.getResponseType = function() {
  *     request.
  */
 goog.net.XhrIo.prototype.setWithCredentials = function(withCredentials) {
+  'use strict';
   this.withCredentials_ = withCredentials;
 };
 
@@ -469,6 +485,7 @@ goog.net.XhrIo.prototype.setWithCredentials = function(withCredentials) {
  * @return {boolean} The desired type for the response.
  */
 goog.net.XhrIo.prototype.getWithCredentials = function() {
+  'use strict';
   return this.withCredentials_;
 };
 
@@ -481,6 +498,7 @@ goog.net.XhrIo.prototype.getWithCredentials = function() {
  * @param {boolean} enabled Whether progress events should be enabled.
  */
 goog.net.XhrIo.prototype.setProgressEventsEnabled = function(enabled) {
+  'use strict';
   this.progressEventsEnabled_ = enabled;
 };
 
@@ -490,9 +508,19 @@ goog.net.XhrIo.prototype.setProgressEventsEnabled = function(enabled) {
  * @return {boolean} Whether progress events are enabled for this request.
  */
 goog.net.XhrIo.prototype.getProgressEventsEnabled = function() {
+  'use strict';
   return this.progressEventsEnabled_;
 };
 
+/**
+ * Specify a Trust Tokens operation to execute alongside the request.
+ * @param {!TrustTokenAttributeType} trustToken a Trust Tokens operation to
+ *     execute.
+ */
+goog.net.XhrIo.prototype.setTrustToken = function(trustToken) {
+  'use strict';
+  this.trustToken_ = trustToken;
+};
 
 /**
  * Instance send that actually uses XMLHttpRequest to make a server call.
@@ -502,16 +530,19 @@ goog.net.XhrIo.prototype.getProgressEventsEnabled = function() {
  *     opt_content Body data.
  * @param {Object|goog.structs.Map=} opt_headers Map of headers to add to the
  *     request.
+ * @suppress {deprecated} Use deprecated goog.structs.forEach to allow different
+ * types of parameters for opt_headers.
  */
 goog.net.XhrIo.prototype.send = function(
     url, opt_method, opt_content, opt_headers) {
+  'use strict';
   if (this.xhr_) {
-    throw Error(
+    throw new Error(
         '[goog.net.XhrIo] Object is active with another request=' +
         this.lastUri_ + '; newUri=' + url);
   }
 
-  var method = opt_method ? opt_method.toUpperCase() : 'GET';
+  const method = opt_method ? opt_method.toUpperCase() : 'GET';
 
   this.lastUri_ = url;
   this.lastError_ = '';
@@ -530,8 +561,10 @@ goog.net.XhrIo.prototype.send = function(
 
   // Set up upload/download progress events, if progress events are supported.
   if (this.getProgressEventsEnabled() && 'onprogress' in this.xhr_) {
-    this.xhr_.onprogress =
-        goog.bind(function(e) { this.onProgressHandler_(e, true); }, this);
+    this.xhr_.onprogress = goog.bind(function(e) {
+      'use strict';
+      this.onProgressHandler_(e, true);
+    }, this);
     if (this.xhr_.upload) {
       this.xhr_.upload.onprogress = goog.bind(this.onProgressHandler_, this);
     }
@@ -540,7 +573,6 @@ goog.net.XhrIo.prototype.send = function(
   /**
    * Try to open the XMLHttpRequest (always async), if an error occurs here it
    * is generally permission denied
-   * @preserveTry
    */
   try {
     goog.log.fine(this.logger_, this.formatMsg_('Opening Xhr'));
@@ -557,23 +589,25 @@ goog.net.XhrIo.prototype.send = function(
   // We can't use null since this won't allow requests with form data to have a
   // content length specified which will cause some proxies to return a 411
   // error.
-  var content = opt_content || '';
+  const content = opt_content || '';
 
-  var headers = this.headers.clone();
+  const headers = this.headers.clone();
 
   // Add headers specific to this request
   if (opt_headers) {
-    goog.structs.forEach(
-        opt_headers, function(value, key) { headers.set(key, value); });
+    goog.structs.forEach(opt_headers, function(value, key) {
+      'use strict';
+      headers.set(key, value);
+    });
   }
 
   // Find whether a content type header is set, ignoring case.
   // HTTP header names are case-insensitive.  See:
   // http://www.w3.org/Protocols/rfc2616/rfc2616-sec4.html#sec4.2
-  var contentTypeKey =
+  const contentTypeKey =
       goog.array.find(headers.getKeys(), goog.net.XhrIo.isContentTypeHeader_);
 
-  var contentIsFormData =
+  const contentIsFormData =
       (goog.global['FormData'] && (content instanceof goog.global['FormData']));
   if (goog.array.contains(goog.net.XhrIo.METHODS_WITH_FORM_DATA, method) &&
       !contentTypeKey && !contentIsFormData) {
@@ -587,6 +621,7 @@ goog.net.XhrIo.prototype.send = function(
 
   // Add the headers to the Xhr object
   headers.forEach(function(value, key) {
+    'use strict';
     this.xhr_.setRequestHeader(key, value);
   }, this);
 
@@ -601,9 +636,16 @@ goog.net.XhrIo.prototype.send = function(
     this.xhr_.withCredentials = this.withCredentials_;
   }
 
+  if ('setTrustToken' in this.xhr_ && this.trustToken_) {
+    try {
+      this.xhr_.setTrustToken(this.trustToken_);
+    } catch (err) {
+      goog.log.fine(
+          this.logger_, this.formatMsg_('Error SetTrustToken: ' + err.message));
+    }
+  }
   /**
    * Try to send the request, or other wise report an error (404 not found).
-   * @preserveTry
    */
   try {
     this.cleanUpTimeoutTimer_();  // Paranoid, should never be running.
@@ -650,9 +692,10 @@ goog.net.XhrIo.prototype.send = function(
  * @private
  */
 goog.net.XhrIo.shouldUseXhr2Timeout_ = function(xhr) {
+  'use strict';
   return goog.userAgent.IE && goog.userAgent.isVersionOrHigher(9) &&
-      goog.isNumber(xhr[goog.net.XhrIo.XHR2_TIMEOUT_]) &&
-      goog.isDef(xhr[goog.net.XhrIo.XHR2_ON_TIMEOUT_]);
+      typeof xhr[goog.net.XhrIo.XHR2_TIMEOUT_] === 'number' &&
+      xhr[goog.net.XhrIo.XHR2_ON_TIMEOUT_] !== undefined;
 };
 
 
@@ -663,6 +706,7 @@ goog.net.XhrIo.shouldUseXhr2Timeout_ = function(xhr) {
  * @private
  */
 goog.net.XhrIo.isContentTypeHeader_ = function(header) {
+  'use strict';
   return goog.string.caseInsensitiveEquals(
       goog.net.XhrIo.CONTENT_TYPE_HEADER, header);
 };
@@ -674,6 +718,7 @@ goog.net.XhrIo.isContentTypeHeader_ = function(header) {
  * @protected
  */
 goog.net.XhrIo.prototype.createXhr = function() {
+  'use strict';
   return this.xmlHttpFactory_ ? this.xmlHttpFactory_.createInstance() :
                                 goog.net.XmlHttp();
 };
@@ -686,6 +731,7 @@ goog.net.XhrIo.prototype.createXhr = function() {
  * @private
  */
 goog.net.XhrIo.prototype.timeout_ = function() {
+  'use strict';
   if (typeof goog == 'undefined') {
     // If goog is undefined then the callback has occurred as the application
     // is unloading and will error.  Thus we let it silently fail.
@@ -707,6 +753,7 @@ goog.net.XhrIo.prototype.timeout_ = function() {
  * @private
  */
 goog.net.XhrIo.prototype.error_ = function(errorCode, err) {
+  'use strict';
   this.active_ = false;
   if (this.xhr_) {
     this.inAbort_ = true;
@@ -726,6 +773,7 @@ goog.net.XhrIo.prototype.error_ = function(errorCode, err) {
  * @private
  */
 goog.net.XhrIo.prototype.dispatchErrors_ = function() {
+  'use strict';
   if (!this.errorDispatched_) {
     this.errorDispatched_ = true;
     this.dispatchEvent(goog.net.EventType.COMPLETE);
@@ -740,6 +788,7 @@ goog.net.XhrIo.prototype.dispatchErrors_ = function() {
  *     defaults to ABORT.
  */
 goog.net.XhrIo.prototype.abort = function(opt_failureCode) {
+  'use strict';
   if (this.xhr_ && this.active_) {
     goog.log.fine(this.logger_, this.formatMsg_('Aborting'));
     this.active_ = false;
@@ -760,6 +809,7 @@ goog.net.XhrIo.prototype.abort = function(opt_failureCode) {
  * @protected
  */
 goog.net.XhrIo.prototype.disposeInternal = function() {
+  'use strict';
   if (this.xhr_) {
     // We explicitly do not call xhr_.abort() unless active_ is still true.
     // This is to avoid unnecessarily aborting a successful request when
@@ -775,7 +825,7 @@ goog.net.XhrIo.prototype.disposeInternal = function() {
     this.cleanUpXhr_(true);
   }
 
-  goog.net.XhrIo.base(this, 'disposeInternal');
+  XhrIo.base(this, 'disposeInternal');
 };
 
 
@@ -787,6 +837,7 @@ goog.net.XhrIo.prototype.disposeInternal = function() {
  * @private
  */
 goog.net.XhrIo.prototype.onReadyStateChange_ = function() {
+  'use strict';
   if (this.isDisposed()) {
     // This method is the target of an untracked goog.Timer.callOnce().
     return;
@@ -810,6 +861,7 @@ goog.net.XhrIo.prototype.onReadyStateChange_ = function() {
  * @private
  */
 goog.net.XhrIo.prototype.onReadyStateChangeEntryPoint_ = function() {
+  'use strict';
   this.onReadyStateChangeHelper_();
 };
 
@@ -821,6 +873,7 @@ goog.net.XhrIo.prototype.onReadyStateChangeEntryPoint_ = function() {
  * @private
  */
 goog.net.XhrIo.prototype.onReadyStateChangeHelper_ = function() {
+  'use strict';
   if (!this.active_) {
     // can get called inside abort call
     return;
@@ -891,6 +944,7 @@ goog.net.XhrIo.prototype.onReadyStateChangeHelper_ = function() {
  * @private
  */
 goog.net.XhrIo.prototype.onProgressHandler_ = function(e, opt_isDownload) {
+  'use strict';
   goog.asserts.assert(
       e.type === goog.net.EventType.PROGRESS,
       'goog.net.EventType.PROGRESS is of the same type as raw XHR progress.');
@@ -913,11 +967,12 @@ goog.net.XhrIo.prototype.onProgressHandler_ = function(e, opt_isDownload) {
  * @private
  */
 goog.net.XhrIo.buildProgressEvent_ = function(e, eventType) {
+  'use strict';
   return /** @type {!ProgressEvent} */ ({
     type: eventType,
     lengthComputable: e.lengthComputable,
     loaded: e.loaded,
-    total: e.total
+    total: e.total,
   });
 };
 
@@ -930,14 +985,15 @@ goog.net.XhrIo.buildProgressEvent_ = function(e, eventType) {
  * @private
  */
 goog.net.XhrIo.prototype.cleanUpXhr_ = function(opt_fromDispose) {
+  'use strict';
   if (this.xhr_) {
     // Cancel any pending timeout event handler.
     this.cleanUpTimeoutTimer_();
 
     // Save reference so we can mark it as closed after the READY event.  The
     // READY event may trigger another request, thus we must nullify this.xhr_
-    var xhr = this.xhr_;
-    var clearedOnReadyStateChange =
+    const xhr = this.xhr_;
+    const clearedOnReadyStateChange =
         this.xhrOptions_[goog.net.XmlHttp.OptionType.USE_NULL_FUNCTION] ?
         goog.nullFunction :
         null;
@@ -971,10 +1027,11 @@ goog.net.XhrIo.prototype.cleanUpXhr_ = function(opt_fromDispose) {
  * @private
  */
 goog.net.XhrIo.prototype.cleanUpTimeoutTimer_ = function() {
+  'use strict';
   if (this.xhr_ && this.useXhr2Timeout_) {
     this.xhr_[goog.net.XhrIo.XHR2_ON_TIMEOUT_] = null;
   }
-  if (goog.isNumber(this.timeoutId_)) {
+  if (this.timeoutId_) {
     goog.Timer.clear(this.timeoutId_);
     this.timeoutId_ = null;
   }
@@ -985,6 +1042,7 @@ goog.net.XhrIo.prototype.cleanUpTimeoutTimer_ = function() {
  * @return {boolean} Whether there is an active request.
  */
 goog.net.XhrIo.prototype.isActive = function() {
+  'use strict';
   return !!this.xhr_;
 };
 
@@ -993,6 +1051,7 @@ goog.net.XhrIo.prototype.isActive = function() {
  * @return {boolean} Whether the request has completed.
  */
 goog.net.XhrIo.prototype.isComplete = function() {
+  'use strict';
   return this.getReadyState() == goog.net.XmlHttp.ReadyState.COMPLETE;
 };
 
@@ -1001,7 +1060,8 @@ goog.net.XhrIo.prototype.isComplete = function() {
  * @return {boolean} Whether the request completed with a success.
  */
 goog.net.XhrIo.prototype.isSuccess = function() {
-  var status = this.getStatus();
+  'use strict';
+  const status = this.getStatus();
   // A zero status code is considered successful for local files.
   return goog.net.HttpStatus.isSuccess(status) ||
       status === 0 && !this.isLastUriEffectiveSchemeHttp_();
@@ -1014,7 +1074,8 @@ goog.net.XhrIo.prototype.isSuccess = function() {
  * @private
  */
 goog.net.XhrIo.prototype.isLastUriEffectiveSchemeHttp_ = function() {
-  var scheme = goog.uri.utils.getEffectiveScheme(String(this.lastUri_));
+  'use strict';
+  const scheme = goog.uri.utils.getEffectiveScheme(String(this.lastUri_));
   return goog.net.XhrIo.HTTP_SCHEME_PATTERN.test(scheme);
 };
 
@@ -1025,10 +1086,10 @@ goog.net.XhrIo.prototype.isLastUriEffectiveSchemeHttp_ = function() {
  * @return {goog.net.XmlHttp.ReadyState} goog.net.XmlHttp.ReadyState.*.
  */
 goog.net.XhrIo.prototype.getReadyState = function() {
+  'use strict';
   return this.xhr_ ?
       /** @type {goog.net.XmlHttp.ReadyState} */ (this.xhr_.readyState) :
-                                                 goog.net.XmlHttp.ReadyState
-                                                     .UNINITIALIZED;
+      goog.net.XmlHttp.ReadyState.UNINITIALIZED;
 };
 
 
@@ -1038,11 +1099,11 @@ goog.net.XhrIo.prototype.getReadyState = function() {
  * @return {number} Http status.
  */
 goog.net.XhrIo.prototype.getStatus = function() {
+  'use strict';
   /**
    * IE doesn't like you checking status until the readystate is greater than 2
    * (i.e. it is receiving or complete).  The try/catch is used for when the
    * page is unloading and an ERROR_NOT_AVAILABLE may occur when accessing xhr_.
-   * @preserveTry
    */
   try {
     return this.getReadyState() > goog.net.XmlHttp.ReadyState.LOADED ?
@@ -1060,11 +1121,11 @@ goog.net.XhrIo.prototype.getStatus = function() {
  * @return {string} Status text.
  */
 goog.net.XhrIo.prototype.getStatusText = function() {
+  'use strict';
   /**
    * IE doesn't like you checking status until the readystate is greater than 2
    * (i.e. it is receiving or complete).  The try/catch is used for when the
    * page is unloading and an ERROR_NOT_AVAILABLE may occur when accessing xhr_.
-   * @preserveTry
    */
   try {
     return this.getReadyState() > goog.net.XmlHttp.ReadyState.LOADED ?
@@ -1082,6 +1143,7 @@ goog.net.XhrIo.prototype.getStatusText = function() {
  * @return {string} Last Uri.
  */
 goog.net.XhrIo.prototype.getLastUri = function() {
+  'use strict';
   return String(this.lastUri_);
 };
 
@@ -1092,7 +1154,7 @@ goog.net.XhrIo.prototype.getLastUri = function() {
  * @return {string} Result from the server, or '' if no result available.
  */
 goog.net.XhrIo.prototype.getResponseText = function() {
-  /** @preserveTry */
+  'use strict';
   try {
     return this.xhr_ ? this.xhr_.responseText : '';
   } catch (e) {
@@ -1115,7 +1177,7 @@ goog.net.XhrIo.prototype.getResponseText = function() {
  *
  * One option is to construct a VBArray from the returned object and convert
  * it to a JavaScript array using the toArray method:
- * {@code (new window['VBArray'](xhrIo.getResponseBody())).toArray()}
+ * `(new window['VBArray'](xhrIo.getResponseBody())).toArray()`
  * This will result in an array of numbers in the range of [0..255]
  *
  * Another option is to use the VBScript CStr method to convert it into a
@@ -1124,7 +1186,7 @@ goog.net.XhrIo.prototype.getResponseText = function() {
  * @return {Object} Binary result from the server or null if not available.
  */
 goog.net.XhrIo.prototype.getResponseBody = function() {
-  /** @preserveTry */
+  'use strict';
   try {
     if (this.xhr_ && 'responseBody' in this.xhr_) {
       return this.xhr_['responseBody'];
@@ -1145,7 +1207,7 @@ goog.net.XhrIo.prototype.getResponseBody = function() {
  * if no result available.
  */
 goog.net.XhrIo.prototype.getResponseXml = function() {
-  /** @preserveTry */
+  'use strict';
   try {
     return this.xhr_ ? this.xhr_.responseXML : null;
   } catch (e) {
@@ -1161,19 +1223,21 @@ goog.net.XhrIo.prototype.getResponseXml = function() {
  * @param {string=} opt_xssiPrefix Optional XSSI prefix string to use for
  *     stripping of the response before parsing. This needs to be set only if
  *     your backend server prepends the same prefix string to the JSON response.
+ * @throws Error if the response text is invalid JSON.
  * @return {Object|undefined} JavaScript object.
  */
 goog.net.XhrIo.prototype.getResponseJson = function(opt_xssiPrefix) {
+  'use strict';
   if (!this.xhr_) {
     return undefined;
   }
 
-  var responseText = this.xhr_.responseText;
+  let responseText = this.xhr_.responseText;
   if (opt_xssiPrefix && responseText.indexOf(opt_xssiPrefix) == 0) {
     responseText = responseText.substring(opt_xssiPrefix.length);
   }
 
-  return goog.json.parse(responseText);
+  return goog.json.hybrid.parse(responseText);
 };
 
 
@@ -1202,7 +1266,7 @@ goog.net.XhrIo.prototype.getResponseJson = function(opt_xssiPrefix) {
  * @return {*} The response.
  */
 goog.net.XhrIo.prototype.getResponse = function() {
-  /** @preserveTry */
+  'use strict';
   try {
     if (!this.xhr_) {
       return null;
@@ -1211,15 +1275,15 @@ goog.net.XhrIo.prototype.getResponse = function() {
       return this.xhr_.response;
     }
     switch (this.responseType_) {
-      case goog.net.XhrIo.ResponseType.DEFAULT:
-      case goog.net.XhrIo.ResponseType.TEXT:
+      case ResponseType.DEFAULT:
+      case ResponseType.TEXT:
         return this.xhr_.responseText;
       // DOCUMENT and BLOB don't need to be handled here because they are
       // introduced in the same spec that adds the .response field, and would
       // have been caught above.
       // ARRAY_BUFFER needs an implementation for Firefox 4, where it was
       // implemented using a draft spec rather than the final spec.
-      case goog.net.XhrIo.ResponseType.ARRAY_BUFFER:
+      case ResponseType.ARRAY_BUFFER:
         if ('mozResponseArrayBuffer' in this.xhr_) {
           return this.xhr_.mozResponseArrayBuffer;
         }
@@ -1244,12 +1308,13 @@ goog.net.XhrIo.prototype.getResponse = function() {
  * @return {string|undefined} The value of the response-header named key.
  */
 goog.net.XhrIo.prototype.getResponseHeader = function(key) {
+  'use strict';
   if (!this.xhr_ || !this.isComplete()) {
     return undefined;
   }
 
-  var value = this.xhr_.getResponseHeader(key);
-  return goog.isNull(value) ? undefined : value;
+  const value = this.xhr_.getResponseHeader(key);
+  return value === null ? undefined : value;
 };
 
 
@@ -1260,8 +1325,12 @@ goog.net.XhrIo.prototype.getResponseHeader = function(key) {
  * @return {string} The value of the response headers or empty string.
  */
 goog.net.XhrIo.prototype.getAllResponseHeaders = function() {
-  return this.xhr_ && this.isComplete() ? this.xhr_.getAllResponseHeaders() :
-                                          '';
+  'use strict';
+  // getAllResponseHeaders can return null if no response has been received,
+  // ensure we always return an empty string.
+  return this.xhr_ && this.isComplete() ?
+      (this.xhr_.getAllResponseHeaders() || '') :
+      '';
 };
 
 
@@ -1278,20 +1347,39 @@ goog.net.XhrIo.prototype.getAllResponseHeaders = function() {
  *     and header values as values.
  */
 goog.net.XhrIo.prototype.getResponseHeaders = function() {
-  var headersObject = {};
-  var headersArray = this.getAllResponseHeaders().split('\r\n');
-  for (var i = 0; i < headersArray.length; i++) {
+  'use strict';
+  // TODO(user): Make this function parse headers as per the spec
+  // (https://tools.ietf.org/html/rfc2616#section-4.2).
+
+  const headersObject = {};
+  const headersArray = this.getAllResponseHeaders().split('\r\n');
+  for (let i = 0; i < headersArray.length; i++) {
     if (goog.string.isEmptyOrWhitespace(headersArray[i])) {
       continue;
     }
-    var keyValue = goog.string.splitLimit(headersArray[i], ': ', 2);
-    if (headersObject[keyValue[0]]) {
-      headersObject[keyValue[0]] += ', ' + keyValue[1];
-    } else {
-      headersObject[keyValue[0]] = keyValue[1];
+    const keyValue =
+        goog.string.splitLimit(headersArray[i], ':', /* maxSplitCount= */ 1);
+    const key = keyValue[0];
+    let value = keyValue[1];
+
+    if (typeof value !== 'string') {
+      // There must be a value but it can be the empty string.
+      continue;
     }
+
+    // Whitespace at the start and end of the value is meaningless.
+    value = value.trim();
+    // The key should not contain whitespace but we currently ignore that.
+
+    const values = headersObject[key] || [];
+    headersObject[key] = values;
+    values.push(value);
   }
-  return headersObject;
+
+  return goog.object.map(headersObject, function(values) {
+    'use strict';
+    return values.join(', ');
+  });
 };
 
 
@@ -1304,6 +1392,7 @@ goog.net.XhrIo.prototype.getResponseHeaders = function() {
  *     unavailable.
  */
 goog.net.XhrIo.prototype.getStreamingResponseHeader = function(key) {
+  'use strict';
   return this.xhr_ ? this.xhr_.getResponseHeader(key) : null;
 };
 
@@ -1315,15 +1404,17 @@ goog.net.XhrIo.prototype.getStreamingResponseHeader = function(key) {
  * @return {string} The value of the response headers or empty string.
  */
 goog.net.XhrIo.prototype.getAllStreamingResponseHeaders = function() {
+  'use strict';
   return this.xhr_ ? this.xhr_.getAllResponseHeaders() : '';
 };
 
 
 /**
  * Get the last error message
- * @return {goog.net.ErrorCode} Last error code.
+ * @return {!goog.net.ErrorCode} Last error code.
  */
 goog.net.XhrIo.prototype.getLastErrorCode = function() {
+  'use strict';
   return this.lastErrorCode_;
 };
 
@@ -1333,8 +1424,9 @@ goog.net.XhrIo.prototype.getLastErrorCode = function() {
  * @return {string} Last error message.
  */
 goog.net.XhrIo.prototype.getLastError = function() {
-  return goog.isString(this.lastError_) ? this.lastError_ :
-                                          String(this.lastError_);
+  'use strict';
+  return typeof this.lastError_ === 'string' ? this.lastError_ :
+                                               String(this.lastError_);
 };
 
 
@@ -1346,6 +1438,7 @@ goog.net.XhrIo.prototype.getLastError = function() {
  * @private
  */
 goog.net.XhrIo.prototype.formatMsg_ = function(msg) {
+  'use strict';
   return msg + ' [' + this.lastMethod_ + ' ' + this.lastUri_ + ' ' +
       this.getStatus() + ']';
 };
@@ -1359,6 +1452,8 @@ goog.debug.entryPointRegistry.register(
      *     function.
      */
     function(transformer) {
+      'use strict';
       goog.net.XhrIo.prototype.onReadyStateChangeEntryPoint_ =
           transformer(goog.net.XhrIo.prototype.onReadyStateChangeEntryPoint_);
     });
+});  // goog.scope

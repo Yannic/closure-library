@@ -1,20 +1,12 @@
-// Copyright 2011 The Closure Library Authors. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS-IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+/**
+ * @license
+ * Copyright The Closure Library Authors.
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
 /**
  * @fileoverview Unit tests for the abstract cryptographic hash interface.
- *
+ * @suppress {missingRequire} TODO(user): this shouldn't be needed
  */
 
 goog.provide('goog.crypt.hashTester');
@@ -23,6 +15,7 @@ goog.require('goog.array');
 goog.require('goog.crypt');
 goog.require('goog.dom');
 goog.require('goog.dom.TagName');
+goog.require('goog.reflect');
 goog.require('goog.testing.PerformanceTable');
 goog.require('goog.testing.PseudoRandom');
 goog.require('goog.testing.asserts');
@@ -35,6 +28,7 @@ goog.setTestOnly('hashTester');
  * @param {!goog.crypt.Hash} hash A hash instance.
  */
 goog.crypt.hashTester.runBasicTests = function(hash) {
+  'use strict';
   // Compute first hash.
   hash.update([97, 158]);
   var golden1 = hash.digest();
@@ -113,6 +107,7 @@ goog.crypt.hashTester.runBasicTests = function(hash) {
  * @param {number} blockBytes Size of the hash block.
  */
 goog.crypt.hashTester.runBlockTests = function(hash, blockBytes) {
+  'use strict';
   // Compute a message which is 1 byte shorter than hash block size.
   var chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
   var message = '';
@@ -179,6 +174,7 @@ goog.crypt.hashTester.runBlockTests = function(hash, blockBytes) {
  * @param {string} hashName Name of the hashing function.
  */
 goog.crypt.hashTester.runPerfTests = function(hashFactory, hashName) {
+  'use strict';
   var body = goog.dom.getDocument().body;
   var perfTable = goog.dom.createElement(goog.dom.TagName.DIV);
   goog.dom.appendChild(body, perfTable);
@@ -192,11 +188,13 @@ goog.crypt.hashTester.runPerfTests = function(hashFactory, hashName) {
 
     function run(data, dataType) {
       table.run(function() {
+        'use strict';
         var hash = hashFactory();
         for (var i = 0; i < updateCount; i++) {
           hash.update(data, byteLength);
         }
-        var digest = hash.digest();
+        // Prevent JsCompiler optimizations from invalidating the benchmark.
+        goog.reflect.sinkValue(hash.digest());
       }, label + ' (' + dataType + ')');
     }
 
@@ -224,6 +222,7 @@ goog.crypt.hashTester.runPerfTests = function(hashFactory, hashName) {
  * @private
  */
 goog.crypt.hashTester.createRandomByteArray_ = function(length) {
+  'use strict';
   var random = new goog.testing.PseudoRandom(0);
   var bytes = [];
 
@@ -245,7 +244,11 @@ goog.crypt.hashTester.createRandomByteArray_ = function(length) {
  * @private
  */
 goog.crypt.hashTester.createByteString_ = function(bytes) {
+  'use strict';
   var str = '';
-  goog.array.forEach(bytes, function(b) { str += String.fromCharCode(b); });
+  goog.array.forEach(bytes, function(b) {
+    'use strict';
+    str += String.fromCharCode(b);
+  });
   return str;
 };

@@ -1,22 +1,13 @@
-// Copyright 2011 The Closure Library Authors. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS-IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+/**
+ * @license
+ * Copyright The Closure Library Authors.
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
 /**
  * @fileoverview Abstract cryptographic hash interface.
  *
  * See goog.crypt.Sha1 and goog.crypt.Md5 for sample implementations.
- *
  */
 
 goog.provide('goog.crypt.Hash');
@@ -30,6 +21,7 @@ goog.provide('goog.crypt.Hash');
  * @struct
  */
 goog.crypt.Hash = function() {
+  'use strict';
   /**
    * The block size for the hasher.
    * @type {number}
@@ -45,7 +37,7 @@ goog.crypt.Hash.prototype.reset = goog.abstractMethod;
 
 
 /**
- * Adds a byte array (array with values in [0-255] range) or a string (might
+ * Adds a byte array (array with values in [0-255] range) or a string (must
  * only contain 8-bit, i.e., Latin1 characters) to the internal accumulator.
  *
  * Many hash functions operate on blocks of data and implement optimizations

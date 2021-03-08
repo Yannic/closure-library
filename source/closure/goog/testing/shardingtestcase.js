@@ -1,16 +1,8 @@
-// Copyright 2009 The Closure Library Authors. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS-IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+/**
+ * @license
+ * Copyright The Closure Library Authors.
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
 /**
  * @fileoverview Utility for sharding tests.
@@ -19,7 +11,7 @@
  * <ol>
  *   <li>Instead of writing your large test in foo_test.html, write it in
  * foo_test_template.html</li>
- *   <li>Add a call to {@code goog.testing.ShardingTestCase.shardByFileName()}
+ *   <li>Add a call to `goog.testing.ShardingTestCase.shardByFileName()`
  * near the top of your test, before any test cases or setup methods.</li>
  *   <li>Symlink foo_test_template.html into different sharded test files
  * named foo_1of4_test.html, foo_2of4_test.html, etc, using `ln -s`.</li>
@@ -29,8 +21,6 @@
  * as a symlink
  *   </li>
  * </ol>
- *
- * @author nicksantos@google.com (Nick Santos)
  */
 
 goog.setTestOnly('goog.testing.ShardingTestCase');
@@ -52,6 +42,7 @@ goog.require('goog.testing.TestCase');
  * @final
  */
 goog.testing.ShardingTestCase = function(shardIndex, numShards, opt_name) {
+  'use strict';
   goog.testing.ShardingTestCase.base(this, 'constructor', opt_name);
 
   goog.asserts.assert(shardIndex > 0, 'Shard index should be positive');
@@ -88,6 +79,7 @@ goog.testing.ShardingTestCase.prototype.sharded_ = false;
  * @override
  */
 goog.testing.ShardingTestCase.prototype.runTests = function() {
+  'use strict';
   if (!this.sharded_) {
     var numTests = this.getCount();
     goog.asserts.assert(
@@ -114,6 +106,7 @@ goog.testing.ShardingTestCase.prototype.runTests = function() {
  * @param {string=} opt_name A descriptive name for the test case.
  */
 goog.testing.ShardingTestCase.shardByFileName = function(opt_name) {
+  'use strict';
   var path = window.location.pathname;
   var shardMatch = path.match(/_(\d+)of(\d+)_test\.(js|html)/);
   goog.asserts.assert(

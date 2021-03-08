@@ -1,31 +1,25 @@
-// Copyright 2008 The Closure Library Authors. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS-IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+/**
+ * @license
+ * Copyright The Closure Library Authors.
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
 /**
  * @fileoverview Defines the goog.module.ModuleInfo class.
- *
  */
 
 goog.provide('goog.module.ModuleInfo');
 
 goog.require('goog.Disposable');
 goog.require('goog.async.throwException');
+goog.require('goog.dispose');
 goog.require('goog.functions');
+goog.require('goog.html.TrustedResourceUrl');
 /** @suppress {extraRequire} */
 goog.require('goog.module');
 goog.require('goog.module.BaseModule');
 goog.require('goog.module.ModuleLoadCallback');
+goog.require('goog.module.ModuleLoadFailureType');
 
 
 
@@ -42,6 +36,7 @@ goog.require('goog.module.ModuleLoadCallback');
  * @final
  */
 goog.module.ModuleInfo = function(deps, id) {
+  'use strict';
   goog.Disposable.call(this);
 
   /**
@@ -85,7 +80,7 @@ goog.inherits(goog.module.ModuleInfo, goog.Disposable);
 
 /**
  * The uris that can be used to retrieve this module's code.
- * @type {Array<string>?}
+ * @type {?Array<!goog.html.TrustedResourceUrl>}
  * @private
  */
 goog.module.ModuleInfo.prototype.uris_ = null;
@@ -114,6 +109,7 @@ goog.module.ModuleInfo.prototype.module_ = null;
  * @return {Array<string>} The ids of the modules that this module depends on.
  */
 goog.module.ModuleInfo.prototype.getDependencies = function() {
+  'use strict';
   return this.deps_;
 };
 
@@ -123,24 +119,31 @@ goog.module.ModuleInfo.prototype.getDependencies = function() {
  * @return {string} The ID.
  */
 goog.module.ModuleInfo.prototype.getId = function() {
+  'use strict';
   return this.id_;
 };
 
 
 /**
  * Sets the uris of this module.
- * @param {Array<string>} uris Uris for this module's code.
+ * @param {!Array<!goog.html.TrustedResourceUrl>} uris Uris for this module's
+ *     code.
  */
-goog.module.ModuleInfo.prototype.setUris = function(uris) {
+goog.module.ModuleInfo.prototype.setTrustedUris = function(uris) {
+  'use strict';
   this.uris_ = uris;
 };
 
 
 /**
  * Gets the uris of this module.
- * @return {Array<string>?} Uris for this module's code.
+ * @return {!Array<!goog.html.TrustedResourceUrl>} Uris for this module's code.
  */
 goog.module.ModuleInfo.prototype.getUris = function() {
+  'use strict';
+  if (!this.uris_) {
+    this.uris_ = [];
+  }
   return this.uris_;
 };
 
@@ -152,10 +155,11 @@ goog.module.ModuleInfo.prototype.getUris = function() {
  *     subclass.
  */
 goog.module.ModuleInfo.prototype.setModuleConstructor = function(constructor) {
+  'use strict';
   if (this.moduleConstructor_ === goog.module.BaseModule) {
     this.moduleConstructor_ = constructor;
   } else {
-    throw Error('Cannot set module constructor more than once.');
+    throw new Error('Cannot set module constructor more than once.');
   }
 };
 
@@ -173,6 +177,7 @@ goog.module.ModuleInfo.prototype.setModuleConstructor = function(constructor) {
  */
 goog.module.ModuleInfo.prototype.registerEarlyCallback = function(
     fn, opt_handler) {
+  'use strict';
   return this.registerCallback_(this.earlyOnloadCallbacks_, fn, opt_handler);
 };
 
@@ -187,6 +192,7 @@ goog.module.ModuleInfo.prototype.registerEarlyCallback = function(
  *     object.
  */
 goog.module.ModuleInfo.prototype.registerCallback = function(fn, opt_handler) {
+  'use strict';
   return this.registerCallback_(this.onloadCallbacks_, fn, opt_handler);
 };
 
@@ -201,6 +207,7 @@ goog.module.ModuleInfo.prototype.registerCallback = function(fn, opt_handler) {
  *     object.
  */
 goog.module.ModuleInfo.prototype.registerErrback = function(fn, opt_handler) {
+  'use strict';
   return this.registerCallback_(this.onErrorCallbacks_, fn, opt_handler);
 };
 
@@ -219,6 +226,7 @@ goog.module.ModuleInfo.prototype.registerErrback = function(fn, opt_handler) {
  */
 goog.module.ModuleInfo.prototype.registerCallback_ = function(
     callbacks, fn, opt_handler) {
+  'use strict';
   var callback = new goog.module.ModuleLoadCallback(fn, opt_handler);
   callbacks.push(callback);
   return callback;
@@ -230,7 +238,20 @@ goog.module.ModuleInfo.prototype.registerCallback_ = function(
  * @return {boolean} Whether the module has been loaded.
  */
 goog.module.ModuleInfo.prototype.isLoaded = function() {
+  'use strict';
   return !!this.module_;
+};
+
+
+/**
+ * Marks the current module as loaded. This is useful for subtractive module
+ * loading, where occasionally we need to fallback to normal module loading,
+ * and re-fetch the module graph. In this case, we need a way to tell the module
+ * manager to mark all modules that are already loaded.
+ */
+goog.module.ModuleInfo.prototype.setLoaded = function() {
+  'use strict';
+  this.module_ = new goog.module.BaseModule();
 };
 
 
@@ -240,6 +261,7 @@ goog.module.ModuleInfo.prototype.isLoaded = function() {
  *     Otherwise, null.
  */
 goog.module.ModuleInfo.prototype.getModule = function() {
+  'use strict';
   return this.module_;
 };
 
@@ -252,6 +274,7 @@ goog.module.ModuleInfo.prototype.getModule = function() {
  *     callbacks.
  */
 goog.module.ModuleInfo.prototype.onLoad = function(contextProvider) {
+  'use strict';
   // Instantiate and initialize the module object.
   var module = new this.moduleConstructor_;
   module.initialize(contextProvider());
@@ -278,9 +301,11 @@ goog.module.ModuleInfo.prototype.onLoad = function(contextProvider) {
 
 /**
  * Calls the error callbacks for the module.
- * @param {goog.module.ModuleManager.FailureType} cause What caused the error.
+ * @param {goog.module.ModuleLoadFailureType} cause What caused the
+ *     error.
  */
 goog.module.ModuleInfo.prototype.onError = function(cause) {
+  'use strict';
   var result = this.callCallbacks_(this.onErrorCallbacks_, cause);
   if (result) {
     // Throw an exception asynchronously. Do not let the exception leak
@@ -303,6 +328,7 @@ goog.module.ModuleInfo.prototype.onError = function(cause) {
  * @private
  */
 goog.module.ModuleInfo.prototype.callCallbacks_ = function(callbacks, context) {
+  'use strict';
   // NOTE(nicksantos):
   // In practice, there are two error-handling scenarios:
   // 1) The callback does some mandatory initialization of the module.
@@ -333,6 +359,7 @@ goog.module.ModuleInfo.prototype.callCallbacks_ = function(callbacks, context) {
 
 /** @override */
 goog.module.ModuleInfo.prototype.disposeInternal = function() {
+  'use strict';
   goog.module.ModuleInfo.superClass_.disposeInternal.call(this);
   goog.dispose(this.module_);
 };

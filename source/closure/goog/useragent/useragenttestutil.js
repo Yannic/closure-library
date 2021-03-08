@@ -1,16 +1,8 @@
-// Copyright 2006 The Closure Library Authors. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS-IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+/**
+ * @license
+ * Copyright The Closure Library Authors.
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
 /**
  * @fileoverview Shared test function to reset the constants in
@@ -39,6 +31,7 @@ goog.setTestOnly('goog.userAgentTestUtil');
  * @suppress {accessControls}
  */
 goog.userAgentTestUtil.reinitializeUserAgent = function() {
+  'use strict';
   // Unfortunately we can't isolate the useragent setting in a function
   // we can call, because things rely on it compiling to nothing when
   // one of the ASSUME flags is set, and the compiler isn't smart enough
@@ -63,6 +56,7 @@ goog.userAgentTestUtil.reinitializeUserAgent = function() {
   goog.userAgent.IPAD = goog.labs.userAgent.platform.isIpad();
   goog.userAgent.IPHONE = goog.labs.userAgent.platform.isIphone();
   goog.userAgent.IPOD = goog.labs.userAgent.platform.isIpod();
+  goog.userAgent.KAIOS = goog.labs.userAgent.platform.isKaiOS();
   goog.userAgent.VERSION = goog.userAgent.determineVersion_();
 
   // Platform in goog.userAgent.platform.
@@ -111,6 +105,7 @@ goog.userAgentTestUtil.UserAgents = {
  * @return {boolean} Whether the user agent has been detected.
  */
 goog.userAgentTestUtil.getUserAgentDetected = function(agent) {
+  'use strict';
   switch (agent) {
     case goog.userAgentTestUtil.UserAgents.GECKO:
       return goog.userAgent.GECKO;
@@ -124,5 +119,5 @@ goog.userAgentTestUtil.getUserAgentDetected = function(agent) {
       return goog.userAgent.WEBKIT;
   }
 
-  throw Error('Unrecognized user agent');
+  throw new Error('Unrecognized user agent');
 };

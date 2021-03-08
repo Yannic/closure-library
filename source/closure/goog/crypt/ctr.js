@@ -1,16 +1,12 @@
-// Copyright 2016 The Closure Library Authors. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS-IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+/**
+ * @fileoverview
+ * @suppress {missingRequire} TODO(user): this shouldn't be needed
+ */
+/**
+ * @license
+ * Copyright The Closure Library Authors.
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
 goog.provide('goog.crypt.Ctr');
 
@@ -31,7 +27,7 @@ goog.require('goog.crypt');
  * @struct
  */
 goog.crypt.Ctr = function(cipher) {
-
+  'use strict';
   /**
    * Block cipher.
    * @type {!goog.crypt.BlockCipher}
@@ -51,7 +47,7 @@ goog.crypt.Ctr = function(cipher) {
  * @return {!Array<number>} Encrypted message.
  */
 goog.crypt.Ctr.prototype.encrypt = function(plainText, initialVector) {
-
+  'use strict';
   goog.asserts.assert(
       initialVector.length == this.cipher_.BLOCK_SIZE,
       'Initial vector must be size of one block.');
@@ -99,6 +95,7 @@ goog.crypt.Ctr.prototype.decrypt = goog.crypt.Ctr.prototype.encrypt;
  * @private
  */
 goog.crypt.Ctr.incrementBigEndianCounter_ = function(counter) {
+  'use strict';
   for (var i = counter.length - 1; i >= 0; i--) {
     var currentByte = counter[i];
     currentByte = (currentByte + 1) & 0xFF;  // Allow wrapping around.
