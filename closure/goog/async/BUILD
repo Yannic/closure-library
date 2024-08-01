@@ -90,6 +90,8 @@ closure_js_library(
         ":nexttick",
         ":throwexception",
         ":workqueue",
+        "//closure/goog/asserts",
+        "//closure/goog/debug:asyncstacktag",
     ],
 )
 

@@ -29,7 +29,6 @@ goog.require('goog.editor.icontent.FieldFormatInfo');
 goog.require('goog.editor.icontent.FieldStyleInfo');
 goog.require('goog.editor.node');
 goog.require('goog.events');
-goog.require('goog.events.EventType');
 goog.require('goog.html.SafeHtml');
 goog.require('goog.log');
 goog.require('goog.style');
@@ -86,6 +85,7 @@ goog.editor.SeamlessField.prototype.listenForIframeLoadEventKey_;
  * update the field if necessary based on the new min height.
  * @param {number} height The min height specified as a number of pixels,
  *    e.g., 75.
+ * @suppress {strictMissingProperties} Added to tighten compiler checks
  */
 goog.editor.SeamlessField.prototype.setMinHeight = function(height) {
   'use strict';
@@ -93,6 +93,7 @@ goog.editor.SeamlessField.prototype.setMinHeight = function(height) {
     // Do nothing if the min height isn't changing.
     return;
   }
+  /** @suppress {strictMissingProperties} Added to tighten compiler checks */
   this.minHeight_ = height;
   if (this.usesIframe()) {
     this.doFieldSizingGecko();
@@ -156,21 +157,9 @@ goog.editor.SeamlessField.prototype.autoDetectFixedHeight_ = function() {
 
 
 /**
- * Resize the iframe in response to the wrapper div changing size.
- * @private
- */
-goog.editor.SeamlessField.prototype.handleOuterDocChange_ = function() {
-  'use strict';
-  if (this.isEventStopped(goog.editor.Field.EventType.CHANGE)) {
-    return;
-  }
-  this.sizeIframeToWrapperGecko_();
-};
-
-
-/**
  * Sizes the iframe to its body's height.
  * @private
+ * @suppress {strictMissingProperties} Added to tighten compiler checks
  */
 goog.editor.SeamlessField.prototype.sizeIframeToBodyHeightGecko_ = function() {
   'use strict';
@@ -330,6 +319,7 @@ goog.editor.SeamlessField.prototype.doFieldSizingGecko = function() {
  * infinite loops.
  * @return {boolean} False if the lock is already acquired.
  * @private
+ * @suppress {strictMissingProperties} Added to tighten compiler checks
  */
 goog.editor.SeamlessField.prototype.acquireSizeIframeLockGecko_ = function() {
   'use strict';
@@ -348,6 +338,7 @@ goog.editor.SeamlessField.prototype.acquireSizeIframeLockGecko_ = function() {
  */
 goog.editor.SeamlessField.prototype.releaseSizeIframeLockGecko_ = function() {
   'use strict';
+  /** @suppress {strictMissingProperties} Added to tighten compiler checks */
   this.sizeIframeLock_ = false;
 };
 
@@ -427,34 +418,6 @@ goog.editor.SeamlessField.prototype.usesIframe = function() {
 
 
 /** @override */
-goog.editor.SeamlessField.prototype.setupMutationEventHandlersGecko =
-    function() {
-  'use strict';
-  goog.editor.SeamlessField.superClass_.setupMutationEventHandlersGecko.call(
-      this);
-
-  if (this.usesIframe()) {
-    var iframe = this.getEditableIframe();
-    var outerDoc = iframe.ownerDocument;
-    this.eventRegister.listen(
-        outerDoc, goog.editor.Field.MUTATION_EVENTS_GECKO,
-        this.handleOuterDocChange_, true);
-
-    // If the images load after we do the initial sizing, then this will
-    // force a field resize.
-    this.listenForIframeLoadEventKey_ = goog.events.listenOnce(
-        this.getEditableDomHelper().getWindow(), goog.events.EventType.LOAD,
-        this.sizeIframeToBodyHeightGecko_, true, this);
-
-    this.eventRegister.listen(
-        outerDoc, 'DOMAttrModified',
-        goog.bind(this.handleDomAttrChange, this, this.handleOuterDocChange_),
-        true);
-  }
-};
-
-
-/** @override */
 goog.editor.SeamlessField.prototype.handleChange = function() {
   'use strict';
   if (this.isEventStopped(goog.editor.Field.EventType.CHANGE)) {
@@ -527,17 +490,6 @@ goog.editor.SeamlessField.prototype.dispatchBlur = function() {
       }
     }, this), 0);
   }
-};
-
-
-/** @override */
-goog.editor.SeamlessField.prototype.turnOnDesignModeGecko = function() {
-  'use strict';
-  goog.editor.SeamlessField.superClass_.turnOnDesignModeGecko.call(this);
-  var doc = this.getEditableDomHelper().getDocument();
-
-  doc.execCommand('enableInlineTableEditing', false, 'false');
-  doc.execCommand('enableObjectResizing', false, 'false');
 };
 
 
@@ -655,6 +607,7 @@ goog.editor.SeamlessField.prototype.attachIframe = function(iframe) {
   // if a field when it has an iframe child, to fill up the remaining line
   // height. So make the line height = 0.
   if (goog.editor.node.isStandardsMode(field)) {
+    /** @suppress {strictMissingProperties} Added to tighten compiler checks */
     this.originalFieldLineHeight_ = field.style.lineHeight;
     goog.style.setStyle(field, 'lineHeight', '0');
   }

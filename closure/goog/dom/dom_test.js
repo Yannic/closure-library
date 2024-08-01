@@ -25,7 +25,6 @@ const functions = goog.require('goog.functions');
 const googArray = goog.require('goog.array');
 const googDom = goog.require('goog.dom');
 const googObject = goog.require('goog.object');
-const isVersion = goog.require('goog.userAgent.product.isVersion');
 const testSuite = goog.require('goog.testing.testSuite');
 const testing = goog.require('goog.html.testing');
 /** @suppress {extraRequire} */
@@ -37,6 +36,7 @@ const $ = googDom.getElement;
 let divForTestingScrolling;
 let myIframe;
 let myIframeDoc;
+let crossDocumentElement;
 let stubs;
 
 function createTestDom(txt) {
@@ -102,8 +102,8 @@ function assertConstHtmlToNodeStringifiesToOneOf(
 }
 
 /** @return {boolean} Returns true if the userAgent is IE8 or higher. */
-function isIE8OrHigher() {
-  return userAgent.IE && isVersion('8');
+function isIE() {
+  return userAgent.IE;
 }
 
 /**
@@ -138,12 +138,17 @@ testSuite({
         '<div style="height:42px;font-size:1px;line-height:0;">' +
         'hello world</div>' +
         '<div style="height:23px;font-size:1px;line-height:0;">' +
-        'hello world</div>');
+        'hello world</div>' +
+        '<div id="xdoc" class="xdoc"></div>');
     myIframeDoc.close();
+
+    crossDocumentElement = myIframeDoc.getElementById('xdoc').cloneNode(true);
+    document.body.appendChild(crossDocumentElement);
   },
 
   tearDownPage() {
     document.body.removeChild(divForTestingScrolling);
+    document.body.removeChild(crossDocumentElement);
   },
 
   tearDown() {
@@ -174,6 +179,7 @@ testSuite({
     assertEquals('Should be able to get id', el.id, 'testEl');
     assertNull(googDom.getHTMLElement('nonexistent'));
     assertThrows(() => googDom.getHTMLElement('testSvg'));
+    assertNotNull(googDom.getHTMLElement('xdoc'));
   },
 
   testGetRequiredHTMLElement() {
@@ -183,6 +189,7 @@ testSuite({
     assertThrows(() => googDom.getRequiredHTMLElement('does_not_exist'));
     assertNotNull(googDom.getElement('testSvg'));
     assertThrows(() => googDom.getRequiredHTMLElement('testSvg'));
+    assertNotNull(googDom.getRequiredHTMLElement('xdoc'));
   },
 
   testGetRequiredElement() {
@@ -325,6 +332,7 @@ testSuite({
     assertNotNull(googDom.getElementByClass('svg-test'));
     assertThrows(() => googDom.getHTMLElementByClass('svg-test'));
     assertNull(googDom.getHTMLElementByClass('nonexistent'));
+    assertNotNull(googDom.getElementByClass('xdoc'));
   },
 
   testGetRequiredHTMLElementByClass() {
@@ -337,6 +345,7 @@ testSuite({
     assertNotNull(googDom.getElementByClass('svg-test'));
     assertThrows(() => googDom.getRequiredHTMLElementByClass('svg-test'));
     assertThrows(() => googDom.getRequiredHTMLElementByClass('nonexistent'));
+    assertNotNull(googDom.getRequiredHTMLElementByClass('xdoc'));
   },
 
   testGetElementByTagNameAndClass() {
@@ -481,7 +490,7 @@ testSuite({
     // Broken in webkit/edge quirks mode and in IE8+
     if ((googDom.isCss1CompatMode_(doc) ||
          !userAgent.WEBKIT && !userAgent.EDGE) &&
-        !isIE8OrHigher()) {
+        !isIE()) {
       assertEquals('height should be 65', 42 + 23, height);
     }
   },
@@ -1931,7 +1940,7 @@ testSuite({
     };
     const dh = googDom.getDomHelper(document);
     dh.setDocument(fakeDocument);
-    if (userAgent.IE && userAgent.isVersionOrHigher(10)) {
+    if (userAgent.IE) {
       assertEquals(0, dh.getDocumentScroll().x);
       assertEquals(0, dh.getDocumentScroll().y);
     } else {

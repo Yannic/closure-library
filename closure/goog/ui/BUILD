@@ -1286,6 +1286,7 @@ closure_js_library(
         "//closure/goog/events:eventtype",
         "//closure/goog/events:focushandler",
         "//closure/goog/fx:transition",
+        "//closure/goog/math:size",
         "//closure/goog/string",
         "//closure/goog/style",
         "//closure/goog/timer",
@@ -1554,7 +1555,6 @@ closure_js_library(
     lenient = True,
     deps = [
         ":component",
-        ":componentutil",
         ":controlcontent",
         "//closure/goog/a11y/aria",
         "//closure/goog/a11y/aria:attributes",
@@ -1747,8 +1747,8 @@ closure_js_library(
         ":component",
         "//closure/goog/array",
         "//closure/goog/asserts",
+        "//closure/goog/asserts:dom",
         "//closure/goog/dom",
-        "//closure/goog/dom:safe",
         "//closure/goog/dom:tagname",
         "//closure/goog/events:event",
         "//closure/goog/string",
@@ -1823,7 +1823,6 @@ closure_js_library(
         "//closure/goog/math:rect",
         "//closure/goog/math:size",
         "//closure/goog/style",
-        "//closure/goog/useragent",
     ],
 )
 

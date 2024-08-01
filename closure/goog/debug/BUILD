@@ -15,6 +15,13 @@ closure_js_library(
 )
 
 closure_js_library(
+    name = "asyncstacktag",
+    srcs = ["asyncstacktag.js"],
+    lenient = True,
+    deps = ["//closure/goog/asserts"],
+)
+
+closure_js_library(
     name = "debug",
     srcs = ["debug.js"],
     lenient = True,
@@ -110,12 +117,10 @@ closure_js_library(
         "//closure/goog/disposable",
         "//closure/goog/events",
         "//closure/goog/events:event",
-        "//closure/goog/events:eventtarget",
         "//closure/goog/log",
         "//closure/goog/net:xhrio",
         "//closure/goog/object",
         "//closure/goog/uri:utils",
-        "//closure/goog/useragent",
     ],
 )
 

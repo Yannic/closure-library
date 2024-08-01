@@ -45,6 +45,7 @@ closure_js_library(
     srcs = ["blobhasher.js"],
     lenient = True,
     deps = [
+        ":hash",
         "//closure/goog/asserts",
         "//closure/goog/events:eventtarget",
         "//closure/goog/fs",
@@ -87,8 +88,8 @@ closure_js_library(
     srcs = ["crypt.js"],
     lenient = True,
     deps = [
-        "//closure/goog/array",
         "//closure/goog/asserts",
+        "//closure/goog/async:throwexception",
     ],
 )
 
@@ -97,6 +98,7 @@ closure_js_library(
     srcs = ["ctr.js"],
     lenient = True,
     deps = [
+        ":blockcipher",
         ":crypt",
         "//closure/goog/array",
         "//closure/goog/asserts",
@@ -123,6 +125,7 @@ closure_js_library(
     lenient = True,
     deps = [
         ":crypt",
+        ":hash",
         "//closure/goog/array",
         "//closure/goog/dom",
         "//closure/goog/dom:tagname",

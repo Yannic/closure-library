@@ -5,6 +5,71 @@ package(default_visibility = ["//visibility:public"])
 licenses(["notice"])
 
 closure_js_library(
+    name = "jstests_deps",
+    testonly = 1,
+    lenient = True,
+    exports = [
+        ":bidi",
+        ":bidiformatter",
+        ":charlistdecompressor",
+        ":collation",
+        ":compactnumberformatsymbols",
+        ":compactnumberformatsymbolsext",
+        ":currency",
+        ":dateintervalformat",
+        ":dateintervalpatterns",
+        ":dateintervalsymbols",
+        ":datetimeformat",
+        ":datetimeparse",
+        ":datetimepatterns",
+        ":datetimepatternsext",
+        ":datetimesymbols",
+        ":datetimesymbolsext",
+        ":dayperiodsymbols",
+        ":durationformat",
+        ":durationsymbols",
+        ":durationsymbolsext",
+        ":durationsymboltypes",
+        ":graphemebreak",
+        ":listformat",
+        ":listsymbols",
+        ":listsymbolsext",
+        ":localefeature",
+        ":messageformat",
+        ":messages",
+        ":mime",
+        ":numberformat",
+        ":numberformatsymbols",
+        ":numberformatsymbolsext",
+        ":ordinalrules",
+        ":pluralrules",
+        ":relativedatetimeformat",
+        ":relativedatetimesymbols",
+        ":relativedatetimesymbolsext",
+        ":timezone",
+        ":uchar",
+        ":ucharnames",
+        "//closure/goog/date",
+        "//closure/goog/date:daterange",
+        "//closure/goog/date:utcdatetime",
+        "//closure/goog/html:safehtml",
+        "//closure/goog/html:testing",
+        "//closure/goog/labs/useragent",
+        "//closure/goog/object",
+        "//closure/goog/string",
+        "//closure/goog/testing:expectedfailures",
+        "//closure/goog/testing:propertyreplacer",
+        "//closure/goog/testing:testsuite",
+        "//closure/goog/testing/i18n:asserts",
+        "//closure/goog/testing/i18n:whitespace",
+        "//closure/goog/useragent",
+        "//closure/goog/useragent:product",
+        "//closure/goog/useragent:product_isversion",
+        "//closure/goog:base",
+    ],
+)
+
+closure_js_library(
     name = "bidi",
     srcs = ["bidi.js"],
     lenient = True,
@@ -33,6 +98,12 @@ closure_js_library(
 closure_js_library(
     name = "charpickerdata",
     srcs = ["charpickerdata.js"],
+    lenient = True,
+)
+
+closure_js_library(
+    name = "cldrversion",
+    srcs = ["cldrversion.js"],
     lenient = True,
 )
 
@@ -75,6 +146,7 @@ closure_js_library(
         ":dateintervalsymbols",
         ":datetimeformat",
         ":datetimesymbols",
+        ":localefeature",
         ":timezone",
         "//closure/goog/array",
         "//closure/goog/asserts",
@@ -89,27 +161,37 @@ closure_js_library(
     name = "dateintervalpatterns",
     srcs = ["dateintervalpatterns.js"],
     lenient = True,
-    deps = [":dateintervalsymbols"],
+    deps = [
+        ":cldrversion",
+        ":dateintervalsymbols",
+    ],
 )
 
 closure_js_library(
     name = "dateintervalpatternsext",
     srcs = ["dateintervalpatternsext.js"],
     lenient = True,
-    deps = [":dateintervalpatterns"],
+    deps = [
+        ":cldrversion",
+        ":dateintervalpatterns",
+    ],
 )
 
 closure_js_library(
     name = "dateintervalsymbols",
     srcs = ["dateintervalsymbols.js"],
     lenient = True,
+    deps = [":cldrversion"],
 )
 
 closure_js_library(
     name = "dateintervalsymbolsext",
     srcs = ["dateintervalsymbolsext.js"],
     lenient = True,
-    deps = [":dateintervalsymbols"],
+    deps = [
+        ":cldrversion",
+        ":dateintervalsymbols",
+    ],
 )
 
 closure_js_library(
@@ -119,6 +201,7 @@ closure_js_library(
     deps = [
         ":datetimepatterns",
         ":datetimesymbols",
+        ":dayperiodsymbols",
         ":localefeature",
         ":nativelocaledigits",
         ":timezone",
@@ -136,8 +219,10 @@ closure_js_library(
     deps = [
         ":datetimeformat",
         ":datetimesymbols",
+        ":dayperiodsymbols",
         "//closure/goog/asserts",
         "//closure/goog/date",
+        "//closure/goog/object",
     ],
 )
 
@@ -151,19 +236,33 @@ closure_js_library(
     name = "datetimepatterns",
     srcs = ["datetimepatterns.js"],
     lenient = True,
-    deps = [":datetimepatternstype"],
+    deps = [
+        ":cldrversion",
+        ":datetimepatternstype",
+    ],
 )
 
 closure_js_library(
     name = "datetimepatternsext",
     srcs = ["datetimepatternsext.js"],
     lenient = True,
-    deps = [":datetimepatterns"],
+    deps = [
+        ":cldrversion",
+        ":datetimepatterns",
+        ":datetimepatternstype",
+    ],
 )
 
 closure_js_library(
     name = "datetimesymbols",
     srcs = ["datetimesymbols.js"],
+    lenient = True,
+    deps = [":cldrversion"],
+)
+
+closure_js_library(
+    name = "dayperiodsymbols",
+    srcs = ["dayperiodsymbols.js"],
     lenient = True,
 )
 
@@ -171,7 +270,47 @@ closure_js_library(
     name = "datetimesymbolsext",
     srcs = ["datetimesymbolsext.js"],
     lenient = True,
-    deps = [":datetimesymbols"],
+    deps = [
+        ":cldrversion",
+        ":datetimesymbols",
+    ],
+)
+
+closure_js_library(
+    name = "durationformat",
+    srcs = ["durationformat.js"],
+    lenient = True,
+    deps = [
+        ":durationsymbols",
+        ":durationsymboltypes",
+        ":listformat",
+        ":localefeature",
+        ":messageformat",
+        "//closure/goog/asserts",
+    ],
+)
+
+closure_js_library(
+    name = "durationsymbols",
+    srcs = ["durationsymbols.js"],
+    lenient = True,
+    deps = [":durationsymboltypes"],
+)
+
+closure_js_library(
+    name = "durationsymbolsext",
+    srcs = ["durationsymbolsext.js"],
+    lenient = True,
+    deps = [
+        ":durationsymbols",
+        ":durationsymboltypes",
+    ],
+)
+
+closure_js_library(
+    name = "durationsymboltypes",
+    srcs = ["durationsymboltypes.js"],
+    lenient = True,
 )
 
 closure_js_library(
@@ -232,6 +371,13 @@ closure_js_library(
         "//closure/goog/array",
         "//closure/goog/asserts",
     ],
+)
+
+closure_js_library(
+    name = "messages",
+    srcs = ["messages.js"],
+    lenient = True,
+    deps = ["//closure/goog/asserts"],
 )
 
 closure_js_library(

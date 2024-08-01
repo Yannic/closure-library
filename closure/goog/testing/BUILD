@@ -183,10 +183,10 @@ closure_js_library(
     srcs = ["jsunit.js"],
     lenient = True,
     deps = [
+        ":asserts",
         ":testcase",
         ":testrunner",
         "//closure/goog/dom:tagname",
-        "//closure/goog/useragent",
     ],
 )
 
@@ -438,13 +438,16 @@ closure_js_library(
 closure_js_library(
     name = "recordfunction",
     testonly = True,
-    srcs = ["recordfunction.js"],
+    srcs = [
+        "functioncall.js",
+        "recordconstructor.js",
+        "recordfunction.js",
+    ],
     lenient = True,
     deps = [
         ":asserts",
         "//closure/goog/functions",
         "//closure/goog/promise",
-        "//closure/goog/promise:resolver",
     ],
 )
 
@@ -492,7 +495,6 @@ closure_js_library(
     srcs = ["testcase.js"],
     lenient = True,
     deps = [
-        ":asserts",
         ":cspviolationobserver",
         ":jsunitexception",
         "//closure/goog/array",
@@ -540,7 +542,6 @@ closure_js_library(
         "//closure/goog/dom:safe",
         "//closure/goog/dom:tagname",
         "//closure/goog/json",
-        "//closure/goog/useragent",
     ],
 )
 

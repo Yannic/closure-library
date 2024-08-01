@@ -18,19 +18,26 @@ const DateLike = goog.require('goog.date.DateLike');
 const DateTimeFormat = goog.require('goog.i18n.DateTimeFormat');
 const DateTimeParse = goog.require('goog.i18n.DateTimeParse');
 /** @suppress {extraRequire} */
-const DateTimeSymbols = goog.require('goog.i18n.DateTimeSymbols');
+const DateTimePatterns_ru = goog.require('goog.i18n.DateTimePatterns_ru');
 const DateTimeSymbols_ca = goog.require('goog.i18n.DateTimeSymbols_ca');
 const DateTimeSymbols_en = goog.require('goog.i18n.DateTimeSymbols_en');
 const DateTimeSymbols_fa = goog.require('goog.i18n.DateTimeSymbols_fa');
 const DateTimeSymbols_fr = goog.require('goog.i18n.DateTimeSymbols_fr');
 const DateTimeSymbols_ko = goog.require('goog.i18n.DateTimeSymbols_ko');
 const DateTimeSymbols_pl = goog.require('goog.i18n.DateTimeSymbols_pl');
+const DateTimeSymbols_ru = goog.require('goog.i18n.DateTimeSymbols_ru');
 const DateTimeSymbols_zh = goog.require('goog.i18n.DateTimeSymbols_zh');
 const DateTimeSymbols_zh_TW = goog.require('goog.i18n.DateTimeSymbols_zh_TW');
 const GoogDate = goog.require('goog.date.Date');
 const testSuite = goog.require('goog.testing.testSuite');
 
-replacer.replace(goog.i18n, 'DateTimeSymbols', DateTimeSymbols_en);
+const {DayPeriods_zh_Hant, setDayPeriods} = goog.require('goog.i18n.DayPeriods');
+
+const DATETIMESYMBOLS =
+    goog.reflect.objectProperty('DateTimeSymbols', goog.i18n);
+const LOCALE = goog.reflect.objectProperty('LOCALE', goog);
+
+replacer.replace(goog.i18n, DATETIMESYMBOLS, DateTimeSymbols_en);
 
 /**
  * @record
@@ -133,18 +140,18 @@ function assertParseFails(parser, text, options) {
 
 testSuite({
   getTestName: function() {
-    return 'DateTimeFormat Tests';
+    return 'DateTimeParse Tests';
   },
 
   setUpPage() {},
 
   setUp() {
-    replacer.replace(goog, 'LOCALE', 'en');
-    replacer.replace(goog.i18n, 'DateTimeSymbols', DateTimeSymbols_en);
+    replacer.replace(goog, LOCALE, 'en');
+    replacer.replace(goog.i18n, DATETIMESYMBOLS, DateTimeSymbols_en);
   },
 
   tearDown() {
-    replacer.replace(goog.i18n, 'DateTimeSymbols', DateTimeSymbols_en);
+    replacer.replace(goog.i18n, DATETIMESYMBOLS, DateTimeSymbols_en);
   },
 
   testNegativeYear() {
@@ -406,15 +413,141 @@ testSuite({
     assertParseFails(parser, '5:4');
     assertParseFails(parser, '5:44');
     assertParsedTimeEquals(5, 44, 0, 0, parser, '5:44 ');
+    assertParsedTimeEquals(5, 44, 0, 0, parser, '5:44   ');
     assertParsedTimeEquals(5, 44, 0, 0, parser, '5:44 p', {partial: 5});
+    assertParsedTimeEquals(
+        5, 44, 0, 0, parser, '5:44\u202f\u202fp', {partial: 6});
     assertParsedTimeEquals(17, 44, 0, 0, parser, '5:44 pm');
+    assertParsedTimeEquals(17, 44, 0, 0, parser, '5:44\u202fpm');
     assertParsedTimeEquals(5, 44, 0, 0, parser, '5:44 ym', {partial: 5});
+    assertParsedTimeEquals(
+        5, 44, 0, 0, parser, '5:44\u1680\u00a0\t\u0020 ym', {partial: 9});
 
     parser = new DateTimeParse('mm:ss');
     const date = new Date(0);
     assertTrue(parser.parse('15:', date) > 0);
     assertEquals(15, date.getMinutes());
     assertEquals(0, date.getSeconds());
+  },
+
+  testTimeParsing_partial_nonBreakableSpace() {
+    const parser = new DateTimeParse('h:mm\u00a0a');
+    assertParseFails(parser, '5');
+    assertParsedTimeEquals(5, 44, 0, 0, parser, '5:44\u00a0');
+    assertParsedTimeEquals(5, 44, 0, 0, parser, '5:44\u00a0p', {partial: 5});
+    assertParsedTimeEquals(17, 44, 0, 0, parser, '5:44\u00a0pm');
+  },
+
+  testTimeParsing_partial_narrowNonBreakableSpace() {
+    const parser = new DateTimeParse('h:mm\u202fa');
+    assertParseFails(parser, '5');
+    assertParsedTimeEquals(5, 44, 0, 0, parser, '5:44\u202f');
+    assertParsedTimeEquals(5, 44, 0, 0, parser, '5:44\u202fp', {partial: 5});
+    assertParsedTimeEquals(17, 44, 0, 0, parser, '5:44\u202fpm');
+  },
+
+  testTimeParsing_partial_emQuad() {
+    const parser = new DateTimeParse('h:mm\u2001a');
+    assertParseFails(parser, '5');
+    assertParsedTimeEquals(5, 44, 0, 0, parser, '5:44\u2001');
+    assertParsedTimeEquals(5, 44, 0, 0, parser, '5:44\u2001p', {partial: 5});
+    assertParsedTimeEquals(17, 44, 0, 0, parser, '5:44\u2001pm');
+  },
+
+  testTimeParsing_partial_enQuad() {
+    const parser = new DateTimeParse('h:mm\u2000a');
+    assertParseFails(parser, '5');
+    assertParsedTimeEquals(5, 44, 0, 0, parser, '5:44\u2000');
+    assertParsedTimeEquals(5, 44, 0, 0, parser, '5:44\u2000p', {partial: 5});
+    assertParsedTimeEquals(17, 44, 0, 0, parser, '5:44\u2000pm');
+  },
+
+  testTimeParsing_partial_emSpace() {
+    const parser = new DateTimeParse('h:mm\u2003a');
+    assertParseFails(parser, '5');
+    assertParsedTimeEquals(5, 44, 0, 0, parser, '5:44\u2003');
+    assertParsedTimeEquals(5, 44, 0, 0, parser, '5:44\u2003p', {partial: 5});
+    assertParsedTimeEquals(17, 44, 0, 0, parser, '5:44\u2003pm');
+  },
+
+  testTimeParsing_partial_enSpace() {
+    const parser = new DateTimeParse('h:mm\u2002a');
+    assertParseFails(parser, '5');
+    assertParsedTimeEquals(5, 44, 0, 0, parser, '5:44\u2002');
+    assertParsedTimeEquals(5, 44, 0, 0, parser, '5:44\u2002p', {partial: 5});
+    assertParsedTimeEquals(17, 44, 0, 0, parser, '5:44\u2002pm');
+  },
+
+  testTimeParsing_partial_thickSpace() {
+    const parser = new DateTimeParse('h:mm\u2004a');
+    assertParseFails(parser, '5');
+    assertParsedTimeEquals(5, 44, 0, 0, parser, '5:44\u2004');
+    assertParsedTimeEquals(5, 44, 0, 0, parser, '5:44\u2004p', {partial: 5});
+    assertParsedTimeEquals(17, 44, 0, 0, parser, '5:44\u2004pm');
+  },
+
+  testTimeParsing_partial_midSpace() {
+    const parser = new DateTimeParse('h:mm\u2005a');
+    assertParseFails(parser, '5');
+    assertParsedTimeEquals(5, 44, 0, 0, parser, '5:44\u2005');
+    assertParsedTimeEquals(5, 44, 0, 0, parser, '5:44\u2005p', {partial: 5});
+    assertParsedTimeEquals(17, 44, 0, 0, parser, '5:44\u2005pm');
+  },
+
+  testTimeParsing_partial_thinSpace() {
+    const parser = new DateTimeParse('h:mm\u2006a');
+    assertParseFails(parser, '5');
+    assertParsedTimeEquals(5, 44, 0, 0, parser, '5:44\u2006');
+    assertParsedTimeEquals(5, 44, 0, 0, parser, '5:44\u2006p', {partial: 5});
+    assertParsedTimeEquals(17, 44, 0, 0, parser, '5:44\u2006pm');
+  },
+
+  testTimeParsing_partial_thinSpace2() {
+    const parser = new DateTimeParse('h:mm\u2009a');
+    assertParseFails(parser, '5');
+    assertParsedTimeEquals(5, 44, 0, 0, parser, '5:44\u2009');
+    assertParsedTimeEquals(5, 44, 0, 0, parser, '5:44\u2009p', {partial: 5});
+    assertParsedTimeEquals(17, 44, 0, 0, parser, '5:44\u2009pm');
+  },
+
+  testTimeParsing_partial_figureSpace() {
+    const parser = new DateTimeParse('h:mm\u2007a');
+    assertParseFails(parser, '5');
+    assertParsedTimeEquals(5, 44, 0, 0, parser, '5:44\u2007');
+    assertParsedTimeEquals(5, 44, 0, 0, parser, '5:44\u2007p', {partial: 5});
+    assertParsedTimeEquals(17, 44, 0, 0, parser, '5:44\u2007pm');
+  },
+
+  testTimeParsing_partial_punctuationSpace() {
+    const parser = new DateTimeParse('h:mm\u2008a');
+    assertParseFails(parser, '5');
+    assertParsedTimeEquals(5, 44, 0, 0, parser, '5:44\u2008');
+    assertParsedTimeEquals(5, 44, 0, 0, parser, '5:44\u2008p', {partial: 5});
+    assertParsedTimeEquals(17, 44, 0, 0, parser, '5:44\u2008pm');
+  },
+
+  testTimeParsing_partial_hairSpace() {
+    const parser = new DateTimeParse('h:mm\u200aa');
+    assertParseFails(parser, '5');
+    assertParsedTimeEquals(5, 44, 0, 0, parser, '5:44\u200a');
+    assertParsedTimeEquals(5, 44, 0, 0, parser, '5:44\u200ap', {partial: 5});
+    assertParsedTimeEquals(17, 44, 0, 0, parser, '5:44\u200apm');
+  },
+
+  testTimeParsing_partial_mediumMatematicalSpace() {
+    const parser = new DateTimeParse('h:mm\u205fa');
+    assertParseFails(parser, '5');
+    assertParsedTimeEquals(5, 44, 0, 0, parser, '5:44\u205f');
+    assertParsedTimeEquals(5, 44, 0, 0, parser, '5:44\u205fp', {partial: 5});
+    assertParsedTimeEquals(17, 44, 0, 0, parser, '5:44\u205fpm');
+  },
+
+  testTimeParsing_partial_ideographicSpace() {
+    const parser = new DateTimeParse('h:mm\u3000a');
+    assertParseFails(parser, '5');
+    assertParsedTimeEquals(5, 44, 0, 0, parser, '5:44\u3000');
+    assertParsedTimeEquals(5, 44, 0, 0, parser, '5:44\u3000p', {partial: 5});
+    assertParsedTimeEquals(17, 44, 0, 0, parser, '5:44\u3000pm');
   },
 
   testTimeParsing_overflow() {
@@ -487,7 +620,7 @@ testSuite({
   },
 
   testChineseDate() {
-    replacer.replace(goog.i18n, 'DateTimeSymbols', DateTimeSymbols_zh);
+    replacer.replace(goog.i18n, DATETIMESYMBOLS, DateTimeSymbols_zh);
 
     // JavaScript month start from 0, July is 7 - 1
     const date = new Date(2006, 7 - 1, 24, 12, 12, 12, 0);
@@ -529,16 +662,24 @@ testSuite({
   },
 
   testZhTwBFormat() {
-    replacer.replace(goog.i18n, 'DateTimeSymbols', DateTimeSymbols_zh_TW);
+    let nativeMode = true;
+    replacer.replace(goog.i18n, DATETIMESYMBOLS, DateTimeSymbols_zh_TW);
+
+    // Make sure we have the day period info.
+    setDayPeriods(DayPeriods_zh_Hant);
 
     // Test for AM/PM with B for zh_TW
     let parser = new DateTimeParse(DateTimeFormat.Format.FULL_TIME);
 
+    // 3:26 下午 (afternoon1)
     let gmtDateStringPm = '\u4E0B\u534803:26:28 [GMT-07:00]';
     let date = new Date(2006, 7 - 1, 24, 12, 12, 12, 0);
 
     let parsedDate = parser.parse(gmtDateStringPm, date);
-    assertTrue(parsedDate > 0);
+
+    assertTrue(
+        'nativeMode=' + nativeMode + ', parsedDate=' + parsedDate,
+        parsedDate > 0);
     // This should be give 10PM == 22:00.
     const normalizedHourPm =
         (24 + date.getHours() + date.getTimezoneOffset() / 60) % 24;
@@ -550,7 +691,7 @@ testSuite({
   // for parsing dates with such native digits.
   testDatesWithNativeDigits() {
     // Language Arabic is one example with
-    replacer.replace(goog.i18n, 'DateTimeSymbols', DateTimeSymbols_fa);
+    replacer.replace(goog.i18n, DATETIMESYMBOLS, DateTimeSymbols_fa);
 
     let formatter = new DateTimeFormat(DateTimeFormat.Format.FULL_DATE);
     let parser = new DateTimeParse(DateTimeFormat.Format.FULL_DATE);
@@ -673,7 +814,7 @@ testSuite({
   },
 
   testFrenchShortQuarter() {
-    replacer.replace(goog.i18n, 'DateTimeSymbols', DateTimeSymbols_fr);
+    replacer.replace(goog.i18n, DATETIMESYMBOLS, DateTimeSymbols_fr);
     const parser = new DateTimeParse('yyyyQQ');
 
     assertParsedDateEquals(2009, 7 - 1, 1, parser, '2009T3');
@@ -763,7 +904,7 @@ testSuite({
 
   /** @bug 9901750 */
   testStandaloneMonthPattern() {
-    replacer.replace(goog.i18n, 'DateTimeSymbols', DateTimeSymbols_pl);
+    replacer.replace(goog.i18n, DATETIMESYMBOLS, DateTimeSymbols_pl);
     const date1 = new GoogDate(2006, 7 - 1);
     const date2 = new GoogDate();
     const formatter = new DateTimeFormat('LLLL yyyy');
@@ -778,7 +919,7 @@ testSuite({
     const symbols = [DateTimeSymbols_en, DateTimeSymbols_pl];
 
     for (let i = 0; i < symbols.length; i++) {
-      replacer.replace(goog.i18n, 'DateTimeSymbols', symbols[i]);
+      replacer.replace(goog.i18n, DATETIMESYMBOLS, symbols[i]);
       const dateTimeSymbols = symbols[i];
       const tests = {
         'MMMM yyyy': dateTimeSymbols.MONTHS,
@@ -821,7 +962,7 @@ testSuite({
 
   testQuotedPattern() {
     // Regression test for b/29990921.
-    replacer.replace(goog.i18n, 'DateTimeSymbols', DateTimeSymbols_en);
+    replacer.replace(goog.i18n, DATETIMESYMBOLS, DateTimeSymbols_en);
 
     // Literal apostrophe
     let parser = new DateTimeParse('MMM \'\'yy');
@@ -868,4 +1009,217 @@ testSuite({
     parser = new DateTimeParse('yyyy');
     assertThrows(() => parser.parse('1234', date, opts));
   },
+
+
+  testZhHantTwDayPeriods() {
+    // b/208532468, 3-Dec-2021
+
+    replacer.replace(goog, LOCALE, 'zh-TW');
+    replacer.replace(goog.i18n, DATETIMESYMBOLS, DateTimeSymbols_zh_TW);
+    // Set up for parts of the day in Chinese.
+    setDayPeriods(DayPeriods_zh_Hant);
+
+    // These cover the time periods for this locale. Note that this set
+    // is generated with flexible time periods, producing several different
+    // day period names.
+    const testStringsZhHantTw = [
+      '午夜12:00:00',
+      '清晨5:30:00',
+      '上午8:58:00',
+      '中午12:00:00',
+      '中午12:58:59',
+      '下午2:17:00',
+      '晚上7:00:00',
+      '凌晨3:37:17',
+    ];
+
+    // These use AM/PM formats.
+    const testStringsZhHantMo = [
+      '上午12:00:00',
+      '上午5:30:00',
+      '上午8:58:00',
+      '下午12:00:00',
+      '下午12:58:59',
+      '下午2:17:00',
+      '下午7:00:00',
+      '上午3:37:17',
+    ];
+
+    // Expected date time values
+    const parseInfoZhHantTw = [
+      [2022, 4, 20, 0, 0, 0], [2022, 4, 20, 5, 30, 0], [2022, 4, 20, 8, 58, 0],
+      [2022, 4, 20, 12, 0, 0], [2022, 4, 20, 12, 58, 59],
+      [2022, 4, 20, 14, 17, 0], [2022, 4, 20, 19, 0, 0],
+      [2022, 4, 20, 3, 37, 17]
+    ];
+
+    let date = new Date(0);
+    const parser = new DateTimeParse(DateTimeFormat.Format.MEDIUM_TIME);
+    // Check the results make sense with both B and AM/PM formatting
+    for (let index = 0; index < testStringsZhHantTw.length; index++) {
+      const dVals = parseInfoZhHantTw[index];
+
+      parser.parse(testStringsZhHantTw[index], date);
+      assertTimeEquals(dVals[3], dVals[4], dVals[5], 0, date);
+    }
+
+    let date2 = new Date(0);
+    const shortParser = new DateTimeParse(DateTimeFormat.Format.SHORT_TIME);
+    // Check strings with only AM/PM data in Hant_MO.
+    for (let index = 0; index < testStringsZhHantMo.length; index++) {
+      const dVals = parseInfoZhHantTw[index];
+
+      let parsedOK = shortParser.parse(testStringsZhHantMo[index], date2);
+      assertTrue('index=' + index, parsedOK > 0);
+      assertTimeEquals(dVals[3], dVals[4], 0, 0, date2);
+    }
+  },
+
+  testRoundTripZhTw() {
+    // Test for b/208532468 round trip with zh_TW with flexible time periods
+    const date = new Date(0, 0, 0, 17);
+    replacer.replace(goog, LOCALE, 'zh-TW');
+    replacer.replace(goog.i18n, DATETIMESYMBOLS, DateTimeSymbols_zh_TW);
+
+    setDayPeriods(DayPeriods_zh_Hant);
+
+    // !!! TODO: check other mode
+    let nativeMode = false;
+    // replacer.replace(
+    //     LocaleFeature, 'USE_ECMASCRIPT_I18N_DATETIMEF', nativeMode);
+    const fmt = new DateTimeFormat(DateTimeFormat.Format.SHORT_TIME);
+    assertTrue(fmt !== null);
+    const result = fmt.format(date);
+    const expected = '下午5:00';
+    assertEquals('Native=' + nativeMode, expected, result);
+
+    // Now parse this
+    let parser = new DateTimeParse(DateTimeFormat.Format.SHORT_TIME);
+    let newDate = new Date(0);
+    let parsedOK = parser.parse(result, newDate);
+    assertTrue(parsedOK > 0);
+    assertTimeEquals(17, 0, 0, 0, newDate);
+  },
+
+  testNonAsciiSpaces() {
+    const time_part = '3:26';
+    const white_spaces = [
+      ' ',
+      '\t',
+      '\xA0',
+      '\u1680',
+      '\u180e',
+      '\u2000',
+      '\u2001',
+      '\u2002',
+      '\u2003',
+      '\u2004',
+      '\u2005',
+      '\u2006',
+      '\u2007',
+      '\u2008',
+      '\u2009',
+      '\u200a',
+      '\u202f',
+      '\u205f',
+      '\u3000',
+      '   ',                 // Multiple spaces
+      '\u202f\u00a0\u200a',  // Multiple non-ASCII spaces
+    ];
+
+    let parser = new DateTimeParse(DateTimeFormat.Format.SHORT_TIME);
+    let newDate = new Date(0);
+    for (let index = 0; index < white_spaces.length; index++) {
+      let input_string = time_part + white_spaces[index] + 'AM';
+      let parsedOK = parser.parse(input_string, newDate);
+      assertTrue(
+          'Fails on index ' + index + ' >' + input_string + '<: ' + parsedOK,
+          parsedOK > 0);
+      assertTimeEquals(3, 26, 0, 0, newDate);
+    }
+  },
+
+  testNonAsciiWithPatterns() {
+    // Cloned from
+    // google3/alkali/apps/twitteralerts/client/app/new_alert/parse_twitter.ts
+    const dateFormats = [
+      'h:mm a - d MMM yyyy',
+      'h:mm a · d MMM yyyy',
+      'h:mm a · d MMM, yyyy',
+      'h:mm a · MMM d, yyyy',
+    ];
+
+    const twitter_dates = [
+      '4:44\u202fAM  19 Jan 2018',
+      '4:44 AM - 19 Jan 2018',
+      '4:44 AM · 19 Jan 2018',
+      '4:44 AM · 19 Jan, 2018',
+    ];
+    const date = new Date();
+    for (let i = 0; i < dateFormats.length; i++) {
+      for (let j = 0; j < twitter_dates.length; j++) {
+        let text = twitter_dates[j];
+        const parser = new DateTimeParse(dateFormats[i]);
+        const parseDate = parser.parse(text, date, {validate: true});
+        if (parseDate !== 0) {
+          // DateTimeParse uses current seconds since they are not provided in
+          // the input string. We prefer to have stable output, so we set
+          // seconds to 0.
+          assertParsedDateEquals(2018, 0, 19, parser, text);
+        }
+      }
+    }
+  },
+
+  testRussianParseWithNnbs() {
+    // Check that dates
+
+    replacer.replace(goog.i18n, DATETIMESYMBOLS, DateTimeSymbols_ru);
+    // Checking parse of output for non-ASCII whitespace characters.
+    const test_cases = [
+      '28 июн. 2012 г.',       // ASCII Space
+      '28 июн. 2012 г.',       // Narrow non-breaking space
+      '28 июн. 2012\tг.',      // Horizontal tab
+      '28 июн. 2012\u3000г.',  // Ideographic space
+      'чт, 28 июн. 2012 г.',
+    ];
+
+    // From datetimepatterns for Russian.
+    const format_patterns = [
+      DateTimePatterns_ru.MONTH_DAY_YEAR_MEDIUM,
+      DateTimePatterns_ru.MONTH_DAY_YEAR_MEDIUM,
+      DateTimePatterns_ru.MONTH_DAY_YEAR_MEDIUM,
+      DateTimePatterns_ru.MONTH_DAY_YEAR_MEDIUM,
+      DateTimePatterns_ru.WEEKDAY_MONTH_DAY_YEAR_MEDIUM,
+    ];
+
+    const output_date = new Date();
+    for (let index = 0; index < test_cases.length; index++) {
+      const string_date = test_cases[index];
+      const pattern = format_patterns[index];
+
+      const parser = new DateTimeParse(pattern);
+      const parseDate =
+          parser.parse(string_date, output_date, {validate: true});
+      if (parseDate !== 0) {
+        assertParsedDateEquals(2012, 5, 28, parser, string_date);
+      }
+    }
+  },
+
+  testBulgarian() {
+    const short_time_string = '20:29 ч.';
+
+    const short_time_bg_pattern = 'H:mm \'ч\'.';
+    const parser = new DateTimeParse(short_time_bg_pattern);
+    const output_date = new Date();
+    const parseDate =
+        parser.parse(short_time_string, output_date, {validate: true});
+    if (parseDate !== 0) {
+      const hr = output_date.getHours();
+      const min = output_date.getMinutes();
+      assertEquals(20, hr);
+      assertEquals(29, min);
+    }
+  }
 });

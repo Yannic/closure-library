@@ -33,6 +33,12 @@ testSuite({
     stubs.reset();
   },
 
+  testConstructor_throwsOnBadToken() {
+    assertThrows(() => new (/** @type {?} */ (SafeStyle))(''));
+    assertThrows(
+        () => new (/** @type {?} */ (SafeStyle.EMPTY)).constructor(''));
+  },
+
   testSafeStyle() {
     const style = 'width: 1em;height: 1em;';
     const safeStyle = SafeStyle.fromConstant(Const.from(style));
@@ -135,6 +141,12 @@ testSuite({
     assertCreateEquals(
         'grid-template-columns:repeat(3, [start] 100px [end]);',
         {'grid-template-columns': 'repeat(3, [start] 100px [end])'});
+  },
+
+  testCreate_allowsSteps() {
+    assertCreateEquals(
+        'animation-timing-function:steps(2, start);',
+        {'animation-timing-function': 'steps(2, start)'});
   },
 
   testCreate_allowsCubicBezier() {

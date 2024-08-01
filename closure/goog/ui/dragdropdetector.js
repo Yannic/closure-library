@@ -74,6 +74,9 @@ goog.ui.DragDropDetector = function(opt_filePath) {
     this.root_ = iframe;
   }
 
+  this.mutationObserver_ =
+      new MutationObserver(() => this.handleNodeInserted_());
+
   document.body.appendChild(this.root_);
 };
 goog.inherits(goog.ui.DragDropDetector, goog.events.EventTarget);
@@ -241,6 +244,13 @@ goog.ui.DragDropDetector.prototype.isCoveringScreen_ = false;
  */
 goog.ui.DragDropDetector.prototype.mousePosition_ = null;
 
+/**
+ * Observer for the iframe body to detect node insertions.
+ * @type {!MutationObserver}
+ * @private
+ * @const
+ */
+goog.ui.DragDropDetector.prototype.mutationObserver_;
 
 /**
  * Initialize the iframe after it has loaded.
@@ -294,7 +304,7 @@ goog.ui.DragDropDetector.prototype.initIframe_ = function() {
               // iframe.  We setTimeout so that handleNodeInserted_ is called
               //  after the content is in the document.
               goog.global.setTimeout(
-                  goog.bind(this.handleNodeInserted_, this, e), 0);
+                  goog.bind(this.handleNodeInserted_, this), 0);
               return true;
             })
         .
@@ -330,9 +340,9 @@ goog.ui.DragDropDetector.prototype.initIframe_ = function() {
         .listen(
             this.body_,
             [goog.events.EventType.MOUSEMOVE, goog.events.EventType.KEYPRESS],
-            this.uncoverScreen_)
-        // Detect content insertion.
-        .listen(this.document_, 'DOMNodeInserted', this.handleNodeInserted_);
+            this.uncoverScreen_);
+    // Detect content insertion into the iframe body.
+    this.mutationObserver_.observe(this.body_, {childList: true});
   }
 };
 
@@ -342,12 +352,14 @@ goog.ui.DragDropDetector.prototype.initIframe_ = function() {
  * than making it navigate to a different URL.
  * @param {goog.events.BrowserEvent} e The event to enforce copying on.
  * @private
+ * @suppress {strictMissingProperties} Added to tighten compiler checks
  */
 goog.ui.DragDropDetector.enforceCopyEffect_ = function(e) {
   'use strict';
   var event = e.getBrowserEvent();
   // This function is only called on IE.
   if (event.dataTransfer.dropEffect.toLowerCase() != 'copy') {
+    /** @suppress {strictMissingProperties} Added to tighten compiler checks */
     event.dataTransfer.dropEffect = 'copy';
   }
 };
@@ -357,6 +369,7 @@ goog.ui.DragDropDetector.enforceCopyEffect_ = function(e) {
  * Cover the screen with the iframe.
  * @param {goog.events.BrowserEvent} e The event that caused this function call.
  * @private
+ * @suppress {strictMissingProperties} Added to tighten compiler checks
  */
 goog.ui.DragDropDetector.prototype.coverScreen_ = function(e) {
   'use strict';
@@ -432,6 +445,7 @@ goog.ui.DragDropDetector.prototype.switchToIframe_ = function(e) {
  * @param {goog.events.BrowserEvent} e The event object.
  * @return {boolean|undefined} Returns false in IE to cancel the event.
  * @private
+ * @suppress {strictMissingProperties} Added to tighten compiler checks
  */
 goog.ui.DragDropDetector.prototype.handleNewDrag_ = function(e) {
   'use strict';
@@ -475,6 +489,7 @@ goog.ui.DragDropDetector.prototype.trackMouse_ = function(e) {
  * Handle a drop on the IE text INPUT.
  * @param {goog.events.BrowserEvent} e The event object.
  * @private
+ * @suppress {strictMissingProperties} Added to tighten compiler checks
  */
 goog.ui.DragDropDetector.prototype.handleInputDrop_ = function(e) {
   'use strict';
@@ -509,10 +524,9 @@ goog.ui.DragDropDetector.prototype.clearContents_ = function() {
 
 /**
  * Event handler called when the content of the iframe changes.
- * @param {goog.events.BrowserEvent} e The event that caused this function call.
  * @private
  */
-goog.ui.DragDropDetector.prototype.handleNodeInserted_ = function(e) {
+goog.ui.DragDropDetector.prototype.handleNodeInserted_ = function() {
   'use strict';
   var uri;
 
@@ -574,6 +588,7 @@ goog.ui.DragDropDetector.prototype.disposeInternal = function() {
   goog.ui.DragDropDetector.base(this, 'disposeInternal');
   this.handler_.dispose();
   this.handler_ = null;
+  this.mutationObserver_.disconnect();
 };
 
 

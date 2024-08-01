@@ -15,7 +15,6 @@ goog.provide('goog.editor.plugins.UndoRedo');
 goog.require('goog.dom');
 goog.require('goog.dom.NodeOffset');
 goog.require('goog.dom.Range');
-goog.require('goog.editor.BrowserFeature');
 goog.require('goog.editor.Command');
 goog.require('goog.editor.Field');
 goog.require('goog.editor.Plugin');
@@ -248,18 +247,9 @@ goog.editor.plugins.UndoRedo.prototype.enable = function(fieldObject) {
   // now, but it really should be fixed to do so. The cursor position stored in
   // the state should be the cursor position before any changes are made, not
   // the cursor position when the change finishes.
-  //
-  // It also seems like the if check below is just a bad one. We should do this
-  // for browsers that use mutation events as well even though the beforechange
-  // happens too late...maybe not. I don't know about this.
-  if (!goog.editor.BrowserFeature.USE_MUTATION_EVENTS) {
-    // We don't listen to beforechange in mutation-event browsers because
-    // there we fire beforechange, then syncronously file change. The point
-    // of before change is to capture before the user has changed anything.
-    eventHandler.listen(
-        fieldObject, goog.editor.Field.EventType.BEFORECHANGE,
-        this.handleBeforeChange_);
-  }
+  eventHandler.listen(
+      fieldObject, goog.editor.Field.EventType.BEFORECHANGE,
+      this.handleBeforeChange_);
   eventHandler.listen(
       fieldObject, goog.editor.Field.EventType.DELAYEDCHANGE,
       this.handleDelayedChange_);
@@ -462,6 +452,7 @@ goog.editor.plugins.UndoRedo.prototype.restoreState = function(
 
 /**
  * @override
+ * @suppress {strictMissingProperties} Added to tighten compiler checks
  */
 goog.editor.plugins.UndoRedo.prototype.handleKeyboardShortcut = function(
     e, key, isModifierPressed) {
@@ -818,6 +809,7 @@ goog.editor.plugins.UndoRedo.UndoState_.prototype.setRedoState = function(
  * @param {goog.editor.plugins.UndoRedoState} rhs The state to compare.
  * @return {boolean} Whether the contents are the same.
  * @override
+ * @suppress {strictMissingProperties} Added to tighten compiler checks
  */
 goog.editor.plugins.UndoRedo.UndoState_.prototype.equals = function(rhs) {
   'use strict';
@@ -849,11 +841,7 @@ goog.editor.plugins.UndoRedo.CursorPosition_ = function(field) {
       !!range && range.isRangeInDocument() && range.getWindow() == win;
   range = isValidRange ? range : null;
 
-  if (goog.editor.BrowserFeature.HAS_W3C_RANGES) {
-    this.initW3C_(range);
-  } else if (goog.editor.BrowserFeature.HAS_IE_RANGES) {
-    this.initIE_(range);
-  }
+  this.initW3C_(range);
 };
 
 
@@ -865,6 +853,7 @@ goog.editor.plugins.UndoRedo.CursorPosition_ = function(field) {
 goog.editor.plugins.UndoRedo.CursorPosition_.prototype.initW3C_ = function(
     range) {
   'use strict';
+  /** @suppress {strictMissingProperties} Added to tighten compiler checks */
   this.isValid_ = false;
 
   // TODO: Check if the range is in the field before trying to save it
@@ -887,70 +876,33 @@ goog.editor.plugins.UndoRedo.CursorPosition_.prototype.initW3C_ = function(
 
   // Test range direction.
   if (range.isReversed()) {
+    /** @suppress {strictMissingProperties} Added to tighten compiler checks */
     this.startOffset_ = focus;
+    /** @suppress {strictMissingProperties} Added to tighten compiler checks */
     this.startChildOffset_ = focusOffset;
+    /** @suppress {strictMissingProperties} Added to tighten compiler checks */
     this.endOffset_ = anchor;
+    /** @suppress {strictMissingProperties} Added to tighten compiler checks */
     this.endChildOffset_ = anchorOffset;
   } else {
+    /** @suppress {strictMissingProperties} Added to tighten compiler checks */
     this.startOffset_ = anchor;
+    /** @suppress {strictMissingProperties} Added to tighten compiler checks */
     this.startChildOffset_ = anchorOffset;
+    /** @suppress {strictMissingProperties} Added to tighten compiler checks */
     this.endOffset_ = focus;
+    /** @suppress {strictMissingProperties} Added to tighten compiler checks */
     this.endChildOffset_ = focusOffset;
   }
 
-  this.isValid_ = true;
-};
-
-
-/**
- * In IE, we just keep track of the text offset (number of characters).
- * @param {goog.dom.AbstractRange?} range The range to save.
- * @private
- */
-goog.editor.plugins.UndoRedo.CursorPosition_.prototype.initIE_ = function(
-    range) {
-  'use strict';
-  this.isValid_ = false;
-
-  if (!range) {
-    return;
-  }
-
-  var ieRange = range.getTextRange(0).getBrowserRangeObject();
-
-  if (!goog.dom.contains(this.field_.getElement(), ieRange.parentElement())) {
-    return;
-  }
-
-  // Create a range that encompasses the contentEditable region to serve
-  // as a reference to form ranges below.
-  var contentEditableRange =
-      this.field_.getEditableDomHelper().getDocument().body.createTextRange();
-  contentEditableRange.moveToElementText(this.field_.getElement());
-
-  // startMarker is a range from the start of the contentEditable node to the
-  // start of the current selection.
-  var startMarker = ieRange.duplicate();
-  startMarker.collapse(true);
-  startMarker.setEndPoint('StartToStart', contentEditableRange);
-  this.startOffset_ =
-      goog.editor.plugins.UndoRedo.CursorPosition_.computeEndOffsetIE_(
-          startMarker);
-
-  // endMarker is a range from the start of the contentEditable node to the
-  // end of the current selection.
-  var endMarker = ieRange.duplicate();
-  endMarker.setEndPoint('StartToStart', contentEditableRange);
-  this.endOffset_ =
-      goog.editor.plugins.UndoRedo.CursorPosition_.computeEndOffsetIE_(
-          endMarker);
-
+  /** @suppress {strictMissingProperties} Added to tighten compiler checks */
   this.isValid_ = true;
 };
 
 
 /**
  * @return {boolean} Whether this object is valid.
+ * @suppress {strictMissingProperties} Added to tighten compiler checks
  */
 goog.editor.plugins.UndoRedo.CursorPosition_.prototype.isValid = function() {
   'use strict';
@@ -961,15 +913,12 @@ goog.editor.plugins.UndoRedo.CursorPosition_.prototype.isValid = function() {
 /**
  * @return {string} A string representation of this object.
  * @override
+ * @suppress {strictMissingProperties} Added to tighten compiler checks
  */
 goog.editor.plugins.UndoRedo.CursorPosition_.prototype.toString = function() {
   'use strict';
-  if (goog.editor.BrowserFeature.HAS_W3C_RANGES) {
-    return 'W3C:' + this.startOffset_.toString() + '\n' +
-        this.startChildOffset_ + ':' + this.endOffset_.toString() + '\n' +
-        this.endChildOffset_;
-  }
-  return 'IE:' + this.startOffset_ + ',' + this.endOffset_;
+  return 'W3C:' + this.startOffset_.toString() + '\n' + this.startChildOffset_ +
+      ':' + this.endOffset_.toString() + '\n' + this.endChildOffset_;
 };
 
 
@@ -980,9 +929,6 @@ goog.editor.plugins.UndoRedo.CursorPosition_.prototype.select = function() {
   'use strict';
   var range = this.getRange_(this.field_.getElement());
   if (range) {
-    if (goog.editor.BrowserFeature.HAS_IE_RANGES) {
-      this.field_.getElement().focus();
-    }
     goog.dom.Range.createFromBrowserRange(range).select();
   }
 };
@@ -994,80 +940,24 @@ goog.editor.plugins.UndoRedo.CursorPosition_.prototype.select = function() {
  * @param {Element} baseNode The node to get the cursor position relative to.
  * @return {Range|TextRange|null} The browser range for this position.
  * @private
+ * @suppress {strictMissingProperties} Added to tighten compiler checks
  */
 goog.editor.plugins.UndoRedo.CursorPosition_.prototype.getRange_ = function(
     baseNode) {
   'use strict';
-  if (goog.editor.BrowserFeature.HAS_W3C_RANGES) {
-    var startNode = this.startOffset_.findTargetNode(baseNode);
-    var endNode = this.endOffset_.findTargetNode(baseNode);
-    if (!startNode || !endNode) {
-      return null;
-    }
 
-    // Create range.
-    return /** @type {Range} */ (
-        goog.dom.Range
-            .createFromNodes(
-                startNode, this.startChildOffset_, endNode,
-                this.endChildOffset_)
-            .getBrowserRangeObject());
+  /** @suppress {strictMissingProperties} Added to tighten compiler checks */
+  var startNode = this.startOffset_.findTargetNode(baseNode);
+  /** @suppress {strictMissingProperties} Added to tighten compiler checks */
+  var endNode = this.endOffset_.findTargetNode(baseNode);
+  if (!startNode || !endNode) {
+    return null;
   }
 
-  // Create a collapsed selection at the start of the contentEditable region,
-  // which the offsets were calculated relative to before.  Note that we force
-  // a text range here so we can use moveToElementText.
-  var sel = baseNode.ownerDocument.body.createTextRange();
-  sel.moveToElementText(baseNode);
-  sel.collapse(true);
-  sel.moveEnd('character', this.endOffset_);
-  sel.moveStart('character', this.startOffset_);
-  return sel;
-};
-
-
-/**
- * Compute the number of characters to the end of the range in IE.
- * @param {TextRange} range The range to compute an offset for.
- * @return {number} The number of characters to the end of the range.
- * @private
- */
-goog.editor.plugins.UndoRedo.CursorPosition_.computeEndOffsetIE_ = function(
-    range) {
-  'use strict';
-  var testRange = range.duplicate();
-
-  // The number of offset characters is a little off depending on
-  // what type of block elements happen to be between the start of the
-  // textedit and the cursor position.  We fudge the offset until the
-  // two ranges match.
-  var text = range.text;
-  var guess = text.length;
-
-  testRange.collapse(true);
-  testRange.moveEnd('character', guess);
-
-  // Adjust the range until the end points match.  This doesn't quite
-  // work if we're at the end of the field so we give up after a few
-  // iterations.
-  var diff;
-  var numTries = 10;
-  while (diff = testRange.compareEndPoints('EndToEnd', range)) {
-    guess -= diff;
-    testRange.moveEnd('character', -diff);
-    --numTries;
-    if (0 == numTries) {
-      break;
-    }
-  }
-  // When we set innerHTML, blank lines become a single space, causing
-  // the cursor position to be off by one.  So we accommodate for blank
-  // lines.
-  var offset = 0;
-  var pos = text.indexOf('\n\r');
-  while (pos != -1) {
-    ++offset;
-    pos = text.indexOf('\n\r', pos + 1);
-  }
-  return guess + offset;
+  // Create range.
+  return /** @type {Range} */ (
+      goog.dom.Range
+          .createFromNodes(
+              startNode, this.startChildOffset_, endNode, this.endChildOffset_)
+          .getBrowserRangeObject());
 };

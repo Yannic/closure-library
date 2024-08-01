@@ -25,7 +25,6 @@ goog.require('goog.i18n.NumberFormatSymbols');
 goog.require('goog.i18n.NumberFormatSymbolsType');
 goog.require('goog.i18n.NumberFormatSymbols_u_nu_latn');
 goog.require('goog.i18n.currency');
-goog.require('goog.i18n.currency.CurrencyInfo');
 goog.require('goog.math');
 goog.require('goog.string');
 
@@ -1878,11 +1877,19 @@ goog.i18n.NumberFormat.NULL_UNIT_ = {
  */
 goog.i18n.NumberFormat.prototype.getUnitFor_ = function(base, plurality) {
   'use strict';
+  /**
+   * @suppress {missingProperties} Auto-added to unblock check_level=STRICT
+   * migration
+   */
   let table = this.compactStyle_ == goog.i18n.NumberFormat.CompactStyle.SHORT ?
       goog.i18n.CompactNumberFormatSymbols.COMPACT_DECIMAL_SHORT_PATTERN :
       goog.i18n.CompactNumberFormatSymbols.COMPACT_DECIMAL_LONG_PATTERN;
 
   if (table == null) {
+    /**
+     * @suppress {missingProperties} Auto-added to unblock check_level=STRICT
+     * migration
+     */
     table = goog.i18n.CompactNumberFormatSymbols.COMPACT_DECIMAL_SHORT_PATTERN;
   }
 

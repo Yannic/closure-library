@@ -23,13 +23,21 @@ closure_js_library(
     srcs = ["browser.js"],
     lenient = True,
     deps = [
+        ":chromium_rebrands",
         ":util",
         "//closure/goog/asserts",
         "//closure/goog/labs/useragent/highentropy:highentropydata",
         "//closure/goog/labs/useragent/highentropy:highentropyvalue",
-        "//closure/goog/object",
         "//closure/goog/string:internal",
     ],
+)
+
+closure_js_library(
+    name = "chromium_rebrands",
+    srcs = [
+        "chromium_rebrands.js",
+    ],
+    lenient = True,
 )
 
 closure_js_library(
@@ -66,6 +74,7 @@ closure_js_library(
     lenient = True,
     deps = [
         ":util",
+        "//closure/goog/asserts",
         "//closure/goog/labs/useragent/highentropy:highentropydata",
         "//closure/goog/labs/useragent/highentropy:highentropyvalue",
         "//closure/goog/string:internal",
@@ -87,6 +96,7 @@ closure_js_library(
     deps = [
         "//closure/goog/array",
         "//closure/goog/debug:deepfreeze",
+        "//closure/goog/debug:deepfreeze_js",
     ],
 )
 
@@ -96,7 +106,11 @@ closure_js_library(
         "testutil.js",
     ],
     lenient = True,
-    deps = [":util"],
+    deps = [
+        ":browser",
+        ":platform",
+        ":util",
+    ],
 )
 
 closure_js_library(
@@ -106,7 +120,10 @@ closure_js_library(
         "util.js",
     ],
     lenient = True,
-    deps = ["//closure/goog/string:internal"],
+    deps = [
+        "//closure/goog/flags",
+        "//closure/goog/string:internal",
+    ],
 )
 
 closure_js_library(

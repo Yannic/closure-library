@@ -7,6 +7,7 @@ goog.module('goog.async.run');
 goog.module.declareLegacyNamespace();
 
 const WorkQueue = goog.require('goog.async.WorkQueue');
+const asyncStackTag = goog.require('goog.debug.asyncStackTag');
 const nextTick = goog.require('goog.async.nextTick');
 const throwException = goog.require('goog.async.throwException');
 
@@ -46,6 +47,7 @@ let run = (callback, context = undefined) => {
     schedule();
     workQueueScheduled = true;
   }
+  callback = asyncStackTag.wrap(callback, 'goog.async.run');
 
   workQueue.add(callback, context);
 };

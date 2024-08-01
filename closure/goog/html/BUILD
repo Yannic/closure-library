@@ -8,15 +8,12 @@ closure_js_library(
     name = "cssspecificity",
     srcs = ["cssspecificity.js"],
     lenient = True,
-    deps = [
-        "//closure/goog/useragent",
-        "//closure/goog/useragent:product",
-    ],
 )
 
 closure_js_library(
     name = "legacyconversions",
     srcs = ["legacyconversions.js"],
+    deprecation = "Please use 'safevalues/restricted/legacy' instead",
     lenient = True,
     deps = [
         ":safehtml",
@@ -31,6 +28,7 @@ closure_js_library(
 closure_js_library(
     name = "safehtml",
     srcs = ["safehtml.js"],
+    deprecation = "Please use 'safevalues' instead",
     lenient = True,
     deps = [
         ":safescript",
@@ -43,7 +41,6 @@ closure_js_library(
         "//closure/goog/asserts",
         "//closure/goog/dom:tagname",
         "//closure/goog/dom:tags",
-        "//closure/goog/i18n:bidi",
         "//closure/goog/labs/useragent:browser",
         "//closure/goog/object",
         "//closure/goog/string:const",
@@ -67,6 +64,7 @@ closure_js_library(
 closure_js_library(
     name = "safescript",
     srcs = ["safescript.js"],
+    deprecation = "Please use 'safevalues' instead",
     lenient = True,
     deps = [
         ":trustedtypes",
@@ -79,6 +77,7 @@ closure_js_library(
 closure_js_library(
     name = "safestyle",
     srcs = ["safestyle.js"],
+    deprecation = "Please use 'safevalues' instead",
     lenient = True,
     deps = [
         ":safeurl",
@@ -93,10 +92,10 @@ closure_js_library(
 closure_js_library(
     name = "safestylesheet",
     srcs = ["safestylesheet.js"],
+    deprecation = "Please use 'safevalues' instead",
     lenient = True,
     deps = [
         ":safestyle",
-        "//closure/goog/array",
         "//closure/goog/asserts",
         "//closure/goog/object",
         "//closure/goog/string:const",
@@ -108,12 +107,12 @@ closure_js_library(
 closure_js_library(
     name = "safeurl",
     srcs = ["safeurl.js"],
+    deprecation = "Please use 'safevalues' instead",
     lenient = True,
     deps = [
         ":trustedresourceurl",
         "//closure/goog/asserts",
         "//closure/goog/fs:url",
-        "//closure/goog/i18n:bidi",
         "//closure/goog/string:const",
         "//closure/goog/string:internal",
         "//closure/goog/string:typedstring",
@@ -123,7 +122,10 @@ closure_js_library(
 closure_js_library(
     name = "safeurl_test_vectors",
     testonly = 1,
-    srcs = ["safeurl_test_vectors.js"],
+    srcs = [
+        "javascript_url_test_vectors.js",
+        "safeurl_test_vectors.js",
+    ],
     lenient = True,
 )
 
@@ -131,6 +133,7 @@ closure_js_library(
     name = "testing",
     testonly = True,
     srcs = ["testing.js"],
+    deprecation = "Please use 'safevalues/testing/conversions' instead",
     lenient = True,
     deps = [
         ":safehtml",
@@ -139,7 +142,6 @@ closure_js_library(
         ":safestylesheet",
         ":safeurl",
         ":trustedresourceurl",
-        "//closure/goog/i18n:bidi",
         "//closure/goog/testing:mockmatchers",
     ],
 )
@@ -149,17 +151,16 @@ closure_js_library(
     srcs = ["textextractor.js"],
     lenient = True,
     deps = [
-        "//closure/goog/array",
         "//closure/goog/dom:tagname",
         "//closure/goog/html/sanitizer:htmlsanitizer",
         "//closure/goog/object",
-        "//closure/goog/useragent",
     ],
 )
 
 closure_js_library(
     name = "trustedresourceurl",
     srcs = ["trustedresourceurl.js"],
+    deprecation = "Please use 'safevalues' instead",
     lenient = True,
     deps = [
         ":safescript",
@@ -167,7 +168,6 @@ closure_js_library(
         "//closure/goog/asserts",
         "//closure/goog/fs:blob",
         "//closure/goog/fs:url",
-        "//closure/goog/i18n:bidi",
         "//closure/goog/string:const",
         "//closure/goog/string:typedstring",
     ],
@@ -183,6 +183,7 @@ closure_js_library(
 closure_js_library(
     name = "uncheckedconversions",
     srcs = ["uncheckedconversions.js"],
+    deprecation = "Please use 'safevalues/restricted/reviewed' instead",
     lenient = True,
     deps = [
         ":safehtml",
@@ -192,7 +193,6 @@ closure_js_library(
         ":safeurl",
         ":trustedresourceurl",
         "//closure/goog/asserts",
-        "//closure/goog/i18n:bidi",
         "//closure/goog/string:const",
         "//closure/goog/string:internal",
     ],

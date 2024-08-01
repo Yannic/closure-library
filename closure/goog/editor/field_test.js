@@ -556,10 +556,6 @@ testSuite({
      immediately.
    */
   testHandleCutAndPasteEvents() {
-    if (BrowserFeature.USE_MUTATION_EVENTS) {
-      // Cut and paste events do not raise events at all in Mozilla.
-      return;
-    }
     const editableField = new FieldConstructor('testField');
     const clock = new MockClock(true);
     const delayedChanges = recordFunction();
@@ -1255,6 +1251,45 @@ testSuite({
     }
   },
 
+  testSetSafeHtml_withPendingDelayedChangeEvent() {
+    const editableField = new FieldConstructor('testField', document);
+    const clock = new MockClock(true);
+
+    try {
+      let delayedChangeCalled = false;
+      events.listen(editableField, Field.EventType.DELAYEDCHANGE, () => {
+        delayedChangeCalled = true;
+      });
+
+      editableField.makeEditable();
+      clock.tick(1000);
+      assertFalse(
+          'Make editable must not fire delayed change.', delayedChangeCalled);
+
+      let shouldWrapInParagraphTag = false;
+      editableField.setSafeHtml(
+          shouldWrapInParagraphTag, SafeHtml.htmlEscape('foo'),
+          false /* Fire delayed change */);
+      testingDom.assertHtmlContentsMatch('foo', editableField.getElement());
+      clock.tick(100);
+      assertFalse(
+          'delayedChange should not fire after only 100ms.',
+          delayedChangeCalled);
+
+      editableField.setSafeHtml(
+          shouldWrapInParagraphTag, SafeHtml.htmlEscape('bar'),
+          true /* Don't fire delayed change */);
+      testingDom.assertHtmlContentsMatch('bar', editableField.getElement());
+      clock.tick(1000);
+      assertFalse(
+          'setSafeHtml must not fire pending delayed change if so configured.',
+          delayedChangeCalled);
+    } finally {
+      clock.dispose();
+      editableField.dispose();
+    }
+  },
+
   /**
      Verify that restoreSavedRange() restores the range and sets the focus.
    */
@@ -1334,34 +1369,9 @@ testSuite({
     editableField.delayedChangeTimer_.start();
     editableField.clearDelayedChange();
     assertTrue(delayedChangeCalled);
-    if (editableField.changeTimerGecko_) {
-      assertFalse(editableField.changeTimerGecko_.isActive());
-    }
     assertFalse(editableField.delayedChangeTimer_.isActive());
 
-    // Clears delayed changes caused by changeTimerGecko_
-    if (editableField.changeTimerGecko_) {
-      delayedChangeCalled = false;
-      editableField.changeTimerGecko_.start();
-      editableField.clearDelayedChange();
-      assertTrue(delayedChangeCalled);
-      if (editableField.changeTimerGecko_) {
-        assertFalse(editableField.changeTimerGecko_.isActive());
-      }
-      assertFalse(editableField.delayedChangeTimer_.isActive());
-    }
     clock.dispose();
-  },
-
-  testHandleChange() {
-    if (BrowserFeature.USE_MUTATION_EVENTS) {
-      const editableField = new FieldConstructor('testField', document);
-      editableField.makeEditable();
-
-      editableField.changeTimerGecko_.start();
-      editableField.handleChange();
-      assertFalse(editableField.changeTimerGecko_.isActive());
-    }
   },
 
   testDispatchDelayedChange() {
@@ -1467,10 +1477,6 @@ testSuite({
   },
 
   testImeKeyDispatchesDelayedChange() {
-    if (BrowserFeature.USE_MUTATION_EVENTS) {
-      // Gecko based browsers handle changes via mutation events
-      return;
-    }
     if (!(userAgent.WINDOWS || platform.isAndroid())) {
       // Only Windows and Android platforms emit these IME-specific events.
       return;
@@ -1495,10 +1501,6 @@ testSuite({
   },
 
   testInputEventDispatchesDelayedChange() {
-    if (BrowserFeature.USE_MUTATION_EVENTS) {
-      // Gecko based browsers handle changes via mutation events
-      return;
-    }
     const editableField = new FieldConstructor('testField');
     const clock = new MockClock(true);
     const delayedChanges = recordFunction();

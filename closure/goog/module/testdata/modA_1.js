@@ -6,6 +6,7 @@
 
 /**
  * @fileoverview File #1 of module A.
+ * @suppress {strictMissingProperties} Added to tighten compiler checks
  */
 
 goog.provide('goog.module.testdata.modA_1');
@@ -13,5 +14,9 @@ goog.provide('goog.module.testdata.modA_1');
 
 goog.setTestOnly('goog.module.testdata.modA_1');
 
-if (window.modA1Loaded) throw new Error('modA_1 loaded twice');
+goog.require('goog.testing.asserts');
+
+if (window.modA1Loaded) {
+  goog.testing.asserts.fail('modA_1 loaded twice');
+}
 window.modA1Loaded = true;

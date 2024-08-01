@@ -160,7 +160,7 @@ goog.inherits(goog.fx.AbstractDragDrop, goog.events.EventTarget);
 /**
  * Minimum size (in pixels) for a dummy target. If the box for the target is
  * less than the specified size it's not created.
- * @type {number}
+ * @const {number}
  * @private
  */
 goog.fx.AbstractDragDrop.DUMMY_TARGET_MIN_SIZE_ = 10;
@@ -171,11 +171,17 @@ goog.fx.AbstractDragDrop.DUMMY_TARGET_MIN_SIZE_ = 10;
  * @const
  */
 goog.fx.AbstractDragDrop.EventType = {
+  /** @const */
   DRAGOVER: 'dragover',
+  /** @const */
   DRAGOUT: 'dragout',
+  /** @const */
   DRAG: 'drag',
+  /** @const */
   DROP: 'drop',
+  /** @const */
   DRAGSTART: 'dragstart',
+  /** @const */
   DRAGEND: 'dragend'
 };
 
@@ -620,13 +626,12 @@ goog.fx.AbstractDragDrop.prototype.moveDrag_ = function(event) {
 
   var activeTarget = this.activeTarget_;
 
-  this.dispatchEvent(
-      new goog.fx.DragDropEvent(
-          goog.fx.AbstractDragDrop.EventType.DRAG, this, this.dragItem_,
-          activeTarget ? activeTarget.target_ : undefined,
-          activeTarget ? activeTarget.item_ : undefined,
-          activeTarget ? activeTarget.element_ : undefined, event.clientX,
-          event.clientY, x, y));
+  this.dispatchEvent(new goog.fx.DragDropEvent(
+      goog.fx.AbstractDragDrop.EventType.DRAG, this, this.dragItem_,
+      activeTarget ? activeTarget.target_ : undefined,
+      activeTarget ? activeTarget.item_ : undefined,
+      activeTarget ? activeTarget.element_ : undefined, event.clientX,
+      event.clientY, x, y));
 
   // Check if we're still inside the bounds of the active target, if not fire
   // a dragout event and proceed to find a new target.
@@ -1318,9 +1323,10 @@ goog.inherits(goog.fx.DragDropEvent, goog.events.Event);
  *
  * @param {Element|string} element Dom Node, or string representation of node
  *     id, to be used as drag source/drop target.
- * @param {Object=} opt_data Data associated with the source/target.
+ * @param {DRAG_DROP_DATA=} opt_data Data associated with the source/target.
  * @throws Error If no element argument is provided or if the type is invalid
  * @extends {goog.events.EventTarget}
+ * @template DRAG_DROP_DATA
  * @constructor
  * @struct
  */
@@ -1336,7 +1342,7 @@ goog.fx.DragDropItem = function(element, opt_data) {
 
   /**
    * Data associated with element.
-   * @type {Object|undefined}
+   * @type {DRAG_DROP_DATA|undefined}
    */
   this.data = opt_data;
 
@@ -1374,7 +1380,7 @@ goog.inherits(goog.fx.DragDropItem, goog.events.EventTarget);
 
 /**
  * Get the data associated with the source/target.
- * @return {Object|null|undefined} Data associated with the source/target.
+ * @return {DRAG_DROP_DATA|undefined} Data associated with the source/target.
  */
 goog.fx.DragDropItem.prototype.getData = function() {
   'use strict';

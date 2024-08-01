@@ -105,7 +105,6 @@ closure_js_library(
         "//closure/goog/ui:component",
         "//closure/goog/ui:linkbuttonrenderer",
         "//closure/goog/ui:tab",
-        "//closure/goog/useragent",
         "//closure/goog/window",
     ],
 )
@@ -151,6 +150,7 @@ closure_js_library(
         "//closure/goog/events:eventhandler",
         "//closure/goog/events:eventtarget",
         "//closure/goog/ui:component",
+        "//closure/goog/ui:toolbar",
     ],
 )
 

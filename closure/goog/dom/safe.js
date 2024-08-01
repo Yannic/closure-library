@@ -33,6 +33,7 @@ goog.provide('goog.dom.safe');
 goog.provide('goog.dom.safe.InsertAdjacentHtmlPosition');
 
 goog.require('goog.asserts');
+goog.require('goog.asserts.dom');
 goog.require('goog.dom.asserts');
 goog.require('goog.functions');
 goog.require('goog.html.SafeHtml');
@@ -45,7 +46,10 @@ goog.require('goog.string.Const');
 goog.require('goog.string.internal');
 
 
-/** @enum {string} */
+/**
+ * @enum {string}
+ * @deprecated Use a plain string value instead.
+ */
 goog.dom.safe.InsertAdjacentHtmlPosition = {
   AFTERBEGIN: 'afterbegin',
   AFTEREND: 'afterend',
@@ -60,6 +64,7 @@ goog.dom.safe.InsertAdjacentHtmlPosition = {
  * @param {!goog.dom.safe.InsertAdjacentHtmlPosition} position Position where
  *     to insert the HTML.
  * @param {!goog.html.SafeHtml} html The known-safe HTML to insert.
+ * @deprecated Use a `safevalues.dom.safeElement.insertAdjacentHtml` instead.
  */
 goog.dom.safe.insertAdjacentHtml = function(node, position, html) {
   'use strict';
@@ -149,6 +154,7 @@ goog.dom.safe.unsafeSetInnerHtmlDoNotUseOrElse = function(elem, html) {
  * @param {!goog.html.SafeHtml} html The known-safe HTML to assign.
  * @throws {Error} If called with one of these tags: math, script, style, svg,
  *     template.
+ * @deprecated Use `safevalues.dom.safeElement.setInnerHtml` instead.
  */
 goog.dom.safe.setInnerHtml = function(elem, html) {
   'use strict';
@@ -187,6 +193,7 @@ goog.dom.safe.setInnerHtmlFromConstant = function(element, constHtml) {
  * Assigns known-safe HTML to an element's outerHTML property.
  * @param {!Element} elem The element whose outerHTML is to be assigned to.
  * @param {!goog.html.SafeHtml} html The known-safe HTML to assign.
+ * @deprecated Use `safevalues.dom.safeElement.setOuterHtml` instead.
  */
 goog.dom.safe.setOuterHtml = function(elem, html) {
   'use strict';
@@ -213,6 +220,7 @@ goog.dom.safe.setOuterHtml = function(elem, html) {
  * @param {string|!goog.html.SafeUrl} url The URL to assign.
  * @return {void}
  * @see goog.html.SafeUrl#sanitize
+ * @deprecated Use `safevalues.dom.safeFormEl.setAction` instead.
  */
 goog.dom.safe.setFormElementAction = function(form, url) {
   'use strict';
@@ -221,9 +229,9 @@ goog.dom.safe.setFormElementAction = function(form, url) {
   if (url instanceof goog.html.SafeUrl) {
     safeUrl = url;
   } else {
-    safeUrl = goog.html.SafeUrl.sanitizeAssertUnchanged(url);
+    safeUrl = goog.html.SafeUrl.sanitizeJavascriptUrlAssertUnchanged(url);
   }
-  goog.dom.asserts.assertIsHTMLFormElement(form).action =
+  goog.asserts.dom.assertIsHtmlFormElement(form).action =
       goog.html.SafeUrl.unwrap(safeUrl);
 };
 
@@ -246,6 +254,7 @@ goog.dom.safe.setFormElementAction = function(form, url) {
  * @param {string|!goog.html.SafeUrl} url The URL to assign.
  * @return {void}
  * @see goog.html.SafeUrl#sanitize
+ * @deprecated Use `safevalues.dom.safeButtonEl.setFormaction` instead.
  */
 goog.dom.safe.setButtonFormAction = function(button, url) {
   'use strict';
@@ -254,9 +263,9 @@ goog.dom.safe.setButtonFormAction = function(button, url) {
   if (url instanceof goog.html.SafeUrl) {
     safeUrl = url;
   } else {
-    safeUrl = goog.html.SafeUrl.sanitizeAssertUnchanged(url);
+    safeUrl = goog.html.SafeUrl.sanitizeJavascriptUrlAssertUnchanged(url);
   }
-  goog.dom.asserts.assertIsHTMLButtonElement(button).formAction =
+  goog.asserts.dom.assertIsHtmlButtonElement(button).formAction =
       goog.html.SafeUrl.unwrap(safeUrl);
 };
 /**
@@ -278,6 +287,7 @@ goog.dom.safe.setButtonFormAction = function(button, url) {
  * @param {string|!goog.html.SafeUrl} url The URL to assign.
  * @return {void}
  * @see goog.html.SafeUrl#sanitize
+ * @deprecated Use `safevalues.dom.safeInputEl.setFormaction` instead.
  */
 goog.dom.safe.setInputFormAction = function(input, url) {
   'use strict';
@@ -286,9 +296,9 @@ goog.dom.safe.setInputFormAction = function(input, url) {
   if (url instanceof goog.html.SafeUrl) {
     safeUrl = url;
   } else {
-    safeUrl = goog.html.SafeUrl.sanitizeAssertUnchanged(url);
+    safeUrl = goog.html.SafeUrl.sanitizeJavascriptUrlAssertUnchanged(url);
   }
-  goog.dom.asserts.assertIsHTMLInputElement(input).formAction =
+  goog.asserts.dom.assertIsHtmlInputElement(input).formAction =
       goog.html.SafeUrl.unwrap(safeUrl);
 };
 
@@ -310,6 +320,7 @@ goog.dom.safe.setStyle = function(elem, style) {
  * @param {!Document} doc The document to be written to.
  * @param {!goog.html.SafeHtml} html The known-safe HTML to assign.
  * @return {void}
+ * @deprecated Use `safevalues.dom.safeDocument.write` instead.
  */
 goog.dom.safe.documentWrite = function(doc, html) {
   'use strict';
@@ -336,47 +347,21 @@ goog.dom.safe.documentWrite = function(doc, html) {
  * @param {string|!goog.html.SafeUrl} url The URL to assign.
  * @return {void}
  * @see goog.html.SafeUrl#sanitize
+ * @deprecated Use `safevalues.dom.safeAnchorEl.setHref` instead.
  */
 goog.dom.safe.setAnchorHref = function(anchor, url) {
   'use strict';
-  goog.dom.asserts.assertIsHTMLAnchorElement(anchor);
+  goog.asserts.dom.assertIsHtmlAnchorElement(anchor);
   /** @type {!goog.html.SafeUrl} */
   var safeUrl;
   if (url instanceof goog.html.SafeUrl) {
     safeUrl = url;
   } else {
-    safeUrl = goog.html.SafeUrl.sanitizeAssertUnchanged(url);
+    safeUrl = goog.html.SafeUrl.sanitizeJavascriptUrlAssertUnchanged(url);
   }
   anchor.href = goog.html.SafeUrl.unwrap(safeUrl);
 };
 
-
-/**
- * Safely assigns a URL to an image element's src property.
- *
- * If url is of type goog.html.SafeUrl, its value is unwrapped and assigned to
- * image's src property.  If url is of type string however, it is first
- * sanitized using goog.html.SafeUrl.sanitize.
- *
- * @param {!HTMLImageElement} imageElement The image element whose src property
- *     is to be assigned to.
- * @param {string|!goog.html.SafeUrl} url The URL to assign.
- * @return {void}
- * @see goog.html.SafeUrl#sanitize
- */
-goog.dom.safe.setImageSrc = function(imageElement, url) {
-  'use strict';
-  goog.dom.asserts.assertIsHTMLImageElement(imageElement);
-  /** @type {!goog.html.SafeUrl} */
-  var safeUrl;
-  if (url instanceof goog.html.SafeUrl) {
-    safeUrl = url;
-  } else {
-    var allowDataUrl = /^data:image\//i.test(url);
-    safeUrl = goog.html.SafeUrl.sanitizeAssertUnchanged(url, allowDataUrl);
-  }
-  imageElement.src = goog.html.SafeUrl.unwrap(safeUrl);
-};
 
 /**
  * Safely assigns a URL to a audio element's src property.
@@ -390,17 +375,17 @@ goog.dom.safe.setImageSrc = function(imageElement, url) {
  * @param {string|!goog.html.SafeUrl} url The URL to assign.
  * @return {void}
  * @see goog.html.SafeUrl#sanitize
+ * @deprecated Use a plain property assignement `myAudioEl.src = x` instead.
  */
 goog.dom.safe.setAudioSrc = function(audioElement, url) {
   'use strict';
-  goog.dom.asserts.assertIsHTMLAudioElement(audioElement);
+  goog.asserts.dom.assertIsHtmlAudioElement(audioElement);
   /** @type {!goog.html.SafeUrl} */
   var safeUrl;
   if (url instanceof goog.html.SafeUrl) {
     safeUrl = url;
   } else {
-    var allowDataUrl = /^data:audio\//i.test(url);
-    safeUrl = goog.html.SafeUrl.sanitizeAssertUnchanged(url, allowDataUrl);
+    safeUrl = goog.html.SafeUrl.sanitizeJavascriptUrlAssertUnchanged(url);
   }
   audioElement.src = goog.html.SafeUrl.unwrap(safeUrl);
 };
@@ -417,17 +402,17 @@ goog.dom.safe.setAudioSrc = function(audioElement, url) {
  * @param {string|!goog.html.SafeUrl} url The URL to assign.
  * @return {void}
  * @see goog.html.SafeUrl#sanitize
+ * @deprecated Use a plain property assignement `myAudioEl.src = x` instead.
  */
 goog.dom.safe.setVideoSrc = function(videoElement, url) {
   'use strict';
-  goog.dom.asserts.assertIsHTMLVideoElement(videoElement);
+  goog.asserts.dom.assertIsHtmlVideoElement(videoElement);
   /** @type {!goog.html.SafeUrl} */
   var safeUrl;
   if (url instanceof goog.html.SafeUrl) {
     safeUrl = url;
   } else {
-    var allowDataUrl = /^data:video\//i.test(url);
-    safeUrl = goog.html.SafeUrl.sanitizeAssertUnchanged(url, allowDataUrl);
+    safeUrl = goog.html.SafeUrl.sanitizeJavascriptUrlAssertUnchanged(url);
   }
   videoElement.src = goog.html.SafeUrl.unwrap(safeUrl);
 };
@@ -445,10 +430,11 @@ goog.dom.safe.setVideoSrc = function(videoElement, url) {
  * @param {!HTMLEmbedElement} embed The embed element whose src property
  *     is to be assigned to.
  * @param {!goog.html.TrustedResourceUrl} url The URL to assign.
+ * @deprecated Use `safevalues.dom.safeEmbedEl.setSrc` instead.
  */
 goog.dom.safe.setEmbedSrc = function(embed, url) {
   'use strict';
-  goog.dom.asserts.assertIsHTMLEmbedElement(embed);
+  goog.asserts.dom.assertIsHtmlEmbedElement(embed);
   embed.src = goog.html.TrustedResourceUrl.unwrapTrustedScriptURL(url);
 };
 
@@ -462,7 +448,7 @@ goog.dom.safe.setEmbedSrc = function(embed, url) {
  *   frameEl.src = url;
  * The latter can result in loading untrusted code unless it is ensured that
  * the URL refers to a trustworthy resource.
- *
+ * @deprecated Use safevalues.dom.safeIframeEl.setSrc instead.
  * @param {!HTMLFrameElement} frame The frame element whose src property
  *     is to be assigned to.
  * @param {!goog.html.TrustedResourceUrl} url The URL to assign.
@@ -470,7 +456,7 @@ goog.dom.safe.setEmbedSrc = function(embed, url) {
  */
 goog.dom.safe.setFrameSrc = function(frame, url) {
   'use strict';
-  goog.dom.asserts.assertIsHTMLFrameElement(frame);
+  goog.asserts.dom.assertIsHtmlFrameElement(frame);
   frame.src = goog.html.TrustedResourceUrl.unwrap(url);
 };
 
@@ -489,10 +475,11 @@ goog.dom.safe.setFrameSrc = function(frame, url) {
  *     is to be assigned to.
  * @param {!goog.html.TrustedResourceUrl} url The URL to assign.
  * @return {void}
+ * @deprecated Use `safevalues.dom.safeIframeEl.setSrc` instead.
  */
 goog.dom.safe.setIframeSrc = function(iframe, url) {
   'use strict';
-  goog.dom.asserts.assertIsHTMLIFrameElement(iframe);
+  goog.asserts.dom.assertIsHtmlIFrameElement(iframe);
   iframe.src = goog.html.TrustedResourceUrl.unwrap(url);
 };
 
@@ -510,10 +497,11 @@ goog.dom.safe.setIframeSrc = function(iframe, url) {
  *     is to be assigned to.
  * @param {!goog.html.SafeHtml} html The HTML to assign.
  * @return {void}
+ * @deprecated Use `safevalues.dom.safeIframeEl.setSrcdoc` instead.
  */
 goog.dom.safe.setIframeSrcdoc = function(iframe, html) {
   'use strict';
-  goog.dom.asserts.assertIsHTMLIFrameElement(iframe);
+  goog.asserts.dom.assertIsHtmlIFrameElement(iframe);
   iframe.srcdoc = goog.html.SafeHtml.unwrapTrustedHTML(html);
 };
 
@@ -543,10 +531,11 @@ goog.dom.safe.setIframeSrcdoc = function(iframe, html) {
  * @throws {Error} if rel contains "stylesheet" and url is not a
  *     TrustedResourceUrl
  * @see goog.html.SafeUrl#sanitize
+ * @deprecated Use `safevalues.dom.safeLinkEl.setHrefAndRel` instead.
  */
 goog.dom.safe.setLinkHrefAndRel = function(link, url, rel) {
   'use strict';
-  goog.dom.asserts.assertIsHTMLLinkElement(link);
+  goog.asserts.dom.assertIsHtmlLinkElement(link);
   link.rel = rel;
   if (goog.string.internal.caseInsensitiveContains(rel, 'stylesheet')) {
     goog.asserts.assert(
@@ -565,7 +554,7 @@ goog.dom.safe.setLinkHrefAndRel = function(link, url, rel) {
   } else {  // string
     // SafeUrl.sanitize must return legitimate SafeUrl when passed a string.
     link.href = goog.html.SafeUrl.unwrap(
-        goog.html.SafeUrl.sanitizeAssertUnchanged(url));
+        goog.html.SafeUrl.sanitizeJavascriptUrlAssertUnchanged(url));
   }
 };
 
@@ -579,6 +568,7 @@ goog.dom.safe.setLinkHrefAndRel = function(link, url, rel) {
  *   objectEl.data = url;
  * The latter can result in loading untrusted code unless setit is ensured that
  * the URL refers to a trustworthy resource.
+ * @deprecated
  *
  * @param {!HTMLObjectElement} object The object element whose data property
  *     is to be assigned to.
@@ -587,7 +577,7 @@ goog.dom.safe.setLinkHrefAndRel = function(link, url, rel) {
  */
 goog.dom.safe.setObjectData = function(object, url) {
   'use strict';
-  goog.dom.asserts.assertIsHTMLObjectElement(object);
+  goog.asserts.dom.assertIsHtmlObjectElement(object);
   object.data = goog.html.TrustedResourceUrl.unwrapTrustedScriptURL(url);
 };
 
@@ -606,10 +596,11 @@ goog.dom.safe.setObjectData = function(object, url) {
  *     is to be assigned to.
  * @param {!goog.html.TrustedResourceUrl} url The URL to assign.
  * @return {void}
+ * @deprecated Use `safevalues.dom.safeScriptEl.setSrc` instead.
  */
 goog.dom.safe.setScriptSrc = function(script, url) {
   'use strict';
-  goog.dom.asserts.assertIsHTMLScriptElement(script);
+  goog.asserts.dom.assertIsHtmlScriptElement(script);
   goog.dom.safe.setNonceForScriptElement_(script);
   script.src = goog.html.TrustedResourceUrl.unwrapTrustedScriptURL(url);
 };
@@ -629,10 +620,11 @@ goog.dom.safe.setScriptSrc = function(script, url) {
  *     set.
  * @param {!goog.html.SafeScript} content The content to assign.
  * @return {void}
+ * @deprecated Use `safevalues.dom.safeScriptEl.setTextContent` instead.
  */
 goog.dom.safe.setScriptContent = function(script, content) {
   'use strict';
-  goog.dom.asserts.assertIsHTMLScriptElement(script);
+  goog.asserts.dom.assertIsHtmlScriptElement(script);
   goog.dom.safe.setNonceForScriptElement_(script);
   script.textContent = goog.html.SafeScript.unwrapTrustedScript(content);
 };
@@ -673,6 +665,7 @@ goog.dom.safe.setNonceForScriptElement_ = function(script) {
  * @param {string|!goog.html.SafeUrl} url The URL to assign.
  * @return {void}
  * @see goog.html.SafeUrl#sanitize
+ * @deprecated Use `safevalues.dom.safeLocation.setHref` instead.
 
  */
 goog.dom.safe.setLocationHref = function(loc, url) {
@@ -683,7 +676,7 @@ goog.dom.safe.setLocationHref = function(loc, url) {
   if (url instanceof goog.html.SafeUrl) {
     safeUrl = url;
   } else {
-    safeUrl = goog.html.SafeUrl.sanitizeAssertUnchanged(url);
+    safeUrl = goog.html.SafeUrl.sanitizeJavascriptUrlAssertUnchanged(url);
   }
   loc.href = goog.html.SafeUrl.unwrap(safeUrl);
 };
@@ -709,6 +702,7 @@ goog.dom.safe.setLocationHref = function(loc, url) {
  * @param {string|!goog.html.SafeUrl} url The URL to assign.
  * @return {void}
  * @see goog.html.SafeUrl#sanitize
+ * @deprecated Use `safevalues.dom.safeLocation.assign` instead.
  */
 goog.dom.safe.assignLocation = function(loc, url) {
   'use strict';
@@ -718,7 +712,7 @@ goog.dom.safe.assignLocation = function(loc, url) {
   if (url instanceof goog.html.SafeUrl) {
     safeUrl = url;
   } else {
-    safeUrl = goog.html.SafeUrl.sanitizeAssertUnchanged(url);
+    safeUrl = goog.html.SafeUrl.sanitizeJavascriptUrlAssertUnchanged(url);
   }
   loc.assign(goog.html.SafeUrl.unwrap(safeUrl));
 };
@@ -742,6 +736,7 @@ goog.dom.safe.assignLocation = function(loc, url) {
  * @param {string|!goog.html.SafeUrl} url The URL to assign.
  * @return {void}
  * @see goog.html.SafeUrl#sanitize
+ * @deprecated Use `safevalues.dom.safeLocation.replace` instead.
  */
 goog.dom.safe.replaceLocation = function(loc, url) {
   'use strict';
@@ -750,7 +745,7 @@ goog.dom.safe.replaceLocation = function(loc, url) {
   if (url instanceof goog.html.SafeUrl) {
     safeUrl = url;
   } else {
-    safeUrl = goog.html.SafeUrl.sanitizeAssertUnchanged(url);
+    safeUrl = goog.html.SafeUrl.sanitizeJavascriptUrlAssertUnchanged(url);
   }
   loc.replace(goog.html.SafeUrl.unwrap(safeUrl));
 };
@@ -782,6 +777,7 @@ goog.dom.safe.replaceLocation = function(loc, url) {
  * @param {string=} opt_specs Comma-separated list of specifications, same as
  *     in window.open().
  * @return {Window} Window the url was opened in.
+ * @deprecated Use `safevalues.dom.safeWindow.open` instead.
  */
 goog.dom.safe.openInWindow = function(url, opt_openerWin, opt_name, opt_specs) {
   'use strict';
@@ -790,7 +786,7 @@ goog.dom.safe.openInWindow = function(url, opt_openerWin, opt_name, opt_specs) {
   if (url instanceof goog.html.SafeUrl) {
     safeUrl = url;
   } else {
-    safeUrl = goog.html.SafeUrl.sanitizeAssertUnchanged(url);
+    safeUrl = goog.html.SafeUrl.sanitizeJavascriptUrlAssertUnchanged(url);
   }
   var win = opt_openerWin || goog.global;
   // If opt_name is undefined, simply passing that in to open() causes IE to
@@ -816,6 +812,7 @@ goog.dom.safe.openInWindow = function(url, opt_openerWin, opt_name, opt_specs) {
  * @param {!DOMParser} parser
  * @param {!goog.html.SafeHtml} html The HTML to be parsed.
  * @return {!Document}
+ * @deprecated Use `safevalues.dom.safeDomParser.parseHtml` instead.
  */
 goog.dom.safe.parseFromStringHtml = function(parser, html) {
   'use strict';
@@ -830,6 +827,7 @@ goog.dom.safe.parseFromStringHtml = function(parser, html) {
  *     XML or SVG supported by this function so we use SafeHtml.
  * @param {string} type
  * @return {!Document}
+ * @deprecated Use `safevalues.dom.safeDomParser.parseFromString` instead.
  */
 goog.dom.safe.parseFromString = function(parser, content, type) {
   'use strict';
@@ -850,6 +848,8 @@ goog.dom.safe.parseFromString = function(parser, content, type) {
  * @param {!Blob} blob The blob to create the image from.
  * @return {!HTMLImageElement} The image element created from the blob.
  * @throws {!Error} If called with a Blob with a MIME type other than image/.*.
+ * @deprecated Use `safevalues.objectUrlFromSafeSource` and assign it to the
+ *     img.src.
  */
 goog.dom.safe.createImageFromBlob = function(blob) {
   'use strict';
@@ -864,11 +864,7 @@ goog.dom.safe.createImageFromBlob = function(blob) {
     'use strict';
     goog.global.URL.revokeObjectURL(objectUrl);
   };
-  goog.dom.safe.setImageSrc(
-      image,
-      goog.html.uncheckedconversions
-          .safeUrlFromStringKnownToSatisfyTypeContract(
-              goog.string.Const.from('Image blob URL.'), objectUrl));
+  image.src = objectUrl;
   return image;
 };
 
@@ -878,6 +874,7 @@ goog.dom.safe.createImageFromBlob = function(blob) {
  * create a fragment in.
  * @param {!goog.html.SafeHtml} html HTML to create a fragment from.
  * @return {?DocumentFragment}
+ * @deprecated Use `safevalues.dom.safeRange.createContextualFragment` instead.
  */
 goog.dom.safe.createContextualFragment = function(range, html) {
   'use strict';
@@ -890,6 +887,9 @@ goog.dom.safe.createContextualFragment = function(range, html) {
  * @param {?Window=} opt_window The window context used to retrieve the nonce.
  *     Defaults to global context.
  * @return {string} CSP nonce or empty string if no nonce is present.
+ * @deprecated Use `safevalues.dom.safeScriptEl.setSrc` or
+ *     `safevalues.dom.safeScriptEl.setTextContent` which automatically set the
+ *     script nonce.
  */
 goog.dom.safe.getScriptNonce = function(opt_window) {
   return goog.dom.safe.getNonce_('script[nonce]', opt_window);
@@ -901,6 +901,7 @@ goog.dom.safe.getScriptNonce = function(opt_window) {
  * @param {?Window=} opt_window The window context used to retrieve the nonce.
  *     Defaults to global context.
  * @return {string} CSP nonce or empty string if no nonce is present.
+ * @deprecated
  */
 goog.dom.safe.getStyleNonce = function(opt_window) {
   return goog.dom.safe.getNonce_(

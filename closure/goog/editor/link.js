@@ -12,15 +12,12 @@ goog.provide('goog.editor.Link');
 
 goog.require('goog.dom');
 goog.require('goog.dom.NodeType');
-goog.require('goog.dom.Range');
 goog.require('goog.dom.TagName');
-goog.require('goog.editor.BrowserFeature');
 goog.require('goog.editor.Command');
 goog.require('goog.editor.Field');
 goog.require('goog.editor.node');
 goog.require('goog.editor.range');
 goog.require('goog.string');
-goog.require('goog.string.Unicode');
 goog.require('goog.uri.utils');
 goog.require('goog.uri.utils.ComponentIndex');
 
@@ -81,6 +78,7 @@ goog.editor.Link.prototype.getExtraAnchors = function() {
 
 /**
  * @return {string} The inner text for the anchor.
+ * @suppress {strictMissingProperties} Added to tighten compiler checks
  */
 goog.editor.Link.prototype.getCurrentText = function() {
   'use strict';
@@ -89,8 +87,14 @@ goog.editor.Link.prototype.getCurrentText = function() {
 
     var leaf = goog.editor.node.getLeftMostLeaf(anchor);
     if (leaf.tagName && leaf.tagName == goog.dom.TagName.IMG) {
+      /**
+       * @suppress {strictMissingProperties} Added to tighten compiler checks
+       */
       this.currentText_ = leaf.getAttribute('alt') || '';
     } else {
+      /**
+       * @suppress {strictMissingProperties} Added to tighten compiler checks
+       */
       this.currentText_ = goog.dom.getRawTextContent(this.getAnchor());
     }
   }
@@ -138,6 +142,7 @@ goog.editor.Link.prototype.removeLink = function() {
  *     one node. Otherwise, we'll change the innerHTML of the whole
  *     link to newText.
  * @param {string} newUrl A new URL.
+ * @suppress {strictMissingProperties} Added to tighten compiler checks
  */
 goog.editor.Link.prototype.setTextAndUrl = function(newText, newUrl) {
   'use strict';
@@ -166,6 +171,7 @@ goog.editor.Link.prototype.setTextAndUrl = function(newText, newUrl) {
     }
 
     // The text changed, so force getCurrentText to recompute.
+    /** @suppress {strictMissingProperties} Added to tighten compiler checks */
     this.currentText_ = null;
   }
 
@@ -179,35 +185,11 @@ goog.editor.Link.prototype.setTextAndUrl = function(newText, newUrl) {
  * in that it specifically handles the placement of a cursor in browsers
  * that trap you in links, by adding a space when necessary and placing the
  * cursor after that space.
+ * @suppress {strictMissingProperties} Added to tighten compiler checks
  */
 goog.editor.Link.prototype.placeCursorRightOf = function() {
   'use strict';
-  var anchor = this.getAnchor();
-  // If the browser gets stuck in a link if we place the cursor next to it,
-  // we'll place the cursor after a space instead.
-  if (goog.editor.BrowserFeature.GETS_STUCK_IN_LINKS) {
-    var spaceNode;
-    var nextSibling = anchor.nextSibling;
-
-    // Check if there is already a space after the link.  Only handle the
-    // simple case - the next node is a text node that starts with a space.
-    if (nextSibling && nextSibling.nodeType == goog.dom.NodeType.TEXT &&
-        (goog.string.startsWith(nextSibling.data, goog.string.Unicode.NBSP) ||
-         goog.string.startsWith(nextSibling.data, ' '))) {
-      spaceNode = nextSibling;
-    } else {
-      // If there isn't an obvious space to use, create one after the link.
-      var dh = goog.dom.getDomHelper(anchor);
-      spaceNode = dh.createTextNode(goog.string.Unicode.NBSP);
-      goog.dom.insertSiblingAfter(spaceNode, anchor);
-    }
-
-    // Move the selection after the space.
-    var range = goog.dom.Range.createCaret(spaceNode, 1);
-    range.select();
-  } else {
-    goog.editor.range.placeCursorNextTo(anchor, false);
-  }
+  goog.editor.range.placeCursorNextTo(this.getAnchor(), false);
 };
 
 

@@ -10,10 +10,8 @@ closure_js_library(
     lenient = True,
     deps = [
         ":defines",
-        "//closure/goog/labs/useragent:browser",
         "//closure/goog/useragent",
         "//closure/goog/useragent:product",
-        "//closure/goog/useragent:product_isversion",
     ],
 )
 
@@ -87,8 +85,6 @@ closure_js_library(
         "//closure/goog/dom:tagname",
         "//closure/goog/events",
         "//closure/goog/events:browserevent",
-        "//closure/goog/events:eventhandler",
-        "//closure/goog/events:eventtarget",
         "//closure/goog/events:eventtype",
         "//closure/goog/events:keycodes",
         "//closure/goog/functions",
@@ -103,7 +99,6 @@ closure_js_library(
         "//closure/goog/string",
         "//closure/goog/style",
         "//closure/goog/useragent",
-        "//closure/goog/useragent:product",
     ],
 )
 
@@ -133,15 +128,12 @@ closure_js_library(
     srcs = ["link.js"],
     lenient = True,
     deps = [
-        ":browserfeature",
         ":command",
         ":field",
         ":node",
         ":range",
-        "//closure/goog/array",
         "//closure/goog/dom",
         "//closure/goog/dom:nodetype",
-        "//closure/goog/dom:range",
         "//closure/goog/dom:tagname",
         "//closure/goog/string",
         "//closure/goog/uri:utils",
@@ -217,7 +209,6 @@ closure_js_library(
         "//closure/goog/dom:safe",
         "//closure/goog/dom:tagname",
         "//closure/goog/events",
-        "//closure/goog/events:eventtype",
         "//closure/goog/html:safehtml",
         "//closure/goog/log",
         "//closure/goog/style",

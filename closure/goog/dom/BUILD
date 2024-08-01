@@ -69,6 +69,7 @@ closure_js_library(
     lenient = True,
     deps = [
         ":dom",
+        ":viewportsizemonitor",
         "//closure/goog/asserts",
         "//closure/goog/async:delay",
         "//closure/goog/events",
@@ -119,6 +120,7 @@ closure_js_library(
         ":tagname",
         "//closure/goog/array",
         "//closure/goog/asserts",
+        "//closure/goog/asserts:dom",
         "//closure/goog/html:safehtml",
         "//closure/goog/html:uncheckedconversions",
         "//closure/goog/math:coordinate",
@@ -279,10 +281,12 @@ closure_js_library(
 closure_js_library(
     name = "safe",
     srcs = ["safe.js"],
+    deprecation = "Please use 'safevalues/dom' instead",
     lenient = True,
     deps = [
         ":asserts",
         "//closure/goog/asserts",
+        "//closure/goog/asserts:dom",
         "//closure/goog/functions",
         "//closure/goog/html:safehtml",
         "//closure/goog/html:safescript",

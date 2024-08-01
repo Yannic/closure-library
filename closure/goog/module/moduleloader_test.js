@@ -55,6 +55,8 @@ const stubs = new PropertyReplacer();
 const modA1 = TrustedResourceUrl.fromConstant(Const.from('testdata/modA_1.js'));
 const modA2 = TrustedResourceUrl.fromConstant(Const.from('testdata/modA_2.js'));
 const modB1 = TrustedResourceUrl.fromConstant(Const.from('testdata/modB_1.js'));
+const errorMod =
+    TrustedResourceUrl.fromConstant(Const.from('testdata/errorMod.js'));
 
 const EventType = ModuleLoader.EventType;
 let observer;
@@ -124,12 +126,14 @@ testSuite({
     events.listen(moduleLoader, googObject.getValues(EventType), observer);
 
     moduleManager.setLoader(moduleLoader);
-    moduleManager.setAllModuleInfo({'modA': [], 'modB': ['modA']});
+    moduleManager.setAllModuleInfo(
+        {'modA': [], 'modB': ['modA'], 'errorMod': []});
     moduleManager.setModuleTrustedUris(
-        {'modA': [modA1, modA2], 'modB': [modB1]});
+        {'modA': [modA1, modA2], 'modB': [modB1], 'errorMod': [errorMod]});
 
     assertNotLoaded('modA');
     assertNotLoaded('modB');
+    assertNotLoaded('errorMod');
     assertFalse(modA1Loaded);
   },
 
@@ -360,13 +364,10 @@ testSuite({
     // errors on IE plays badly with the simulated errors in the test.
     if (userAgent.IE) return;
 
-    // Modules will throw an exception if this boolean is set to true.
-    modA1Loaded = true;
-
     return new GoogPromise((resolve, reject) => {
       const errorHandler = () => {
         try {
-          assertNotLoaded('modA');
+          assertNotLoaded('errorMod');
         } catch (e) {
           reject(e);
         }
@@ -375,26 +376,17 @@ testSuite({
       moduleManager.registerCallback(
           ModuleManager.CallbackType.ERROR, errorHandler);
 
-      moduleManager.execOnLoad('modA', () => {
-        fail('modA should not load successfully');
+      moduleManager.execOnLoad('errorMod', () => {
+        fail('errorMod should not load successfully');
       });
     });
   },
 
   testEventError() {
-    // Don't run this test on older IE, because the way the test runner catches
-    // errors on IE plays badly with the simulated errors in the test.
-    if (userAgent.IE && !userAgent.isVersionOrHigher(11)) {
-      return;
-    }
-
-    // Modules will throw an exception if this boolean is set to true.
-    modA1Loaded = true;
-
     return new GoogPromise((resolve, reject) => {
              const errorHandler = () => {
                try {
-                 assertNotLoaded('modA');
+                 assertNotLoaded('errorMod');
                } catch (e) {
                  reject(e);
                }
@@ -403,8 +395,8 @@ testSuite({
              moduleManager.registerCallback(
                  ModuleManager.CallbackType.ERROR, errorHandler);
 
-             moduleManager.execOnLoad('modA', () => {
-               fail('modA should not load successfully');
+             moduleManager.execOnLoad('errorMod', () => {
+               fail('errorMod should not load successfully');
              });
            })
         .then(() => {
@@ -423,7 +415,7 @@ testSuite({
           assertEquals('REQUEST_ERROR', 3, requestErrors.length);
           const requestError = requestErrors[0];
           assertNotNull(requestError.error);
-          const expectedString = 'loaded twice';
+          const expectedString = 'should not load';
           const messageAndStack =
               requestErrors[0].error.message + requestErrors[0].error.stack;
           assertContains(expectedString, messageAndStack);
@@ -524,17 +516,93 @@ testSuite({
           assertEquals(
               'REQUEST_ERROR', 0,
               observer.getEvents(EventType.REQUEST_ERROR).length);
-          assertThrows('Module load already requested: modB', () => {
-            moduleManager.prefetchModule('modA');
+          stubs.set(BulkLoader.prototype, 'load', () => {
+            fail('modA should not be downloaded again.');
           });
+          moduleManager.prefetchModule('modA');
         });
   },
 
-  testPrefetchModuleWithBatchModeEnabled() {
+  testPrefetchModuleAThenLoadModuleBWithBatchEnabled() {
     moduleManager.setBatchModeEnabled(true);
-    assertThrows('Modules prefetching is not supported in batch mode', () => {
-      moduleManager.prefetchModule('modA');
-    });
+    moduleManager.prefetchModule('modA');
+
+    assertThrows(
+        'Modules prefetching is only supported in batch mode when using ' +
+            'script tags',
+        () => {
+          moduleManager.execOnLoad('modB', () => {});
+        });
+  },
+
+  testLoadModulesAAndBWithBatchEnabledAndScriptTagEnabled() {
+    moduleLoader.setUseScriptTags(true);
+    const moduleInfoMap = {
+      'modA': moduleManager.getModuleInfo('modA'),
+      'modB': moduleManager.getModuleInfo('modB')
+    };
+    return new GoogPromise((resolve, reject) => {
+             moduleLoader.loadModules(['modA', 'modB'], moduleInfoMap, {
+               onSuccess: resolve,
+             });
+           })
+        .then(() => {
+          assertLoaded('modA');
+          assertLoaded('modB');
+        });
+  },
+
+  testPrefetchAAndThenLoadModulesAAndBWithBatchEnabledAndScriptTagEnabled() {
+    moduleLoader.setUseScriptTags(true);
+    const moduleInfoMap = {
+      'modA': moduleManager.getModuleInfo('modA'),
+      'modB': moduleManager.getModuleInfo('modB')
+    };
+    moduleLoader.prefetchModule('modA', moduleInfoMap['modA']);
+    return new GoogPromise((resolve, reject) => {
+             moduleLoader.loadModules(['modA', 'modB'], moduleInfoMap, {
+               onSuccess: resolve,
+             });
+           })
+        .then(() => {
+          assertLoaded('modA');
+          assertLoaded('modB');
+        });
+  },
+
+  testPrefetchModuleAThenLoadModuleBWithBatchEnabledAndScriptTagEnabled() {
+    moduleLoader.setUseScriptTags(true);
+    moduleManager.setBatchModeEnabled(true);
+    moduleManager.prefetchModule('modA');
+
+    return new GoogPromise((resolve, reject) => {
+             moduleManager.execOnLoad('modB', resolve);
+           })
+        .then(() => {
+          assertLoaded('modA');
+          assertLoaded('modB');
+        });
+  },
+
+  testLoadModuleBWithBatchEnabled() {
+    moduleManager.setBatchModeEnabled(true);
+
+    return new GoogPromise((resolve, reject) => {
+             moduleManager.execOnLoad('modB', resolve);
+           })
+        .then(() => {
+          assertLoaded('modA');
+          assertLoaded('modB');
+          assertEquals(
+              'REQUEST_SUCCESS', 1,
+              observer.getEvents(EventType.REQUEST_SUCCESS).length);
+          assertArrayEquals(
+              ['modA', 'modB'],
+              observer.getEvents(EventType.REQUEST_SUCCESS)[0].moduleIds);
+          assertEquals(
+              'REQUEST_ERROR', 0,
+              observer.getEvents(EventType.REQUEST_ERROR).length);
+        });
   },
 
   /** @suppress {missingProperties} suppression added to enable type checking */

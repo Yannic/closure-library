@@ -76,6 +76,23 @@ function neverHappen(res) {
   fail('This should not happen');
 }
 
+/**
+ * @param {string=} msg Expected message
+ */
+function assertUnhandledException(msg = undefined) {
+  const ex = assertThrows(
+      'Should catch an unhandled exception',
+      /**
+       * @suppress {checkTypes} suppression added to enable type checking
+       */
+      function() {
+        mockClock.tick();
+        neverHappen();
+      });
+  if (msg != null) assertEquals(msg, ex.message);
+  mockClock.tick();  // check that there are no further unhandled exceptions
+}
+
 testSuite({
   setUp() {
     mockClock.install();
@@ -369,15 +386,7 @@ testSuite({
     d1.callback();
     assertEquals('B2,A2', calls.join(','));
 
-    const ex = assertThrows(/**
-                             @suppress {checkTypes} suppression added to enable
-                             type checking
-                           */
-                            function() {
-                              mockClock.tick();
-                              neverHappen();
-                            });
-    assertTrue('Should catch unhandled throw from d2.', ex.message == 'x');
+    assertUnhandledException('x');
   },
 
   testUndefinedResultAndCallbackSequence() {
@@ -510,6 +519,23 @@ testSuite({
     });
   },
 
+  testStrictHandledErrorsViaPromise() {
+    stubs.replace(Deferred, 'STRICT_ERRORS', true);
+
+    // The registered errback returns a non-error value.
+    const d = Deferred.succeed();
+    d.addCallback(function(res) {
+      throw Error('eventually handled');
+    });
+
+    d.then().catch(() => {});
+
+    assertNotThrows(
+        'The error was handled and should not be rethrown', function() {
+          mockClock.tick();
+        });
+  },
+
   testStrictBlockedErrors() {
     stubs.replace(Deferred, 'STRICT_ERRORS', true);
 
@@ -537,6 +563,26 @@ testSuite({
         function() {
           mockClock.tick();
         });
+  },
+
+  // TODO(user): This is surprising behavior and we should change it.
+  testStrictErrors_rejectsWhenResolvedWithErrorInstance() {
+    stubs.replace(Deferred, 'STRICT_ERRORS', true);
+    let count = 0;
+    function countCalls(d) {
+      count++;
+    }
+
+    let d = Deferred.succeed(new Error('aaa'));
+    assertUnhandledException('aaa');
+    d.addCallbacks(neverHappen, countCalls);
+    assertUnhandledException('aaa');
+    assertEquals(1, count);
+
+    // NOTE: CanceledError is _not_ treated as an Error for this purpose.
+    d = Deferred.succeed(new CanceledError(d));
+    d.addCallbacks(countCalls, neverHappen);
+    assertEquals(2, count);
   },
 
   testSynchronousErrorCanceling() {
